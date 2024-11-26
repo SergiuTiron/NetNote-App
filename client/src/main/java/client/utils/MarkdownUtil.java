@@ -26,7 +26,7 @@ public class MarkdownUtil {
 		WebEngine webEngine = webView.getEngine();
 		webEngine.loadContent(htmlContent);
 
-		URL cssFileUrl = MarkdownUtil.class.getResource("/css/markdown-style.css")
+		URL cssFileUrl = MarkdownUtil.class.getResource("/css/markdown-style.css");
 		if (cssFileUrl != null) {
 			// Add the CSS link to the HTML content
 			String cssLink = "<link rel='stylesheet' type='text/css' href='" + cssFileUrl + "' />";
