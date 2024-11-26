@@ -9,6 +9,14 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
+	<dependencies>
+		<dependency>
+			<groupId>org.commonmark</groupId>
+			<artifactId>commonmark</artifactId>
+			<version>0.24.0</version>
+		</dependency>
+	</dependencies>
+
 	<modules>
 		<module>commons</module>
 		<module>client</module>

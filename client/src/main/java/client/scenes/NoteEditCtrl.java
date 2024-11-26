@@ -1,5 +1,6 @@
 package client.scenes;
 
+import client.utils.MarkdownUtil;
 import client.utils.ServerUtils;
 import commons.Note;
 import jakarta.inject.Inject;
@@ -9,6 +10,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
+import javafx.scene.web.WebView;
 
 import java.net.URL;
 import java.util.List;
@@ -23,6 +25,9 @@ public class NoteEditCtrl implements Initializable {
 
     @FXML
     private TextArea editingArea;
+
+    @FXML
+    private WebView markdownPreview;
 
     @Inject
     public NoteEditCtrl(ServerUtils server) {
@@ -39,12 +44,21 @@ public class NoteEditCtrl implements Initializable {
             }
         });
         noteListView.getSelectionModel().selectedItemProperty()
-                .addListener((_, _, current) -> this.handleNoteSelect(current));
-
+            .addListener((_, _, current) -> this.handleNoteSelect(current));
+        editingArea.textProperty().addListener((_, _, newText) -> {
+            updateMarkdownView(newText);  // Pass the actual text content to update the WebView
+        });
         // Until the user has selected a note to edit, display an informative message
         //  & do not allow the user to type.
         editingArea.setEditable(false);
         editingArea.setText("Select a note to start editing.");
+    }
+
+    // Called whenever the WebView needs to be updated (because of writing in editingArea).
+    private void updateMarkdownView(String markdownContent) {
+        // Convert the content written in editingArea to HTML
+        String htmlContent = MarkdownUtil.parseToHtml(markdownContent);
+        markdownPreview.getEngine().loadContent(htmlContent);
     }
 
     // Called whenever the user clicks on one of the notes in the sidebar.
