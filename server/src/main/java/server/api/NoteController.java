@@ -16,8 +16,8 @@
 package server.api;
 
 import java.util.List;
-import java.util.Random;
 
+import commons.Note;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,28 +26,25 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import commons.Quote;
-import server.database.QuoteRepository;
+import server.database.NoteRepository;
 
 @RestController
-@RequestMapping("/api/quotes")
-public class QuoteController {
+@RequestMapping("/api/notes")
+public class NoteController {
 
-    private final Random random;
-    private final QuoteRepository repo;
+    private final NoteRepository repo;
 
-    public QuoteController(Random random, QuoteRepository repo) {
-        this.random = random;
+    public NoteController(NoteRepository repo) {
         this.repo = repo;
     }
 
     @GetMapping(path = { "", "/" })
-    public List<Quote> getAll() {
+    public List<Note> getAll() {
         return repo.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Quote> getById(@PathVariable("id") long id) {
+    public ResponseEntity<Note> getById(@PathVariable("id") long id) {
         if (id < 0 || !repo.existsById(id)) {
             return ResponseEntity.badRequest().build();
         }
@@ -55,25 +52,9 @@ public class QuoteController {
     }
 
     @PostMapping(path = { "", "/" })
-    public ResponseEntity<Quote> add(@RequestBody Quote quote) {
-
-        if (quote.person == null || isNullOrEmpty(quote.person.firstName) || isNullOrEmpty(quote.person.lastName)
-                || isNullOrEmpty(quote.quote)) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        Quote saved = repo.save(quote);
+    public ResponseEntity<Note> add(@RequestBody Note note) {
+        Note saved = repo.save(note);
         return ResponseEntity.ok(saved);
     }
 
-    private static boolean isNullOrEmpty(String s) {
-        return s == null || s.isEmpty();
-    }
-
-    @GetMapping("rnd")
-    public ResponseEntity<Quote> getRandom() {
-        var quotes = repo.findAll();
-        var idx = random.nextInt((int) repo.count());
-        return ResponseEntity.ok(quotes.get(idx));
-    }
 }
