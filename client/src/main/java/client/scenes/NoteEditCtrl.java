@@ -43,8 +43,7 @@ public class NoteEditCtrl implements Initializable {
 
         // Until the user has selected a note to edit, display an informative message
         //  & do not allow the user to type.
-        editingArea.setEditable(false);
-        editingArea.setText("Select a note to start editing.");
+        this.handleNoteSelect(null);
     }
 
     // Called whenever the user clicks on one of the notes in the sidebar.
