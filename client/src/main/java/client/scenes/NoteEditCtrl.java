@@ -43,13 +43,20 @@ public class NoteEditCtrl implements Initializable {
 
         // Until the user has selected a note to edit, display an informative message
         //  & do not allow the user to type.
-        editingArea.setEditable(false);
-        editingArea.setText("Select a note to start editing.");
+        this.handleNoteSelect(null);
     }
 
     // Called whenever the user clicks on one of the notes in the sidebar.
     private void handleNoteSelect(Note note) {
-        editingArea.setEditable(true); // Make sure we allow editing, as we have content now
+        if (note == null) {
+            // If no note is selected, disable editing and show a default message
+            editingArea.setEditable(false);
+            editingArea.setText("Select a note to start editing.");
+            return;
+        }
+
+        // If a note is selected, enable editing and display its content
+        editingArea.setEditable(true);
         editingArea.setText(note.content);
     }
 
@@ -57,6 +64,9 @@ public class NoteEditCtrl implements Initializable {
     public void createNewNote() {
         Note note = server.newEmptyNote();
         noteListView.getItems().add(note);
+        // Updates the location of the editing area on the note  currently created
+        noteListView.getSelectionModel().select(note);
+        editingArea.setEditable(true);
     }
 
     // Called whenever the user clicks the "Refresh" button.
