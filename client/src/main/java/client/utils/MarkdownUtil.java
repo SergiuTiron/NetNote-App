@@ -6,7 +6,6 @@ import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 
 public class MarkdownUtil {
