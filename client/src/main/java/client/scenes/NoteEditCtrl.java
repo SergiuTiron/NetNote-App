@@ -12,7 +12,6 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.web.WebView;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -47,11 +46,7 @@ public class NoteEditCtrl implements Initializable {
         noteListView.getSelectionModel().selectedItemProperty()
             .addListener((_, _, current) -> this.handleNoteSelect(current));
         editingArea.textProperty().addListener((_, _, newText) -> {
-	        try {
-		        MarkdownUtil.renderMarkdownInWebView(newText, markdownPreview);
-	        } catch (MalformedURLException e) {
-		        throw new RuntimeException(e);
-	        }
+            MarkdownUtil.renderMarkdownInWebView(newText, markdownPreview);
         });
         // Until the user has selected a note to edit, display an informative message
         //  & do not allow the user to type.

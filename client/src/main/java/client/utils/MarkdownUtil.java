@@ -20,7 +20,7 @@ public class MarkdownUtil {
 	}
 
 	// Method to render the HTML using a CSS file
-	public static void renderMarkdownInWebView(String markdownContent, WebView webView) throws MalformedURLException {
+	public static void renderMarkdownInWebView(String markdownContent, WebView webView){
 
 		String htmlContent = parseToHtml(markdownContent);
 
