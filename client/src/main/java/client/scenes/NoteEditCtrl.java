@@ -46,7 +46,7 @@ public class NoteEditCtrl implements Initializable {
         noteListView.getSelectionModel().selectedItemProperty()
             .addListener((_, _, current) -> this.handleNoteSelect(current));
         editingArea.textProperty().addListener((_, _, newText) -> {
-            updateMarkdownView(newText);  // Pass the actual text content to update the WebView
+            MarkdownUtil.renderMarkdownInWebView(newText, markdownPreview);
         });
         // Until the user has selected a note to edit, display an informative message
         //  & do not allow the user to type.
