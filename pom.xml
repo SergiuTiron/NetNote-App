@@ -14,7 +14,7 @@
 			<resource>
 				<directory>src/main/resources</directory>
 				<includes>
-					<include>**/*.css</include>
+					<include>/css/markdown-style.css</include>
 				</includes>
 			</resource>
 		</resources>
