@@ -26,30 +26,33 @@ import com.google.inject.Injector;
 import client.scenes.MainCtrl;
 import client.utils.ServerUtils;
 import javafx.application.Application;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 public class Main extends Application {
 
-	private static final Injector INJECTOR = createInjector(new MyModule());
-	private static final MyFXML FXML = new MyFXML(INJECTOR);
+    private static final Injector INJECTOR = createInjector(new MyModule());
+    private static final MyFXML FXML = new MyFXML(INJECTOR);
 
-	public static void main(String[] args) throws URISyntaxException, IOException {
-		launch();
-	}
+    public static void main(String[] args) throws URISyntaxException, IOException {
+        launch();
+    }
 
-	@Override
-	public void start(Stage primaryStage) throws Exception {
+    @Override
+    public void start(Stage primaryStage) throws Exception {
 
-		var serverUtils = INJECTOR.getInstance(ServerUtils.class);
-		if (!serverUtils.isServerAvailable()) {
-			var msg = "Server needs to be started before the client, but it does not seem to be available. Shutting down.";
-			System.err.println(msg);
-			return;
-		}
+        var serverUtils = INJECTOR.getInstance(ServerUtils.class);
+        if (!serverUtils.isServerAvailable()) {
+            var msg = "Server needs to be started before the client, but it does not seem to be available. Shutting down.";
+            System.err.println(msg);
+            return;
+        }
+        //The icon is taken from a google search TODO:Create our own icon
+        Image image = new Image("appIcon/NoteIcon.jpg");
+        primaryStage.getIcons().add(image);
+        var editView = FXML.load(NoteEditCtrl.class, "client", "scenes", "NoteEditView.fxml");
 
-		var editView = FXML.load(NoteEditCtrl.class, "client", "scenes", "NoteEditView.fxml");
-
-		var mainCtrl = INJECTOR.getInstance(MainCtrl.class);
-		mainCtrl.initialize(primaryStage, editView);
-	}
+        var mainCtrl = INJECTOR.getInstance(MainCtrl.class);
+        mainCtrl.initialize(primaryStage, editView);
+    }
 }
