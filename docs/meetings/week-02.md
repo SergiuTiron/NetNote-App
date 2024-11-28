@@ -28,7 +28,7 @@
 
 Expected time: 47 minutes
 
-Minute taker notes:
+### Minute taker notes:
 
 #### Agenda:
 <p>Since there was a meeting on Monday we finished the agenda faster than expected this was discussed during the meeting and will be taken into account in the next meetings. (1 min)
