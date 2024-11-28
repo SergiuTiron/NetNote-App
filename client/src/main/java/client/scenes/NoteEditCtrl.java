@@ -7,12 +7,11 @@ import jakarta.inject.Inject;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.web.WebView;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -28,6 +27,9 @@ public class NoteEditCtrl implements Initializable {
 
     @FXML
     private WebView markdownPreview;
+
+    @FXML
+    private TextField searchField;
 
     @Inject
     public NoteEditCtrl(ServerUtils server) {
@@ -51,6 +53,7 @@ public class NoteEditCtrl implements Initializable {
         // Until the user has selected a note to edit, display an informative message
         //  & do not allow the user to type.
         this.handleNoteSelect(null);
+
     }
 
     // Called whenever the WebView needs to be updated (because of writing in editingArea).
@@ -98,6 +101,21 @@ public class NoteEditCtrl implements Initializable {
 
         note.content = editingArea.getText();
         server.addNote(note);
+    }
+
+    //called when the user clicks the "Search" button
+    public void filterNotes() {
+        String query = searchField.getText();
+        if(query == null || query.isEmpty()) {
+            noteListView.setItems(FXCollections.observableList(server.getNotes()));
+            return;
+        }
+        List<Note> filteredNotes = new ArrayList<>();
+        for(Note note : server.getNotes())
+            if(note.content.toLowerCase().contains(query.toLowerCase()))
+                filteredNotes.add(note);
+
+        noteListView.setItems(FXCollections.observableList(filteredNotes));
     }
 
 }
