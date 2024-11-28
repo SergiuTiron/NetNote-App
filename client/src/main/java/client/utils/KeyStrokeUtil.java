@@ -16,7 +16,7 @@ public class KeyStrokeUtil {
      */
     public void increaseCounter() {
         keystrokeCount++;
-        System.out.println("Key counter increased");
+        //System.out.println("Key counter increased"); This line is solely for debugging purpose
     }
 
     /**

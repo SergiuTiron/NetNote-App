@@ -1,5 +1,6 @@
 package client.scenes;
 
+import client.utils.KeyStrokeUtil;
 import client.utils.MarkdownUtil;
 import client.utils.ServerUtils;
 import commons.Note;
@@ -18,6 +19,7 @@ import java.util.ResourceBundle;
 public class NoteEditCtrl implements Initializable {
 
     private final ServerUtils server;
+    private final KeyStrokeUtil keyStroke;
 
     @FXML
     private ListView<Note> noteListView;
@@ -32,9 +34,11 @@ public class NoteEditCtrl implements Initializable {
     private TextField searchField;
 
     @Inject
-    public NoteEditCtrl(ServerUtils server) {
+    public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke) {
         this.server = server;
+        this.keyStroke = keyStroke;
     }
+
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -47,8 +51,16 @@ public class NoteEditCtrl implements Initializable {
         });
         noteListView.getSelectionModel().selectedItemProperty()
             .addListener((_, _, current) -> this.handleNoteSelect(current));
-        editingArea.textProperty().addListener((_, _, newText) -> {
-            MarkdownUtil.renderMarkdownInWebView(newText, markdownPreview);
+        editingArea.textProperty().addListener((_, _, newText) ->
+                MarkdownUtil.renderMarkdownInWebView(newText, markdownPreview));
+
+        // TODO: create a new menu for editing the number of keystrokes for saving as for now this is hardcoded
+        editingArea.setOnKeyTyped(event -> {
+            keyStroke.increaseCounter();
+            if(keyStroke.getCounter() == keyStroke.getTrigger() && !editingArea.getText().isEmpty()){
+                autoSave();
+                keyStroke.counterReset();
+            }
         });
         // Until the user has selected a note to edit, display an informative message
         //  & do not allow the user to type.
@@ -56,12 +68,6 @@ public class NoteEditCtrl implements Initializable {
 
     }
 
-    // Called whenever the WebView needs to be updated (because of writing in editingArea).
-    private void updateMarkdownView(String markdownContent) {
-        // Convert the content written in editingArea to HTML
-        String htmlContent = MarkdownUtil.parseToHtml(markdownContent);
-        markdownPreview.getEngine().loadContent(htmlContent);
-    }
 
     // Called whenever the user clicks on one of the notes in the sidebar.
     private void handleNoteSelect(Note note) {
@@ -92,8 +98,15 @@ public class NoteEditCtrl implements Initializable {
         noteListView.setItems(FXCollections.observableList(notes));
     }
 
+    public void autoSave() {
+        Note note = noteListView.getSelectionModel().getSelectedItem();
+        note.content = editingArea.getText();
+        server.addNote(note);
+        //System.out.println("Changes saved"); This line is just for debugging purpose
+    }
+
     // Called whenever the user clicks the "Save Changes" button.
-    // TODO: replace with automatic saving every x keystrokes & upon program exit.
+    // TODO: make a save on exit as well
     public void saveChanges() {
         Note note = noteListView.getSelectionModel().getSelectedItem();
         if (note == null)
