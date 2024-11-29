@@ -17,7 +17,10 @@ package client.utils;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 
+import java.io.IOException;
 import java.net.ConnectException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
 
 import commons.Note;
@@ -63,5 +66,24 @@ public class ServerUtils {
 			}
 		}
 		return true;
+	}
+
+	public void deleteNoteFromServer(long id) throws IOException {
+		URL url = new URL(SERVER + "api/notes/" + id);
+		HttpURLConnection connection = null;
+
+		try {
+			connection = (HttpURLConnection) url.openConnection();
+			connection.setRequestMethod("DELETE");
+
+			int responseCode = connection.getResponseCode();
+			if (responseCode != HttpURLConnection.HTTP_NO_CONTENT) {
+				throw new RuntimeException("Failed to delete note. " + responseCode);
+			}
+		} finally {
+			if (connection != null) {
+				connection.disconnect();
+			}
+		}
 	}
 }
