@@ -1,5 +1,6 @@
 package client.scenes;
 
+import client.utils.KeyStrokeUtil;
 import client.utils.MarkdownUtil;
 import client.utils.ServerUtils;
 import commons.Note;
@@ -16,14 +17,12 @@ import javafx.scene.web.WebView;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class NoteEditCtrl implements Initializable {
 
     private final ServerUtils server;
+    private final KeyStrokeUtil keyStroke;
 
     @FXML
     private ListView<Note> noteListView;
@@ -38,8 +37,9 @@ public class NoteEditCtrl implements Initializable {
     private TextField searchField;
 
     @Inject
-    public NoteEditCtrl(ServerUtils server) {
+    public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke) {
         this.server = server;
+        this.keyStroke = keyStroke;
     }
 
     @Override
@@ -53,6 +53,17 @@ public class NoteEditCtrl implements Initializable {
         });
         noteListView.getSelectionModel().selectedItemProperty()
             .addListener((_, _, current) -> this.handleNoteSelect(current));
+        editingArea.textProperty().addListener((_, _, newText) ->
+                MarkdownUtil.renderMarkdownInWebView(newText, markdownPreview));
+
+        // TODO: create a new menu for editing the number of keystrokes for saving as for now this is hardcoded
+        editingArea.setOnKeyTyped(event -> {
+            keyStroke.increaseCounter();
+            if(keyStroke.getCounter() == keyStroke.getTrigger() && !editingArea.getText().isEmpty()){
+                autoSave();
+                keyStroke.counterReset();
+            }
+        });
         editingArea.textProperty().addListener((_, _, newText) -> MarkdownUtil.renderMarkdownInWebView(newText, markdownPreview));
         // Until the user has selected a note to edit, display an informative message
         //  & do not allow the user to type.
@@ -60,7 +71,6 @@ public class NoteEditCtrl implements Initializable {
         keyShortcuts();
     }
 
-    // Transformed this from if statements into a more complex and aesthetic lambda-based structure with the help of AI
     private void keyShortcuts() {
         noteListView.sceneProperty().addListener((_, _, newScene) -> {
             if (newScene != null) {
@@ -75,7 +85,7 @@ public class NoteEditCtrl implements Initializable {
         });
     }
 
-    // Where all of the keycodes combinations are stored
+    // Where all the keycodes combinations are stored
     private Map<KeyCombination, Runnable> keyCodeCombinations() {
         return Map.of(
                 new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN), this::createNewNote,
@@ -128,8 +138,15 @@ public class NoteEditCtrl implements Initializable {
         noteListView.setItems(FXCollections.observableList(notes));
     }
 
+    public void autoSave() {
+        Note note = noteListView.getSelectionModel().getSelectedItem();
+        note.content = editingArea.getText();
+        server.addNote(note);
+        //System.out.println("Changes saved"); This line is just for debugging purpose
+    }
+
     // Called whenever the user clicks the "Save Changes" button.
-    // TODO: replace with automatic saving every x keystrokes & upon program exit.
+    // TODO: make a save on exit as well
     public void saveChanges() {
         Note note = noteListView.getSelectionModel().getSelectedItem();
         if (note == null)
@@ -161,10 +178,14 @@ public class NoteEditCtrl implements Initializable {
             editingArea.setText("Select a note to delete.");
             return;
         }
-
+        boolean deleteConfirmed = confirmationDelete(selectedNote);
+        if (!deleteConfirmed) {
+            return;
+        }
         try {
             server.deleteNoteFromServer(selectedNote.getId());
-            confirmationDelete(selectedNote);
+            noteListView.getItems().remove(selectedNote);
+            clearFields();
             refresh();
         } catch (IOException e) {
             editingArea.setText("Failed to delete note. Please try again.");
@@ -172,15 +193,14 @@ public class NoteEditCtrl implements Initializable {
         }
     }
 
-    private void confirmationDelete(Note selectedNote) {
+    private boolean confirmationDelete(Note selectedNote) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this note?");
-        alert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.YES) {
-                noteListView.getItems().remove(selectedNote);
-                clearFields();
-            }
-            else noteListView.getSelectionModel().clearSelection();
-        });
+        Optional<ButtonType> response = alert.showAndWait();
+        if (response.isPresent() && response.get() == ButtonType.OK) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private void clearFields() {
