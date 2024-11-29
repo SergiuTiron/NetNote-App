@@ -11,6 +11,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.web.WebView;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -129,6 +130,41 @@ public class NoteEditCtrl implements Initializable {
                 filteredNotes.add(note);
 
         noteListView.setItems(FXCollections.observableList(filteredNotes));
+    }
+
+    // Called whenever the user clicks the "Delete" button.
+    public void deleteButton() throws IOException {
+        Note selectedNote = noteListView.getSelectionModel().getSelectedItem();
+        if (selectedNote == null) {
+            editingArea.setText("Select a note to delete.");
+            return;
+        }
+
+        try {
+            server.deleteNoteFromServer(selectedNote.getId());
+            confirmationDelete(selectedNote);
+            refresh();
+        } catch (IOException e) {
+            editingArea.setText("Failed to delete note. Please try again.");
+            e.printStackTrace();
+        }
+    }
+
+    private void confirmationDelete(Note selectedNote) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this note?");
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.YES) {
+                noteListView.getItems().remove(selectedNote);
+                clearFields();
+            }
+            else noteListView.getSelectionModel().clearSelection();
+        });
+    }
+
+    private void clearFields() {
+        noteListView.getSelectionModel().clearSelection();
+        editingArea.setEditable(false);
+        editingArea.setText("Select a note to start editing.");
     }
 
 }

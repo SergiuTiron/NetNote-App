@@ -17,7 +17,7 @@
          <children>
               <SplitPane dividerPositions="0.2, 0.65" VBox.vgrow="ALWAYS">
                   <items>
-                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="361.0" prefWidth="142.0">
                      <children>
                               <ListView fx:id="noteListView" prefHeight="348.0" prefWidth="148.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                      </children>
@@ -37,13 +37,14 @@
               </SplitPane>
             <HBox prefHeight="40.0" prefWidth="600.0">
                <children>
-                  <AnchorPane prefHeight="38.0" prefWidth="609.0" HBox.hgrow="NEVER">
+                  <AnchorPane prefHeight="38.0" prefWidth="622.0" HBox.hgrow="NEVER">
                      <children>
-                        <Button layoutX="10.0" layoutY="7.5" maxHeight="25.0" maxWidth="75.0" minHeight="25.0" minWidth="75.0" mnemonicParsing="false" onAction="#createNewNote" prefHeight="25.0" prefWidth="75.0" text="Add Note" />
-                        <Button layoutX="100.0" layoutY="7.5" maxHeight="25.0" maxWidth="75.0" minHeight="25.0" minWidth="75.0" mnemonicParsing="false" onAction="#refresh" prefHeight="25.0" prefWidth="75.0" text="Refresh" />
-                        <Button layoutX="500.0" layoutY="7.5" maxHeight="25.0" maxWidth="90.0" minHeight="25.0" minWidth="90.0" mnemonicParsing="false" onAction="#saveChanges" prefHeight="25.0" prefWidth="90.0" text="Save Changes" />
-                        <TextField fx:id="searchField" layoutX="230.0" layoutY="6.0" prefHeight="26.0" prefWidth="101.0" />
-                        <Button layoutX="332.0" layoutY="6.0" mnemonicParsing="false" onAction="#filterNotes" text="Search" />
+                        <Button layoutX="6.0" layoutY="6.0" maxHeight="25.0" maxWidth="75.0" minHeight="25.0" minWidth="75.0" mnemonicParsing="false" onAction="#createNewNote" prefHeight="25.0" prefWidth="75.0" text="Add Note" />
+                        <Button layoutX="405.0" layoutY="7.0" maxHeight="25.0" maxWidth="75.0" minHeight="25.0" minWidth="75.0" mnemonicParsing="false" onAction="#refresh" prefHeight="25.0" prefWidth="75.0" text="Refresh" />
+                        <Button layoutX="495.0" layoutY="6.0" maxHeight="25.0" maxWidth="90.0" minHeight="25.0" minWidth="90.0" mnemonicParsing="false" onAction="#saveChanges" prefHeight="25.0" prefWidth="90.0" text="Save Changes" />
+                        <TextField fx:id="searchField" layoutX="183.0" layoutY="6.0" prefHeight="26.0" prefWidth="101.0" />
+                        <Button layoutX="285.0" layoutY="6.0" mnemonicParsing="false" onAction="#filterNotes" text="Search" />
+                        <Button layoutX="92.0" layoutY="7.0" mnemonicParsing="false" onAction="#deleteButton" text="Delete" />
                      </children>
                   </AnchorPane>
                </children>

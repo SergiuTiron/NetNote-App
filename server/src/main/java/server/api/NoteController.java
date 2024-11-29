@@ -19,23 +19,21 @@ import java.util.List;
 
 import commons.Note;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import server.database.NoteRepository;
+import server.service.NoteService;
 
 @RestController
 @RequestMapping("/api/notes")
 public class NoteController {
 
     private final NoteRepository repo;
+    private final NoteService noteService;
 
-    public NoteController(NoteRepository repo) {
+    public NoteController(NoteRepository repo, NoteService noteService) {
         this.repo = repo;
+        this.noteService = noteService;
     }
 
     @GetMapping(path = { "", "/" })
@@ -57,4 +55,9 @@ public class NoteController {
         return ResponseEntity.ok(saved);
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteNote(@PathVariable Long id) {
+        noteService.deleteNoteById(id);
+        return ResponseEntity.noContent().build();
+    }
 }
