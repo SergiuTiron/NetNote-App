@@ -101,14 +101,6 @@ public class NoteEditCtrl implements Initializable {
         );
     }
 
-
-    // Called whenever the WebView needs to be updated (because of writing in editingArea).
-    private void updateMarkdownView(String markdownContent) {
-        // Convert the content written in editingArea to HTML
-        String htmlContent = MarkdownUtil.parseToHtml(markdownContent);
-        markdownPreview.getEngine().loadContent(htmlContent);
-    }
-
     // Called whenever the user clicks on one of the notes in the sidebar.
     private void handleNoteSelect(Note note) {
         if (note == null) {
