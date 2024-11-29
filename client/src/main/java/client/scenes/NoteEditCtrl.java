@@ -8,14 +8,16 @@ import jakarta.inject.Inject;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.web.WebView;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class NoteEditCtrl implements Initializable {
 
@@ -40,7 +42,6 @@ public class NoteEditCtrl implements Initializable {
         this.keyStroke = keyStroke;
     }
 
-
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         noteListView.setCellFactory(_ -> new ListCell<>() {
@@ -63,12 +64,42 @@ public class NoteEditCtrl implements Initializable {
                 keyStroke.counterReset();
             }
         });
+        editingArea.textProperty().addListener((_, _, newText) -> MarkdownUtil.renderMarkdownInWebView(newText, markdownPreview));
         // Until the user has selected a note to edit, display an informative message
         //  & do not allow the user to type.
         this.handleNoteSelect(null);
-
+        keyShortcuts();
     }
 
+    private void keyShortcuts() {
+        noteListView.sceneProperty().addListener((_, _, newScene) -> {
+            if (newScene != null) {
+                newScene.setOnKeyPressed(event -> {
+                    Map<KeyCombination, Runnable> keyActions = keyCodeCombinations();
+                    keyActions.entrySet().stream()
+                            .filter(entry -> entry.getKey().match(event))
+                            .findFirst()
+                            .ifPresent(entry -> entry.getValue().run());
+                });
+            }
+        });
+    }
+
+    // Where all the keycodes combinations are stored
+    private Map<KeyCombination, Runnable> keyCodeCombinations() {
+        return Map.of(
+                new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN), this::createNewNote,
+                new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN), this::saveChanges,
+                new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN), this::refresh,
+                new KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_DOWN), () -> {
+                    try {
+                        deleteButton();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+        );
+    }
 
     // Called whenever the user clicks on one of the notes in the sidebar.
     private void handleNoteSelect(Note note) {
@@ -139,10 +170,14 @@ public class NoteEditCtrl implements Initializable {
             editingArea.setText("Select a note to delete.");
             return;
         }
-
+        boolean deleteConfirmed = confirmationDelete(selectedNote);
+        if (!deleteConfirmed) {
+            return;
+        }
         try {
             server.deleteNoteFromServer(selectedNote.getId());
-            confirmationDelete(selectedNote);
+            noteListView.getItems().remove(selectedNote);
+            clearFields();
             refresh();
         } catch (IOException e) {
             editingArea.setText("Failed to delete note. Please try again.");
@@ -150,15 +185,14 @@ public class NoteEditCtrl implements Initializable {
         }
     }
 
-    private void confirmationDelete(Note selectedNote) {
+    private boolean confirmationDelete(Note selectedNote) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this note?");
-        alert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.YES) {
-                noteListView.getItems().remove(selectedNote);
-                clearFields();
-            }
-            else noteListView.getSelectionModel().clearSelection();
-        });
+        Optional<ButtonType> response = alert.showAndWait();
+        if (response.isPresent() && response.get() == ButtonType.OK) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private void clearFields() {
