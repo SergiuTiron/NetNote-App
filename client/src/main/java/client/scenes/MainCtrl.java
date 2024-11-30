@@ -17,6 +17,7 @@ package client.scenes;
 
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 
@@ -25,6 +26,7 @@ public class MainCtrl {
     private Stage primaryStage;
 
     private NoteEditCtrl noteEditCtrl;
+
     private Scene overview;
 
     public void initialize(Stage primaryStage, Pair<NoteEditCtrl, Parent> noteEdit) {
@@ -36,7 +38,12 @@ public class MainCtrl {
         primaryStage.show();
     }
 
+
+
     public void showOverview() {
+        //The icon is taken from a google search TODO:Create our own icon
+        Image image = new Image("appIcon/NoteIcon.jpg");
+        primaryStage.getIcons().add(image);
         primaryStage.setTitle("NetNote");
         primaryStage.setScene(overview);
         noteEditCtrl.refresh();
