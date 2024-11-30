@@ -5,7 +5,9 @@ import client.utils.MarkdownUtil;
 import client.utils.ServerUtils;
 import commons.Note;
 import jakarta.inject.Inject;
+import javafx.animation.FadeTransition;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 
@@ -13,7 +15,9 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.net.URL;
@@ -23,6 +27,9 @@ public class NoteEditCtrl implements Initializable {
 
     private final ServerUtils server;
     private final KeyStrokeUtil keyStroke;
+
+    @FXML
+    private Label saveLabel;
 
     @FXML
     private ListView<Note> noteListView;
@@ -56,7 +63,6 @@ public class NoteEditCtrl implements Initializable {
         editingArea.textProperty().addListener((_, _, newText) ->
                 MarkdownUtil.renderMarkdownInWebView(newText, markdownPreview));
 
-        // TODO: create a new menu for editing the number of keystrokes for saving as for now this is hardcoded
         editingArea.setOnKeyTyped(event -> {
             keyStroke.increaseCounter();
             if(keyStroke.getCounter() == keyStroke.getTrigger() && !editingArea.getText().isEmpty()){
@@ -69,6 +75,58 @@ public class NoteEditCtrl implements Initializable {
         //  & do not allow the user to type.
         this.handleNoteSelect(null);
         keyShortcuts();
+    }
+
+    private void saveLabelTransition() {
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(250), saveLabel);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+        fadeIn.setOnFinished(e -> {
+            // Hold the label visible for 1 seconds
+            FadeTransition fadeOut = new FadeTransition(Duration.millis(250), saveLabel);
+            fadeOut.setFromValue(1);
+            fadeOut.setToValue(0);
+            fadeOut.setDelay(Duration.seconds(1)); // Wait 1 second before fading out
+            fadeOut.play();
+        });
+        fadeIn.play();
+    }
+
+    public void changeNoteSavingSettings(ActionEvent event) {
+        //System.out.println("something"); solely for debugging
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+
+        alert.setTitle("AutoSave Settings");
+        alert.setHeaderText("The current number of keystrokes for saving is: " + keyStroke.getTrigger() + " keystrokes.");
+        alert.getDialogPane().getScene().getWindow().setWidth(400);
+        alert.getDialogPane().getScene().getWindow().setHeight(200);
+
+        TextField textField = new TextField();
+        textField.setPromptText("Enter the number of keystrokes to save upon");
+        // Add the TextField to a layout (VBox)
+        VBox content = new VBox();
+        content.setSpacing(10);
+        content.getChildren().add(textField);
+
+        // Set the custom content to the Alert
+        alert.getDialogPane().setContent(content);
+
+        alert.showAndWait().ifPresent(response -> {
+            if(response == ButtonType.OK && !textField.getText().isEmpty()){
+                try{
+                    keyStroke.setTriggerCount(Integer.parseInt(textField.getText()));
+                }catch (NumberFormatException e){
+                    Alert error = new Alert(Alert.AlertType.ERROR);
+                    error.setTitle("Invalid number");
+                    error.setHeaderText("The number of keystrokes you provided is invalid.");
+                    error.showAndWait();
+                }
+            }
+            else if(response == ButtonType.CANCEL){
+                alert.close();
+            }
+        });
+
     }
 
     private void keyShortcuts() {
@@ -130,10 +188,11 @@ public class NoteEditCtrl implements Initializable {
         noteListView.setItems(FXCollections.observableList(notes));
     }
 
-    public void autoSave() {
+    public  void autoSave() {
         Note note = noteListView.getSelectionModel().getSelectedItem();
         note.content = editingArea.getText();
         server.addNote(note);
+        saveLabelTransition();
         //System.out.println("Changes saved"); This line is just for debugging purpose
     }
 
@@ -143,9 +202,9 @@ public class NoteEditCtrl implements Initializable {
         Note note = noteListView.getSelectionModel().getSelectedItem();
         if (note == null)
             return;
-
         note.content = editingArea.getText();
         server.addNote(note);
+        saveLabelTransition();
     }
 
     //called when the user clicks the "Search" button
@@ -188,11 +247,7 @@ public class NoteEditCtrl implements Initializable {
     private boolean confirmationDelete(Note selectedNote) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this note?");
         Optional<ButtonType> response = alert.showAndWait();
-        if (response.isPresent() && response.get() == ButtonType.OK) {
-            return true;
-        } else {
-            return false;
-        }
+        return response.isPresent() && response.get() == ButtonType.OK;
     }
 
     private void clearFields() {

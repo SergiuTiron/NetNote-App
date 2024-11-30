@@ -10,7 +10,8 @@ import java.util.Objects;
 public class Collection {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "generator")
+    @SequenceGenerator(name = "generator", sequenceName = "my_sequence1", allocationSize = 1)
     private long id;
 
     private String name;

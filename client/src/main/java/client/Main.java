@@ -26,7 +26,6 @@ import com.google.inject.Injector;
 import client.scenes.MainCtrl;
 import client.utils.ServerUtils;
 import javafx.application.Application;
-import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 public class Main extends Application {
@@ -47,9 +46,7 @@ public class Main extends Application {
             System.err.println(msg);
             return;
         }
-        //The icon is taken from a google search TODO:Create our own icon
-        Image image = new Image("appIcon/NoteIcon.jpg");
-        primaryStage.getIcons().add(image);
+
         var editView = FXML.load(NoteEditCtrl.class, "client", "scenes", "NoteEditView.fxml");
 
         var mainCtrl = INJECTOR.getInstance(MainCtrl.class);
