@@ -6,7 +6,11 @@ import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class MarkdownUtil {
 
@@ -16,6 +20,13 @@ public class MarkdownUtil {
 		Node document = parser.parse(markdownContent);
 		HtmlRenderer renderer = HtmlRenderer.builder().build();
 		return renderer.render(document);  // "<p>This is <em>Markdown</em></p>\n"
+	}
+
+	// Method to render the HTML without a CSS file
+	public static void renderMarkdown(String markdownContent, WebView webView){
+		String htmlContent = parseToHtml(markdownContent);
+		WebEngine webEngine = webView.getEngine();
+		webEngine.loadContent(htmlContent);
 	}
 
 	// Method to render the HTML using a CSS file
@@ -37,5 +48,20 @@ public class MarkdownUtil {
 		else {
 			System.err.println("CSS file not found.");
 		}
+	}
+
+	// Method to generate a temporary HTML file
+	public static void generateTemporaryHTML(WebView webView) throws IOException {
+		WebEngine webEngine = webView.getEngine();
+		String markdownContent = (String) webEngine.executeScript("document.documentElement.outerHTML");
+		String htmlContent = parseToHtml(markdownContent);
+
+		Path tempFile = Files.createTempFile("markdown_renderer", ".html");
+
+		try (BufferedWriter writer = Files.newBufferedWriter(tempFile)) {
+			writer.write(htmlContent);
+		}
+
+		tempFile.toFile().deleteOnExit();
 	}
 }
