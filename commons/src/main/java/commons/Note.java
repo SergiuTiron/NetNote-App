@@ -11,8 +11,7 @@ public class Note {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "generator")
     @SequenceGenerator(name = "generator", sequenceName = "my_sequence2", allocationSize = 1)
     public long id;
-
-    private String collection;
+    private String title;
     public String content;
 
     public Note() {
@@ -21,15 +20,19 @@ public class Note {
 
     public Note(String content) {
         this.content = content;
-    }
-
-    public Note(String collection, String content) {
-        this.collection = collection;
-        this.content = content;
+        this.title = "New Note";
     }
 
     public long getId() {
         return id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     @Override
@@ -37,13 +40,11 @@ public class Note {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Note note = (Note) o;
-        return id == note.id && Objects.equals(content, note.content)
-                && Objects.equals(collection, note.collection);
+        return id == note.id && Objects.equals(title, note.title) && Objects.equals(content, note.content);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, content, collection);
-}
-
+        return Objects.hash(id, title, content);
+    }
 }

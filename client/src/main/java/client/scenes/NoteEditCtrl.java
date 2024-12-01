@@ -12,12 +12,14 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 
 import javafx.scene.control.*;
+import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
 import javafx.util.Duration;
+import javafx.util.StringConverter;
 
 import java.io.IOException;
 import java.net.URL;
@@ -51,13 +53,34 @@ public class NoteEditCtrl implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        noteListView.setCellFactory(_ -> new ListCell<>() {
+        noteListView.setCellFactory(_ -> new TextFieldListCell<>(new StringConverter<>(){
             @Override
-            protected void updateItem(Note note, boolean empty) {
-                super.updateItem(note, empty);
-                this.setText(empty ? "" : "Note ID #" + note.id); // TODO: show note title instead
+            public String toString(Note note) {
+                if (note == null) return "";
+                return note.getTitle();
+            }
+            @Override
+            public Note fromString(String newTitle) {
+                Note selectedNote = noteListView.getSelectionModel().getSelectedItem();
+                if (selectedNote != null) {
+                    selectedNote.setTitle(newTitle);
+                    server.updateNote(selectedNote);
+                }
+                return selectedNote;
+            }
+        }));
+
+        noteListView.setEditable(true);
+
+        //double-click triggers note editing
+        noteListView.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                int selectedNoteIndex = noteListView.getSelectionModel().getSelectedIndex();
+                if(selectedNoteIndex != -1)
+                    noteListView.edit(selectedNoteIndex);
             }
         });
+
         noteListView.getSelectionModel().selectedItemProperty()
             .addListener((_, _, current) -> this.handleNoteSelect(current));
         editingArea.textProperty().addListener((_, _, newText) ->
@@ -75,6 +98,7 @@ public class NoteEditCtrl implements Initializable {
         //  & do not allow the user to type.
         this.handleNoteSelect(null);
         keyShortcuts();
+
     }
 
     // Method to render markdown

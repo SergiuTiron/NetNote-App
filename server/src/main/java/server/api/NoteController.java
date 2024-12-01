@@ -16,7 +16,6 @@
 package server.api;
 
 import java.util.List;
-
 import commons.Note;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -60,4 +59,16 @@ public class NoteController {
         noteService.deleteNoteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    //method that calls the updateNote in NoteService to update the selected note
+    @PutMapping("/{id}")
+    public ResponseEntity<Note> updateNote(@PathVariable Long id, @RequestBody Note updatedNote) {
+        try{
+            Note savedNote = noteService.updateNote(id, updatedNote);
+            return ResponseEntity.ok(savedNote);
+        }catch(RuntimeException e){
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }

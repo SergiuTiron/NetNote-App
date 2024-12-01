@@ -86,4 +86,13 @@ public class ServerUtils {
 			}
 		}
 	}
+
+	// method that triggers the update of the note in the server
+	public Note updateNote(Note selectedNote) {
+		String url = SERVER + "api/notes/" + selectedNote.getId();
+		return ClientBuilder.newClient(new ClientConfig())
+				.target(url)
+				.request(APPLICATION_JSON)
+				.put(Entity.entity(selectedNote, APPLICATION_JSON), Note.class);
+	}
 }
