@@ -258,7 +258,6 @@ public class NoteEditCtrl implements Initializable {
 
     // Called whenever the user clicks the "Delete" button.
     public void deleteButton() throws IOException {
-        Note.decrementNumberOfNotes();
         Note selectedNote = noteListView.getSelectionModel().getSelectedItem();
         if (selectedNote == null) {
             editingArea.setText("Select a note to delete.");
