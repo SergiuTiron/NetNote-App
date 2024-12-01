@@ -28,6 +28,8 @@ public class NoteService {
     // method that updates the note both locally and in the repository
     public Note updateNote(Long id, Note updatedNote) throws RuntimeException {
         Optional<Note> retrievedNote = noteRepository.findById(id);
+        if(updatedNote == null)
+            throw new IllegalArgumentException("Note with ID" + id + " does not exist");
         if (retrievedNote.isPresent()) {
             Note noteToSave = retrievedNote.get();
             noteToSave.setTitle(updatedNote.getTitle());
