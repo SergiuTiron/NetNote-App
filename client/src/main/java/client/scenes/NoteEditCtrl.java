@@ -70,11 +70,21 @@ public class NoteEditCtrl implements Initializable {
                 keyStroke.counterReset();
             }
         });
-        editingArea.textProperty().addListener((_, _, newText) -> MarkdownUtil.renderMarkdownInWebView(newText, markdownPreview));
+        editingArea.textProperty().addListener((_, _, newText) -> renderMarkdown(newText));
         // Until the user has selected a note to edit, display an informative message
         //  & do not allow the user to type.
         this.handleNoteSelect(null);
         keyShortcuts();
+    }
+
+    // Method to render markdown
+    private void renderMarkdown(String markdownContent) {
+        URL cssFileUrl = MarkdownUtil.class.getResource("/css/markdown-style.css");
+        if (cssFileUrl != null) {
+            MarkdownUtil.renderMarkdownInWebView(markdownContent, markdownPreview);
+        } else {
+            MarkdownUtil.renderMarkdown(markdownContent, markdownPreview);
+        }
     }
 
     private void saveLabelTransition() {
