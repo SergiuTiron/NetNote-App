@@ -36,6 +36,10 @@ public class Note {
         return title;
     }
 
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     public static void decrementNumberOfNotes(){
         numberOfNotes--;
     }
