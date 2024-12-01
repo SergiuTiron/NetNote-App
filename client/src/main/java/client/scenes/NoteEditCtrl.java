@@ -55,7 +55,7 @@ public class NoteEditCtrl implements Initializable {
             @Override
             protected void updateItem(Note note, boolean empty) {
                 super.updateItem(note, empty);
-                this.setText(empty ? "" : "Note ID #" + note.id); // TODO: show note title instead
+                this.setText(empty ? "" : note.getTitle()); // TODO: show note title instead
             }
         });
         noteListView.getSelectionModel().selectedItemProperty()
@@ -75,6 +75,8 @@ public class NoteEditCtrl implements Initializable {
         //  & do not allow the user to type.
         this.handleNoteSelect(null);
         keyShortcuts();
+
+        noteListView.setEditable(true);
     }
 
     // Method to render markdown
@@ -234,6 +236,7 @@ public class NoteEditCtrl implements Initializable {
 
     // Called whenever the user clicks the "Delete" button.
     public void deleteButton() throws IOException {
+        Note.decrementNumberOfNotes();
         Note selectedNote = noteListView.getSelectionModel().getSelectedItem();
         if (selectedNote == null) {
             editingArea.setText("Select a note to delete.");
