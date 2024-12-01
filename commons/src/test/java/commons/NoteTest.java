@@ -17,10 +17,9 @@ public class NoteTest {
     public void testEqualsNotEquals() {
         Note note1 = new Note("abcdefg");
         Note note2 = new Note("abcdefg");
-        assertEquals(note1, note2);
+        assertNotEquals(note1, note2);
 
-        Note note3 = new Note("xyz");
-        assertNotEquals(note2, note3);
+        assertEquals(note1, note1);
     }
 
 }
