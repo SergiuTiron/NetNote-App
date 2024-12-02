@@ -16,13 +16,13 @@
 6. **Product presentation to the TA** (5 min)
 7. **Talking Points:**
     - Check-in on code development since Monday (2 min)
-    - Addressing any setbacks encountered by team members (3 min)
+    - Addressing any setbacks encountered by team members (2 min)
     - Potential issue reassigning (1 min)
     - Discussing whether we should add weights to the issues on GitLab or not (3 min)
     - Testing with JUnit and Mockito (5 min)
     - Deciding on how to organize the Monday task distributions better (5 min)
 8. **Summarize Action Points and the task distribution from Monday** (5 min)  
-9. **Questions for the TA** (10 min)
+9. **Questions for the TA** (9 min)
 10. **Clearing out any uncertainties** (2 min)
 10. **Meeting impression and general feedback** (3 min)
     - How team members felt about the meeting
