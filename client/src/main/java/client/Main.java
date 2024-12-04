@@ -32,6 +32,7 @@ public class Main extends Application {
 
     private static final Injector INJECTOR = createInjector(new MyModule());
     private static final MyFXML FXML = new MyFXML(INJECTOR);
+    private NoteEditCtrl noteEditCtrl;
 
     public static void main(String[] args) throws URISyntaxException, IOException {
         launch();
@@ -51,5 +52,17 @@ public class Main extends Application {
 
         var mainCtrl = INJECTOR.getInstance(MainCtrl.class);
         mainCtrl.initialize(primaryStage, editView);
+
+        // save changes on exit
+        noteEditCtrl = editView.getKey();
+        primaryStage.setOnCloseRequest(_ -> {
+            if (noteEditCtrl != null) {
+                noteEditCtrl.saveChanges();
+                System.out.println("Changes were saved on exit.");
+            }
+            else {
+                System.err.println("Changes were not saved on exit.");
+            }
+        });
     }
 }

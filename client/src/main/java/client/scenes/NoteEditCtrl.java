@@ -82,7 +82,9 @@ public class NoteEditCtrl implements Initializable {
         });
 
         noteListView.getSelectionModel().selectedItemProperty()
-            .addListener((_, _, current) -> this.handleNoteSelect(current));
+            .addListener((_, _, current) -> {
+                this.handleNoteSelect(current);
+            });
         editingArea.textProperty().addListener((_, _, newText) ->
                 MarkdownUtil.renderMarkdownInWebView(newText, markdownPreview));
 
@@ -230,8 +232,9 @@ public class NoteEditCtrl implements Initializable {
         //System.out.println("Changes saved"); This line is just for debugging purpose
     }
 
-    // Called whenever the user clicks the "Save Changes" button.
-    // TODO: make a save on exit as well
+    /**
+     * Called on exit, when switching notes in ListView and when exiting the app
+     */
     public void saveChanges() {
         Note note = noteListView.getSelectionModel().getSelectedItem();
         if (note == null)
@@ -239,6 +242,7 @@ public class NoteEditCtrl implements Initializable {
         note.content = editingArea.getText();
         server.addNote(note);
         saveLabelTransition();
+        System.out.println("Changes were saved.");
     }
 
     //called when the user clicks the "Search" button
