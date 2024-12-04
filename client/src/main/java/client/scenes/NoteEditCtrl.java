@@ -206,7 +206,7 @@ public class NoteEditCtrl implements Initializable {
 
         // If a note is selected, enable editing and display its content
         editingArea.setEditable(true);
-        editingArea.setText(note.content);
+        editingArea.setText(note.getContent());
     }
 
     // Called whenever the user clicks the "New Note" button.
@@ -226,7 +226,7 @@ public class NoteEditCtrl implements Initializable {
 
     public  void autoSave() {
         Note note = noteListView.getSelectionModel().getSelectedItem();
-        note.content = editingArea.getText();
+        note.setContent(editingArea.getText());
         server.addNote(note);
         saveLabelTransition();
         //System.out.println("Changes saved"); This line is just for debugging purpose
@@ -239,7 +239,7 @@ public class NoteEditCtrl implements Initializable {
         Note note = noteListView.getSelectionModel().getSelectedItem();
         if (note == null)
             return;
-        note.content = editingArea.getText();
+        note.setContent(editingArea.getText());
         server.addNote(note);
         saveLabelTransition();
         System.out.println("Changes were saved.");
@@ -254,7 +254,7 @@ public class NoteEditCtrl implements Initializable {
         }
         List<Note> filteredNotes = new ArrayList<>();
         for(Note note : server.getNotes())
-            if(note.content.toLowerCase().contains(query.toLowerCase()))
+            if(note.getContent().toLowerCase().contains(query.toLowerCase()))
                 filteredNotes.add(note);
 
         noteListView.setItems(FXCollections.observableList(filteredNotes));

@@ -10,7 +10,7 @@ public class NoteTest {
     @Test
     public void testConstructor() {
         Note note = new Note("abcdefg");
-        assertEquals("abcdefg", note.content);
+        assertEquals("abcdefg", note.getContent());
     }
 
     @Test
