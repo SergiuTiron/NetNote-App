@@ -10,9 +10,9 @@ public class Note {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "generator")
     @SequenceGenerator(name = "generator", sequenceName = "my_sequence2", allocationSize = 1)
-    public long id;
+    private long id;
     private String title;
-    public String content;
+    private String content;
 
     public Note() {
 
@@ -21,6 +21,10 @@ public class Note {
     public Note(String content) {
         this.content = content;
         this.title = "New Note";
+    }
+
+    public String getContent() {
+        return content;
     }
 
     public long getId() {
@@ -33,6 +37,10 @@ public class Note {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 
     @Override
