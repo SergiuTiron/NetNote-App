@@ -1,11 +1,11 @@
 | Key           | Value                    |
 | --------------| -------------------------|
-| Date :        | 04-12-2024               |
-| Time :        | 13:45                    |
-| Location :    | Drebbelweg PC3           |
+| Date:        | 04-12-2024               |
+| Time:        | 13:45                    |
+| Location:    | Drebbelweg PC3           |
 | Chair:        | Victor Badescu             |
 | Minute Taker: | Melle Moerkerk           |
-| Attendees :   | Victor Badescu, Luca Bledea Floruta, Melle Moerkerk, Sergiu Tiron, Stepan Urumov, Guus Willems |
+| Attendees:   | Victor Badescu, Luca Bledea Floruta, Melle Moerkerk, Sergiu Tiron, Stepan Urumov, Guus Willems |
 
 ### Agenda Items
 ---
@@ -31,3 +31,51 @@
 12. **Meeting closure** (1 min)
 ---
 Expected time:  50 minutes
+
+### Minute Taker Notes
+---
+
+#### TA Announcements
+- Our Code of Conduct was approved, we passed the assignment.
+- Buddy Check due this friday.
+- Tasks & Planning (formative feedback): this friday.
+
+#### Code Development Check-in
+No progress made since meeting on Monday, everyone was busy the past days.
+
+#### Addressing Setbacks
+Sergiu: asked TA about specifics regarding AI usage (when do you have to mention it was used, etc). **TA will update us on Mattermost.**
+
+#### Adding weight & time tracking to issues
+- We won't be using weights, because we believe adds unnecessary complication & it is not a graded element.
+- We *will* be using GitLab's built-in time tracking features to keep track of expected vs. actual time spent on an issue. (See sidebar in an issue to find this)
+- Additionally, we might use labels on issues that designate their difficulty level.
+
+#### Testing our code
+- We should add tests while writing our code, instead of adding them all at once at a later time.
+- If you want to merge new code to the main branch, you should include tests for your code.
+  - Especially for backend code, as this is quite easy to test. Frontend (JavaFX) is quite cumbersome to test so we might do this less/not at all.
+
+#### Better organisation of the Monday meetings
+- We should create issues on GitLab on Monday concering the things we will be implementing that week
+    - (instead of our current method, where we send a notepad in the WhatsApp group).
+- ... and we can then assign issues on GitLab instead.
+- This is also easier to modify than having to send a document back and forth in the WhatsApp.
+- Additionally, we should start using milestones.
+
+#### Misc. concerns
+- (Guus:) For the translation feature, the bullet points aren't a very even division of the work. Should we split these differently?
+  - Concensus: we should handle this in our own 'subgroups'.
+- (Victor:) We should postpone making the search feature server-side until after we have implemented multi-collections. Because otherwise, we'd have to refactor again after.
+
+#### Monday Meeting Next Week
+- No project rooms in the library available; meeting will have to be elsewhere (exact location undecided).
+- Melle won't be joining in person (will be available online).
+
+#### Meeting Duration
+Actual meeting duration: 49 min
+
+### Action Points
+- GitLab issues for this week should be created **today** (December 4th).
+- We should start using milestones this week.
+- Buddy Check due this **friday** (December 6th).
