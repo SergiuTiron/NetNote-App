@@ -14,7 +14,19 @@ import java.nio.file.Path;
 
 public class MarkdownUtil {
 
-	// This is taken from the -commonmark-java- library in the product backlog
+	/**
+	 * Constructor
+	 */
+	public MarkdownUtil() {
+	}
+
+	/**
+	 * Method which parses the content typed in the Markdown
+	 * renderer into HTML
+	 * This is taken from the -commonmark-java- library in the product backlog
+	 * @param markdownContent - string to be processed.
+	 * @return - markdown content in HTML format
+	 */
 	public static String parseToHtml(String markdownContent) {
 		Parser parser = Parser.builder().build();
 		Node document = parser.parse(markdownContent);
@@ -22,15 +34,23 @@ public class MarkdownUtil {
 		return renderer.render(document);  // "<p>This is <em>Markdown</em></p>\n"
 	}
 
-	// Method to render the HTML without a CSS file
-	public static void renderMarkdown(String markdownContent, WebView webView){
+	/**
+	 * Method to render the HTML without a CSS file
+	 * @param markdownContent - string to be processed
+	 * @param webView - webView to be used
+	 */
+	public void renderMarkdown(String markdownContent, WebView webView){
 		String htmlContent = parseToHtml(markdownContent);
 		WebEngine webEngine = webView.getEngine();
 		webEngine.loadContent(htmlContent);
 	}
 
-	// Method to render the HTML using a CSS file
-	public static void renderMarkdownInWebView(String markdownContent, WebView webView){
+	/**
+	 * Method to render the HTML using a CSS file
+	 * @param markdownContent - string to be processed
+	 * @param webView - webView to be used
+	 */
+	public void renderMarkdownInWebView(String markdownContent, WebView webView){
 
 		String htmlContent = parseToHtml(markdownContent);
 
@@ -50,8 +70,11 @@ public class MarkdownUtil {
 		}
 	}
 
-	// Method to generate a temporary HTML file
-	public static void generateTemporaryHTML(WebView webView) throws IOException {
+	/**
+	 * Method to generate a temporary HTML file on disk
+	 * @param webView - webView to be used
+	 */
+	public void generateTemporaryHTML(WebView webView) throws IOException {
 		WebEngine webEngine = webView.getEngine();
 		String markdownContent = (String) webEngine.executeScript("document.documentElement.outerHTML");
 		String htmlContent = parseToHtml(markdownContent);
