@@ -20,7 +20,7 @@ public class CollectionService {
 
     public void deleteCollectionByID(Long id) {
         if (!collectionRepository.existsById(id)) {
-            throw new IllegalArgumentException("Note with ID" + id + " does not exist");
+            throw new IllegalArgumentException("Collection with ID" + id + " does not exist");
         }
         collectionRepository.deleteById(id);
     }
