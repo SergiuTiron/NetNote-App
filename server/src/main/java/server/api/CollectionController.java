@@ -1,0 +1,45 @@
+package server.api;
+
+import commons.Collection;
+import commons.Note;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import server.database.CollectionRepository;
+import server.service.CollectionService;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/collections")
+public class CollectionController {
+    private final CollectionRepository repo;
+    private final CollectionService collectionService;
+
+    public CollectionController(CollectionRepository repo, CollectionService collectionService) {
+        this.repo = repo;
+        this.collectionService = collectionService;
+    }
+
+    @GetMapping(path = { "", "/" })
+    public List<Collection> getAll() {
+        return repo.findAll();
+    }
+
+    @PostMapping(path = { "", "/" })
+    public ResponseEntity<Collection> addCollection(@RequestBody Collection collection) {
+        Collection saved = repo.save(collection);
+        return ResponseEntity.ok(saved);
+    }
+
+    @PostMapping("/{collectionId}")
+    public ResponseEntity<Collection> addNote(@PathVariable Long collectionId, @RequestBody Note noteRequest) {
+        Collection updatedCollection = collectionService.addNoteToCollection(collectionId, noteRequest);
+        return ResponseEntity.ok(updatedCollection);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCollection(@PathVariable Long id) {
+        collectionService.deleteCollectionByID(id);
+        return ResponseEntity.noContent().build();
+    }
+}

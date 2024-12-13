@@ -16,8 +16,11 @@ public class Note {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    public Note() {
+    @ManyToOne
+    @JoinColumn(name = "collection_id", nullable = false)
+    private Collection collection;
 
+    public Note() {
     }
 
     public Note(String content) {
@@ -43,6 +46,18 @@ public class Note {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public Collection getCollection() {
+        return collection;
+    }
+
+    public void setCollection(Collection collection) {
+        this.collection = collection;
     }
 
     @Override

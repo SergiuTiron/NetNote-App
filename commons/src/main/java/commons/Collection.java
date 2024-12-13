@@ -17,14 +17,14 @@ public class Collection {
     private String name;
 
     //one-to-many relation between collection and notes
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "collection", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Note> notes;
 
     public Collection() {}
 
     public Collection(String name) {
         this.name = name;
-        notes = new ArrayList<>();
+        this.notes = new ArrayList<>();
     }
 
     public long getId() {

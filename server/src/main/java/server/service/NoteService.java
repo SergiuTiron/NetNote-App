@@ -10,7 +10,6 @@ import java.util.Optional;
 @Service
 public class NoteService {
 
-
     private NoteRepository noteRepository;
 
     @Autowired
@@ -33,8 +32,7 @@ public class NoteService {
         if (retrievedNote.isPresent()) {
             Note noteToSave = retrievedNote.get();
             noteToSave.setTitle(updatedNote.getTitle());
-            Note savedNote = noteRepository.save(updatedNote);
-            return savedNote;
+            return noteRepository.save(updatedNote);
         }
         else
             throw new RuntimeException();
