@@ -29,6 +29,7 @@ public class NoteEditCtrl implements Initializable {
 
     private final ServerUtils server;
     private final KeyStrokeUtil keyStroke;
+    private final MarkdownUtil markdown;
 
     @FXML
     private Label saveLabel;
@@ -46,9 +47,10 @@ public class NoteEditCtrl implements Initializable {
     private TextField searchField;
 
     @Inject
-    public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke) {
+    public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke, MarkdownUtil markdown) {
         this.server = server;
         this.keyStroke = keyStroke;
+        this.markdown = markdown;
     }
 
     @Override
@@ -87,7 +89,7 @@ public class NoteEditCtrl implements Initializable {
                 this.handleNoteSelect(current);
             });
         editingArea.textProperty().addListener((_, _, newText) ->
-                MarkdownUtil.renderMarkdownInWebView(newText, markdownPreview));
+                markdown.renderMarkdownInWebView(newText, markdownPreview));
 
         editingArea.setOnKeyTyped(event -> {
             keyStroke.increaseCounter();
@@ -108,9 +110,9 @@ public class NoteEditCtrl implements Initializable {
     private void renderMarkdown(String markdownContent) {
         URL cssFileUrl = MarkdownUtil.class.getResource("/css/markdown-style.css");
         if (cssFileUrl != null) {
-            MarkdownUtil.renderMarkdownInWebView(markdownContent, markdownPreview);
+            markdown.renderMarkdownInWebView(markdownContent, markdownPreview);
         } else {
-            MarkdownUtil.renderMarkdown(markdownContent, markdownPreview);
+            markdown.renderMarkdown(markdownContent, markdownPreview);
         }
     }
 
