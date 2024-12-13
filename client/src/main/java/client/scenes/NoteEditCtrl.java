@@ -82,7 +82,8 @@ public class NoteEditCtrl implements Initializable {
         });
 
         noteListView.getSelectionModel().selectedItemProperty()
-            .addListener((_, _, current) -> {
+            .addListener((_, old, current) -> {
+                saveChanges(old);
                 this.handleNoteSelect(current);
             });
         editingArea.textProperty().addListener((_, _, newText) ->
@@ -203,7 +204,6 @@ public class NoteEditCtrl implements Initializable {
             editingArea.setText("Select a note to start editing.");
             return;
         }
-
         // If a note is selected, enable editing and display its content
         editingArea.setEditable(true);
         editingArea.setText(note.getContent());
@@ -233,10 +233,21 @@ public class NoteEditCtrl implements Initializable {
     }
 
     /**
-     * Called on exit, when switching notes in ListView and when exiting the app
+     * Called on exiting the app
      */
     public void saveChanges() {
         Note note = noteListView.getSelectionModel().getSelectedItem();
+        if (note == null)
+            return;
+        note.setContent(editingArea.getText());
+        server.addNote(note);
+        saveLabelTransition();
+        System.out.println("Changes were saved.");
+    }
+    /**
+     * Called when switching notes in ListView and when exiting the app
+     */
+    public void saveChanges(Note note) {
         if (note == null)
             return;
         note.setContent(editingArea.getText());
