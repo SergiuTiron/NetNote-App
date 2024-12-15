@@ -15,9 +15,11 @@
  */
 package client.scenes;
 
+import commons.Collection;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 
@@ -25,8 +27,13 @@ public class MainCtrl {
 
     private Stage primaryStage;
 
-    public void initialize(Stage primaryStage) {
+    private Scene collectionEdit;
+
+
+    public void initialize(Stage primaryStage,
+                           Pair<CollectionEditCtrl, Parent> collectionEdit) {
         this.primaryStage = primaryStage;
+        this.collectionEdit = new Scene(collectionEdit.getValue());
         // The icon is taken from a google search TODO:Create our own icon
         Image image = new Image("appIcon/NoteIcon.jpg");
         primaryStage.getIcons().add(image);
@@ -41,6 +48,16 @@ public class MainCtrl {
 
         primaryStage.setScene(overview);
         noteEditCtrl.refresh();
+    }
+
+    public void showCollectionEdit() {
+        Stage addCollectionStage = new Stage();
+        Image image = new Image("appIcon/NoteIcon.jpg");
+        addCollectionStage.getIcons().add(image);
+        addCollectionStage.setTitle("CollectionEdit");
+        addCollectionStage.setScene(collectionEdit);
+        addCollectionStage.initModality(Modality.APPLICATION_MODAL);
+        addCollectionStage.showAndWait();
     }
 
 }

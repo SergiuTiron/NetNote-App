@@ -17,6 +17,7 @@ package client;
 
 import static com.google.inject.Guice.createInjector;
 
+import client.scenes.CollectionEditCtrl;
 import client.scenes.NoteEditCtrl;
 import com.google.inject.Injector;
 
@@ -38,6 +39,7 @@ public class Main extends Application {
     private static final Locale DEFAULT_LOCALE = Locale.ENGLISH;
 
     private NoteEditCtrl noteEditCtrl;
+    private CollectionEditCtrl collectionEditCtrl;
     private MainCtrl mainCtrl;
 
     private Locale locale = DEFAULT_LOCALE;
@@ -53,9 +55,10 @@ public class Main extends Application {
             System.err.println("Server needs to be started before the client, but it does not seem to be available. Shutting down.");
             return;
         }
-
+        Pair<CollectionEditCtrl, Parent> collectionEditView = FXML.load(this.locale, "client", "scenes", "CollectionEditView.fxml");
         this.mainCtrl = INJECTOR.getInstance(MainCtrl.class);
-        mainCtrl.initialize(primaryStage);
+
+        mainCtrl.initialize(primaryStage,collectionEditView);
         this.loadScenes();
 
         primaryStage.setOnCloseRequest(_ -> {

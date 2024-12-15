@@ -15,6 +15,7 @@
  */
 package client;
 
+import client.scenes.CollectionEditCtrl;
 import client.scenes.NoteEditCtrl;
 import com.google.inject.Binder;
 import com.google.inject.Module;
@@ -28,5 +29,6 @@ public class MyModule implements Module {
     public void configure(Binder binder) {
         binder.bind(MainCtrl.class).in(Scopes.SINGLETON);
         binder.bind(NoteEditCtrl.class).in(Scopes.SINGLETON);
+        binder.bind(CollectionEditCtrl.class).in(Scopes.SINGLETON);
     }
 }
