@@ -25,40 +25,22 @@ public class MainCtrl {
 
     private Stage primaryStage;
 
-    private NoteEditCtrl noteEditCtrl;
-
-    private Scene overview;
-
-    private String currentLanguage = "English";
-
-    public void initialize(Stage primaryStage, Pair<NoteEditCtrl, Parent> noteEdit) {
+    public void initialize(Stage primaryStage) {
         this.primaryStage = primaryStage;
-        this.noteEditCtrl = noteEdit.getKey();
-        this.overview = new Scene(noteEdit.getValue());
-        noteEditCtrl.initializeLanguage(currentLanguage);
-
-        showOverview();
-        primaryStage.show();
-    }
-
-
-
-    public void showOverview() {
-        //The icon is taken from a google search TODO:Create our own icon
+        // The icon is taken from a google search TODO:Create our own icon
         Image image = new Image("appIcon/NoteIcon.jpg");
         primaryStage.getIcons().add(image);
         primaryStage.setTitle("NetNote");
+
+        primaryStage.show();
+    }
+
+    public void showOverview(Pair<NoteEditCtrl, Parent> noteEdit) {
+        NoteEditCtrl noteEditCtrl = noteEdit.getKey();
+        Scene overview = new Scene(noteEdit.getValue());
+
         primaryStage.setScene(overview);
         noteEditCtrl.refresh();
     }
-
-    public String getCurrentLanguage() {
-        return currentLanguage;
-    }
-
-    public void setCurrentLanguage(String currentLanguage) {
-        this.currentLanguage = currentLanguage;
-    }
-
 
 }

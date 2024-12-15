@@ -25,16 +25,17 @@
             <AnchorPane prefHeight="40.0" prefWidth="1167.0" HBox.hgrow="ALWAYS">
                <children>
                   <TextField fx:id="searchField" layoutX="5.0" layoutY="5.0" prefHeight="30.0" prefWidth="542.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="353.0" />
-                  <Button layoutX="562.0" layoutY="5.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#filterNotes" prefHeight="30.0" prefWidth="95.0" text="Search" textAlignment="CENTER" AnchorPane.bottomAnchor="4.599999999999994" AnchorPane.rightAnchor="242.79999999999995" AnchorPane.topAnchor="5.0" />
-                  <ComboBox fx:id="collectionBox" layoutX="786.0" layoutY="8.0" prefHeight="25.0" prefWidth="100.0" promptText="Collections" AnchorPane.rightAnchor="14.0">
+                  <Button layoutX="562.0" layoutY="5.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#filterNotes" prefHeight="30.0" prefWidth="95.0" text="%buttons.search" textAlignment="CENTER" AnchorPane.bottomAnchor="4.599999999999994" AnchorPane.rightAnchor="242.79999999999995" AnchorPane.topAnchor="5.0" />
+                  <ComboBox fx:id="collectionBox" layoutX="786.0" layoutY="8.0" prefHeight="25.0" prefWidth="100.0" promptText="%buttons.collections" AnchorPane.rightAnchor="14.0">
                    <items>
                        <FXCollections fx:factory="observableArrayList">
+                           <!-- TODO use %collections.all and %collections.edit -->
                            <String fx:value="All" />
                            <String fx:value="Edit Collections..." />
                        </FXCollections>
                    </items>
                   </ComboBox>
-                  <ComboBox fx:id="liveLanguageBox" layoutX="676.0" layoutY="7.0" prefHeight="25.0" prefWidth="100.0" promptText="Language" >
+                  <ComboBox fx:id="liveLanguageBox" layoutX="676.0" layoutY="7.0" prefHeight="25.0" prefWidth="100.0" promptText="%buttons.language" >
                   </ComboBox>
                </children>
             </AnchorPane>
@@ -63,7 +64,7 @@
                       <AnchorPane prefHeight="356.0" prefWidth="136.0">
                           <children>
                         <WebView fx:id="markdownPreview" prefHeight="348.0" prefWidth="206.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                        <Label fx:id="saveLabel" alignment="CENTER" layoutX="211.0" layoutY="459.0" opacity="0.0" prefHeight="20.0" prefWidth="100.0" text="ChangesSaved!" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="0.0" />
+                        <Label fx:id="saveLabel" alignment="CENTER" layoutX="211.0" layoutY="459.0" opacity="0.0" prefHeight="20.0" prefWidth="100.0" text="%notice.changesSaved" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="0.0" />
                           </children>
                       </AnchorPane>
                   </items>
@@ -74,29 +75,29 @@
          <children>
             <AnchorPane prefHeight="40.0" prefWidth="1024.0" HBox.hgrow="ALWAYS">
                <children>
-                  <Button layoutX="800.0" layoutY="7.5" maxHeight="25.0" maxWidth="90.0" minHeight="25.0" minWidth="90.0" mnemonicParsing="false" onAction="#saveChanges" prefHeight="25.0" prefWidth="90.0" text="Save Changes" AnchorPane.bottomAnchor="7.5" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="7.0" />
-                  <Button layoutX="95.0" layoutY="7.5" mnemonicParsing="false" onAction="#deleteButton" prefHeight="25.0" prefWidth="75.0" text="Delete" AnchorPane.bottomAnchor="7.5" AnchorPane.topAnchor="7.5" />
-                  <Button layoutX="10.0" layoutY="7.5" maxHeight="25.0" maxWidth="75.0" minHeight="25.0" minWidth="75.0" mnemonicParsing="false" onAction="#createNewNote" prefHeight="25.0" prefWidth="75.0" text="Add Note" AnchorPane.bottomAnchor="7.5" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="7.5" />
-                  <Button layoutX="715.0" layoutY="7.5" maxHeight="25.0" maxWidth="75.0" minHeight="25.0" minWidth="75.0" mnemonicParsing="false" onAction="#refresh" prefHeight="25.0" prefWidth="75.0" text="Refresh" AnchorPane.bottomAnchor="7.5" AnchorPane.rightAnchor="110.0" AnchorPane.topAnchor="7.5" />
+                  <Button layoutX="800.0" layoutY="7.5" maxHeight="25.0" maxWidth="90.0" minHeight="25.0" minWidth="90.0" mnemonicParsing="false" onAction="#saveChanges" prefHeight="25.0" prefWidth="90.0" text="%buttons.saveChanges" AnchorPane.bottomAnchor="7.5" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="7.0" />
+                  <Button layoutX="95.0" layoutY="7.5" mnemonicParsing="false" onAction="#deleteButton" prefHeight="25.0" prefWidth="75.0" text="%buttons.delete" AnchorPane.bottomAnchor="7.5" AnchorPane.topAnchor="7.5" />
+                  <Button layoutX="10.0" layoutY="7.5" maxHeight="25.0" maxWidth="75.0" minHeight="25.0" minWidth="75.0" mnemonicParsing="false" onAction="#createNewNote" prefHeight="25.0" prefWidth="75.0" text="%buttons.addNote" AnchorPane.bottomAnchor="7.5" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="7.5" />
+                  <Button layoutX="715.0" layoutY="7.5" maxHeight="25.0" maxWidth="75.0" minHeight="25.0" minWidth="75.0" mnemonicParsing="false" onAction="#refresh" prefHeight="25.0" prefWidth="75.0" text="%buttons.refresh" AnchorPane.bottomAnchor="7.5" AnchorPane.rightAnchor="110.0" AnchorPane.topAnchor="7.5" />
                </children>
             </AnchorPane>
          </children>
       </HBox>
       <MenuBar layoutY="1.0" prefHeight="25.0" prefWidth="900.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <menus>
-          <Menu mnemonicParsing="false" text="Settings">
+          <Menu mnemonicParsing="false" text="%menu.settings">
             <items>
-              <MenuItem mnemonicParsing="false" onAction="#changeNoteSavingSettings" text="Reset Saving Criteria" />
+              <MenuItem mnemonicParsing="false" onAction="#changeNoteSavingSettings" text="%menu.settings.autosave" />
             </items>
           </Menu>
-          <Menu mnemonicParsing="false" text="Edit">
+          <Menu mnemonicParsing="false" text="%menu.edit">
             <items>
-              <MenuItem mnemonicParsing="false" text="Delete Current Note" />
+              <MenuItem mnemonicParsing="false" text="%menu.edit.deleteNote" />
             </items>
           </Menu>
-          <Menu mnemonicParsing="false" text="Help">
+          <Menu mnemonicParsing="false" text="%menu.help">
             <items>
-              <MenuItem mnemonicParsing="false" text="About" />
+              <MenuItem mnemonicParsing="false" text="%menu.help.about" />
             </items>
           </Menu>
         </menus>

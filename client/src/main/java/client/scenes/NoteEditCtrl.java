@@ -1,11 +1,14 @@
 package client.scenes;
 
 import client.utils.KeyStrokeUtil;
+import client.utils.LocaleUtil;
 import client.utils.MarkdownUtil;
 import client.utils.ServerUtils;
 import commons.Note;
 import jakarta.inject.Inject;
 import javafx.animation.FadeTransition;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -30,6 +33,9 @@ public class NoteEditCtrl implements Initializable {
     private final ServerUtils server;
     private final KeyStrokeUtil keyStroke;
     private final MarkdownUtil markdown;
+    private final LocaleUtil localeUtil;
+
+    private ResourceBundle resourceBundle;
 
     @FXML
     private Label saveLabel;
@@ -50,26 +56,41 @@ public class NoteEditCtrl implements Initializable {
     private ComboBox collectionBox;
 
     @FXML
-    private ComboBox<String> liveLanguageBox;
+    private ComboBox<Locale> liveLanguageBox;
+
+    public final ObjectProperty<Locale> selectedLanguage = new SimpleObjectProperty<>();
 
     @Inject
-    public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke, MarkdownUtil markdown, ComboBox collectionBox) {
+    public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke, MarkdownUtil markdown, LocaleUtil localeUtil,
+                        ComboBox<?> collectionBox) {
         this.server = server;
         this.keyStroke = keyStroke;
         this.markdown = markdown;
-        this.collectionBox = collectionBox;
+        this.localeUtil = localeUtil;
+	    this.collectionBox = collectionBox;
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        liveLanguageBox.setItems(FXCollections.observableArrayList("English", "Dutch", "Romanian", "Bulgarian"));
+        this.resourceBundle = resourceBundle;
 
-        liveLanguageBox.setValue("English");
+        liveLanguageBox.setItems(FXCollections.observableList(localeUtil.getAvailableLocales()));
+        liveLanguageBox.setCellFactory(_ -> new TextFieldListCell<>(new StringConverter<>() {
+            @Override
+            public String toString(Locale locale) {
+                return locale.getDisplayName(selectedLanguage.get());
+            }
 
-        liveLanguageBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
+            @Override
+            public Locale fromString(String s) {
+                return Locale.of(s);
+            }
+        }));
+        liveLanguageBox.getSelectionModel().selectedItemProperty().addListener((_, _, newValue) -> {
+            if (newValue == null) {
                 return;
             }
+            this.setLanguage(newValue);
         });
 
         noteListView.setCellFactory(_ -> new TextFieldListCell<>(new StringConverter<>(){
@@ -152,13 +173,14 @@ public class NoteEditCtrl implements Initializable {
         //System.out.println("something"); solely for debugging
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
 
-        alert.setTitle("AutoSave Settings");
-        alert.setHeaderText("The current number of keystrokes for saving is: " + keyStroke.getTrigger() + " keystrokes.");
+        alert.setTitle(resourceBundle.getString("popup.autosave.title"));
+        alert.setHeaderText(resourceBundle.getString("popup.autosave.text")
+                .replace("%num%", String.valueOf(keyStroke.getTrigger())));
         alert.getDialogPane().getScene().getWindow().setWidth(400);
         alert.getDialogPane().getScene().getWindow().setHeight(200);
 
         TextField textField = new TextField();
-        textField.setPromptText("Enter the number of keystrokes to save upon");
+        textField.setPromptText(resourceBundle.getString("popup.autosave.prompt"));
         // Add the TextField to a layout (VBox)
         VBox content = new VBox();
         content.setSpacing(10);
@@ -173,8 +195,8 @@ public class NoteEditCtrl implements Initializable {
                     keyStroke.setTriggerCount(Integer.parseInt(textField.getText()));
                 }catch (NumberFormatException e){
                     Alert error = new Alert(Alert.AlertType.ERROR);
-                    error.setTitle("Invalid number");
-                    error.setHeaderText("The number of keystrokes you provided is invalid.");
+                    error.setTitle(resourceBundle.getString("popup.autosave.invalid.title"));
+                    error.setHeaderText(resourceBundle.getString("popup.autosave.invalid.text"));
                     error.showAndWait();
                 }
             }
@@ -220,7 +242,7 @@ public class NoteEditCtrl implements Initializable {
         if (note == null) {
             // If no note is selected, disable editing and show a default message
             editingArea.setEditable(false);
-            editingArea.setText("Select a note to start editing.");
+            editingArea.setText(resourceBundle.getString("initialText"));
             return;
         }
         // If a note is selected, enable editing and display its content
@@ -313,7 +335,7 @@ public class NoteEditCtrl implements Initializable {
     }
 
     private boolean confirmationDelete(Note selectedNote) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this note?");
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, resourceBundle.getString("popup.confirmDelete"));
         Optional<ButtonType> response = alert.showAndWait();
         return response.isPresent() && response.get() == ButtonType.OK;
     }
@@ -321,17 +343,12 @@ public class NoteEditCtrl implements Initializable {
     private void clearFields() {
         noteListView.getSelectionModel().clearSelection();
         editingArea.setEditable(false);
-        editingArea.setText("Select a note to start editing.");
-    }
-    public void initializeLanguage(String initialLanguage) {
-        this.selectedLanguage = initialLanguage;
-        liveLanguageBox.setValue(initialLanguage);
-        updateLanguageIndicator();
-    }
-    private void updateLanguageIndicator() {
-        System.out.println("Language switched to: " + selectedLanguage);
-        // You can add more logic here to handle dynamic language switching
+        editingArea.setText(resourceBundle.getString("initialText"));
     }
 
-    private String selectedLanguage = "English";
+    public void setLanguage(Locale locale) {
+        this.selectedLanguage.setValue(locale);
+        liveLanguageBox.setValue(locale);
+    }
+
 }

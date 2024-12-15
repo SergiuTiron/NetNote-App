@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 import com.google.inject.Injector;
 
@@ -31,15 +33,24 @@ import javafx.util.Pair;
 
 public class MyFXML {
 
-    private Injector injector;
+    private final Injector injector;
 
     public MyFXML(Injector injector) {
         this.injector = injector;
     }
 
-    public <T> Pair<T, Parent> load(Class<T> c, String... parts) {
+    public <T> Pair<T, Parent> load(Locale locale, String... parts) {
+        System.out.println("Loading FXML with language: " + locale);
+
         try {
-            var loader = new FXMLLoader(getLocation(parts), null, null, new MyFactory(), StandardCharsets.UTF_8);
+            var loader = new FXMLLoader(
+                    this.getLocation(parts),
+                    ResourceBundle.getBundle("locale/translations", locale), // Load i18n resources
+                    null,
+                    new MyFactory(),
+                    StandardCharsets.UTF_8
+            );
+
             Parent parent = loader.load();
             T ctrl = loader.getController();
             return new Pair<>(ctrl, parent);
