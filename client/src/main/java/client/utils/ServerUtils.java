@@ -23,6 +23,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 
+import commons.Collection;
 import commons.Note;
 import org.glassfish.jersey.client.ClientConfig;
 
@@ -94,5 +95,79 @@ public class ServerUtils {
 				.target(url)
 				.request(APPLICATION_JSON)
 				.put(Entity.entity(selectedNote, APPLICATION_JSON), Note.class);
+	}
+
+	/**
+	 * Fetches all collections from the backend
+	 * @return - all collections
+	 */
+	public List<Collection> getCollections() {
+		return ClientBuilder.newClient(new ClientConfig())
+			.target(SERVER).path("api/collections")
+			.request(APPLICATION_JSON)
+			.get(new GenericType<>() {});
+	}
+
+	/**
+	 * Adds a collection to the backend
+	 * @param collection - collection to add
+	 * @return - collection to add
+	 */
+	public Collection addCollection(Collection collection) {
+		return ClientBuilder.newClient(new ClientConfig())
+			.target(SERVER).path("api/collections")
+			.request(APPLICATION_JSON)
+			.post(Entity.entity(collection, APPLICATION_JSON), Collection.class);
+	}
+
+	/**
+	 * Deletes a collection from the backend
+	 * @param id - id of the collection to delete
+	 * @throws IOException - if collection fails to be deleted
+	 */
+	public void deleteCollection(long id) throws IOException {
+		URL url = new URL(SERVER + "api/collections/" + id);
+		HttpURLConnection connection = null;
+
+		try {
+			connection = (HttpURLConnection) url.openConnection();
+			connection.setRequestMethod("DELETE");
+
+			int responseCode = connection.getResponseCode();
+			if (responseCode != HttpURLConnection.HTTP_NO_CONTENT) {
+				throw new RuntimeException("Failed to delete collection. " + responseCode);
+			}
+		} finally {
+			if (connection != null) {
+				connection.disconnect();
+			}
+		}
+	}
+
+	/**
+	 * Associates a note to a specific collection
+	 * @param collectionId - id of the collection
+	 * @param note - note to be linked
+	 * @return - the updated Collection
+	 */
+	public Collection linkNoteToCollection(long collectionId, Note note) {
+		String url = SERVER + "api/collections/" + collectionId + "/notes";
+		return ClientBuilder.newClient(new ClientConfig())
+			.target(url)
+			.request(APPLICATION_JSON)
+			.post(Entity.entity(note, APPLICATION_JSON), Collection.class);
+	}
+
+	/**
+	 * Get a list of all notes in a collection
+	 * @param collectionId - id of the collection
+	 * @return - list of all notes
+	 */
+	public List<Note> getNotesByCollection(long collectionId) {
+		String url = SERVER + "api/collections/" + collectionId + "/notes";
+		return ClientBuilder.newClient(new ClientConfig())
+			.target(url)
+			.request(APPLICATION_JSON)
+			.get(new GenericType<>() {});
 	}
 }
