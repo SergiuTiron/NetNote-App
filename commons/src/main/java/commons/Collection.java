@@ -20,7 +20,8 @@ public class Collection {
     @OneToMany(mappedBy = "collection", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Note> notes;
 
-    public Collection() {}
+    public Collection() {
+    }
 
     public Collection(String name) {
         this.name = name;
@@ -47,7 +48,7 @@ public class Collection {
         notes.remove(note);
     }
 
-    public Note getNote(int index){
+    public Note getNote(int index) {
         return notes.get(index);
     }
 
@@ -61,6 +62,6 @@ public class Collection {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name,notes);
-}
+        return Objects.hash(id, name, notes);
+    }
 }

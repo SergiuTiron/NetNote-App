@@ -59,8 +59,7 @@ public class Main extends Application {
             if (noteEditCtrl != null) {
                 noteEditCtrl.saveChanges();
                 System.out.println("Changes were saved on exit.");
-            }
-            else {
+            } else {
                 System.err.println("Changes were not saved on exit.");
             }
         });
