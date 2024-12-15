@@ -295,7 +295,7 @@ public class NoteEditCtrl implements Initializable {
         noteListView.setItems(FXCollections.observableList(notes));
     }
 
-    public  void autoSave() {
+    public void autoSave() {
         Note note = noteListView.getSelectionModel().getSelectedItem();
         note.setContent(editingArea.getText());
         server.addNote(note);
@@ -342,7 +342,9 @@ public class NoteEditCtrl implements Initializable {
         noteListView.setItems(FXCollections.observableList(filteredNotes));
     }
 
-    // Called whenever the user clicks the "Delete" button.
+    /**
+     * Called whenever the user clicks the "Delete" button.
+     */
     public void deleteButton() throws IOException {
         Note selectedNote = noteListView.getSelectionModel().getSelectedItem();
         if (selectedNote == null) {
