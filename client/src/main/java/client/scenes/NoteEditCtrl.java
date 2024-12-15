@@ -56,7 +56,7 @@ public class NoteEditCtrl implements Initializable {
         this.server = server;
         this.keyStroke = keyStroke;
         this.markdown = markdown;
-	    this.collectionBox = collectionBox;
+        this.collectionBox = collectionBox;
     }
 
     @Override
@@ -79,7 +79,6 @@ public class NoteEditCtrl implements Initializable {
         }));
 
         noteListView.setEditable(true);
-
         //double-click triggers note editing
         noteListView.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {

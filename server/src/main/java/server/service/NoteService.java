@@ -17,11 +17,11 @@ public class NoteService {
         this.noteRepository = noteRepository;
     }
 
-    public void deleteNoteById(Long Id) {
-        if (!noteRepository.existsById(Id)) {
-            throw new IllegalArgumentException("Note with ID" + Id + " does not exist");
+    public void deleteNoteById(Long id) {
+        if (!noteRepository.existsById(id)) {
+            throw new IllegalArgumentException("Note with ID" + id + " does not exist");
         }
-        noteRepository.deleteById(Id);
+        noteRepository.deleteById(id);
     }
 
     // method that updates the note both locally and in the repository
