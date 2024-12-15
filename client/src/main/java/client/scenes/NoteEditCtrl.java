@@ -3,12 +3,10 @@ package client.scenes;
 import client.utils.KeyStrokeUtil;
 import client.utils.MarkdownUtil;
 import client.utils.ServerUtils;
-import commons.Collection;
 import commons.Note;
 import jakarta.inject.Inject;
 import javafx.animation.FadeTransition;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -51,6 +49,9 @@ public class NoteEditCtrl implements Initializable {
     @FXML
     private ComboBox collectionBox;
 
+    @FXML
+    private ComboBox<String> liveLanguageBox;
+
     @Inject
     public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke, MarkdownUtil markdown, ComboBox collectionBox) {
         this.server = server;
@@ -61,6 +62,16 @@ public class NoteEditCtrl implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        liveLanguageBox.setItems(FXCollections.observableArrayList("English", "Dutch", "Romanian", "Bulgarian"));
+
+        liveLanguageBox.setValue("English");
+
+        liveLanguageBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                return;
+            }
+        });
+
         noteListView.setCellFactory(_ -> new TextFieldListCell<>(new StringConverter<>(){
             @Override
             public String toString(Note note) {
@@ -110,122 +121,8 @@ public class NoteEditCtrl implements Initializable {
         //  & do not allow the user to type.
         this.handleNoteSelect(null);
         keyShortcuts();
-    }
-
-    /**
-     * Method to handle choice made from ComboBox
-     */
-    public void handleComboBox(){
-        System.out.println("ComboBox action triggered"); // Debug message to confirm the method is being called
-
-        Object selectedItem = collectionBox.getSelectionModel().getSelectedItem();
-        System.out.println("Selected item: " + selectedItem);
-
-        if (selectedItem == null) {
-            return;
-        }
-
-        if (selectedItem instanceof String) {
-            String selectedString = (String) selectedItem;
-            if ("All".equals(selectedString)) {
-                handleAllCollectionsSelected();
-            } else if ("Edit Collections...".equals(selectedString)) {
-                handleEditCollections();
-            }
-        } else if (selectedItem instanceof Collection) {
-            handleSpecificCollectionSelected((Collection) selectedItem);
-        }
-    }
-
-    /**
-     * Handler for "All" option
-     */
-    private void handleAllCollectionsSelected() {
 
     }
-
-    /**
-     * Handler for "Edit collections"
-     */
-    private void handleEditCollections() {
-
-    }
-
-    /**
-     * Displaying a given list of notes (from a collection) in the listview
-     * @param selectedItem - collection
-     */
-    private void handleSpecificCollectionSelected(Collection selectedItem) {
-        List<Note> notes = server.getNotesByCollection(selectedItem.getId());
-        // Clear the current list
-        noteListView.getItems().clear();
-
-        // Add the notes to the ListView
-        noteListView.getItems().addAll(notes);
-    }
-
-    /**
-     * Method to refresh ComboBox after creating or deleting collections
-     */
-    private void refreshComboBox() {
-        System.out.println("Refreshing ComboBox");
-        ObservableList<Object> updatedItems = FXCollections.observableArrayList();
-        updatedItems.add("All");
-        updatedItems.add("Edit Collections");
-        updatedItems.addAll(server.getCollections());
-        collectionBox.setItems(updatedItems);
-    }
-
-    /**
-     * Create a collection
-     * @param name - name for the collection
-     */
-    private void addCollection(String name) {
-        server.addCollection(new Collection(name));
-        refreshComboBox();
-    }
-
-    /**
-     * Delete a collection
-     * @param name - name of the collection to be deleted
-     */
-    public void deleteCollection(String name) {
-        List<Collection> collections = server.getCollections(); // Assume you have a method for this
-
-        Collection collectionToDelete = findCollectionById(name);
-
-        try{
-            server.deleteCollection(collectionToDelete.getId());
-        } catch (IOException e) {
-            System.err.println("Failed to delete collection");
-            e.printStackTrace();
-        }
-
-        refreshComboBox();
-    }
-
-    /**
-     * Find a given collection by its id
-     * @param name - name of collection to find
-     * @return - id of collection
-     */
-    private Collection findCollectionById(String name) {
-        List<Collection> collections = server.getCollections();
-
-        Collection collectionToFind = null;
-        for (Collection collection : collections) {
-            if (collection.getName().equalsIgnoreCase(name)) {
-                collectionToFind = collection;
-                break;
-            }
-        }
-        if (collectionToFind == null) {
-            throw new RuntimeException("Collection not found");
-        } else {
-            return collectionToFind;
-        }
-    }
-
 
     // Method to render markdown
     private void renderMarkdown(String markdownContent) {
@@ -427,5 +324,15 @@ public class NoteEditCtrl implements Initializable {
         editingArea.setEditable(false);
         editingArea.setText("Select a note to start editing.");
     }
+    public void initializeLanguage(String initialLanguage) {
+        this.selectedLanguage = initialLanguage;
+        liveLanguageBox.setValue(initialLanguage);
+        updateLanguageIndicator();
+    }
+    private void updateLanguageIndicator() {
+        System.out.println("Language switched to: " + selectedLanguage);
+        // You can add more logic here to handle dynamic language switching
+    }
 
+    private String selectedLanguage = "English";
 }
