@@ -324,5 +324,15 @@ public class NoteEditCtrl implements Initializable {
         editingArea.setEditable(false);
         editingArea.setText("Select a note to start editing.");
     }
+    public void initializeLanguage(String initialLanguage) {
+        this.selectedLanguage = initialLanguage;
+        liveLanguageBox.setValue(initialLanguage);
+        updateLanguageIndicator();
+    }
+    private void updateLanguageIndicator() {
+        System.out.println("Language switched to: " + selectedLanguage);
+        // You can add more logic here to handle dynamic language switching
+    }
 
+    private String selectedLanguage = "English";
 }
