@@ -1,6 +1,7 @@
 package client.scenes;
 
 import client.utils.KeyStrokeUtil;
+import client.utils.LocaleUtil;
 import client.utils.MarkdownUtil;
 import client.utils.ServerUtils;
 import commons.Note;
@@ -32,6 +33,7 @@ public class NoteEditCtrl implements Initializable {
     private final ServerUtils server;
     private final KeyStrokeUtil keyStroke;
     private final MarkdownUtil markdown;
+    private final LocaleUtil localeUtil;
 
     @FXML
     private Label saveLabel;
@@ -57,23 +59,22 @@ public class NoteEditCtrl implements Initializable {
     public final ObjectProperty<Locale> selectedLanguage = new SimpleObjectProperty<>();
 
     @Inject
-    public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke, MarkdownUtil markdown, ComboBox<?> collectionBox) {
+    public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke, MarkdownUtil markdown, LocaleUtil localeUtil,
+                        ComboBox<?> collectionBox) {
         this.server = server;
         this.keyStroke = keyStroke;
         this.markdown = markdown;
-        this.collectionBox = collectionBox;
+        this.localeUtil = localeUtil;
+	    this.collectionBox = collectionBox;
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        liveLanguageBox.setItems(FXCollections.observableArrayList(
-                // English, Dutch, Romanian, Bulgarian
-                Locale.of("en"), Locale.of("nl"), Locale.of("ro"), Locale.of("bg")
-        ));
+        liveLanguageBox.setItems(FXCollections.observableList(localeUtil.getAvailableLocales()));
         liveLanguageBox.setCellFactory(_ -> new TextFieldListCell<>(new StringConverter<>() {
             @Override
             public String toString(Locale locale) {
-                return locale.toString();
+                return locale.getDisplayName(selectedLanguage.get());
             }
 
             @Override
