@@ -25,9 +25,6 @@ public class MainCtrl {
 
     private Stage primaryStage;
 
-    private NoteEditCtrl noteEditCtrl;
-    private Scene overview;
-
     public void initialize(Stage primaryStage) {
         this.primaryStage = primaryStage;
         // The icon is taken from a google search TODO:Create our own icon
@@ -39,8 +36,8 @@ public class MainCtrl {
     }
 
     public void showOverview(Pair<NoteEditCtrl, Parent> noteEdit) {
-        this.noteEditCtrl = noteEdit.getKey();
-        this.overview = new Scene(noteEdit.getValue());
+        NoteEditCtrl noteEditCtrl = noteEdit.getKey();
+        Scene overview = new Scene(noteEdit.getValue());
 
         primaryStage.setScene(overview);
         noteEditCtrl.refresh();

@@ -342,12 +342,7 @@ public class NoteEditCtrl implements Initializable {
 
     public void setLanguage(Locale locale) {
         this.selectedLanguage.setValue(locale);
-        liveLanguageBox.setValue(locale); // TODO
-        this.updateLanguageIndicator();
+        liveLanguageBox.setValue(locale);
     }
 
-    private void updateLanguageIndicator() {
-        System.out.println("Language switched to: " + selectedLanguage);
-        // You can add more logic here to handle dynamic language switching
-    }
 }

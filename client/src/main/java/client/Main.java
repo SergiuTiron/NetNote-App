@@ -23,6 +23,7 @@ import com.google.inject.Injector;
 import client.scenes.MainCtrl;
 import client.utils.ServerUtils;
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
 import javafx.scene.Parent;
 import javafx.stage.Stage;
 import javafx.util.Pair;
@@ -70,12 +71,19 @@ public class Main extends Application {
     public void loadScenes() {
         Pair<NoteEditCtrl, Parent> editView = FXML.load(this.locale, "client", "scenes", "NoteEditView.fxml");
         this.noteEditCtrl = editView.getKey();
-        noteEditCtrl.selectedLanguage.addListener(_ -> {
-            this.locale = noteEditCtrl.selectedLanguage.get();
-            System.out.println("Language changed to " + locale);
-            this.loadScenes();
-        });
+        noteEditCtrl.setLanguage(this.locale);
+        noteEditCtrl.selectedLanguage.addListener(this.localeChangeListener);
         mainCtrl.showOverview(editView);
+    }
+
+    private final ChangeListener<Locale> localeChangeListener = (_, _, _) -> this.handleLocaleChange();
+
+    private void handleLocaleChange() {
+        noteEditCtrl.selectedLanguage.removeListener(this.localeChangeListener);
+
+        this.locale = noteEditCtrl.selectedLanguage.get();
+        System.out.println("Reloading scenes with new locale: " + locale);
+        this.loadScenes();
     }
 
 }
