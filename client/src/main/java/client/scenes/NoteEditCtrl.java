@@ -6,6 +6,8 @@ import client.utils.ServerUtils;
 import commons.Note;
 import jakarta.inject.Inject;
 import javafx.animation.FadeTransition;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -50,10 +52,12 @@ public class NoteEditCtrl implements Initializable {
     private ComboBox collectionBox;
 
     @FXML
-    private ComboBox<String> liveLanguageBox;
+    private ComboBox<Locale> liveLanguageBox;
+
+    public final ObjectProperty<Locale> selectedLanguage = new SimpleObjectProperty<>();
 
     @Inject
-    public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke, MarkdownUtil markdown, ComboBox collectionBox) {
+    public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke, MarkdownUtil markdown, ComboBox<?> collectionBox) {
         this.server = server;
         this.keyStroke = keyStroke;
         this.markdown = markdown;
@@ -62,14 +66,26 @@ public class NoteEditCtrl implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        liveLanguageBox.setItems(FXCollections.observableArrayList("English", "Dutch", "Romanian", "Bulgarian"));
+        liveLanguageBox.setItems(FXCollections.observableArrayList(
+                // English, Dutch, Romanian, Bulgarian
+                Locale.of("en"), Locale.of("nl"), Locale.of("ro"), Locale.of("bg")
+        ));
+        liveLanguageBox.setCellFactory(_ -> new TextFieldListCell<>(new StringConverter<>() {
+            @Override
+            public String toString(Locale locale) {
+                return locale.toString();
+            }
 
-        liveLanguageBox.setValue("English");
-
-        liveLanguageBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
+            @Override
+            public Locale fromString(String s) {
+                return Locale.of(s);
+            }
+        }));
+        liveLanguageBox.getSelectionModel().selectedItemProperty().addListener((_, _, newValue) -> {
+            if (newValue == null) {
                 return;
             }
+            this.setLanguage(newValue);
         });
 
         noteListView.setCellFactory(_ -> new TextFieldListCell<>(new StringConverter<>(){
@@ -323,15 +339,15 @@ public class NoteEditCtrl implements Initializable {
         editingArea.setEditable(false);
         editingArea.setText("Select a note to start editing.");
     }
-    public void initializeLanguage(String initialLanguage) {
-        this.selectedLanguage = initialLanguage;
-        liveLanguageBox.setValue(initialLanguage);
-        updateLanguageIndicator();
+
+    public void setLanguage(Locale locale) {
+        this.selectedLanguage.setValue(locale);
+        liveLanguageBox.setValue(locale); // TODO
+        this.updateLanguageIndicator();
     }
+
     private void updateLanguageIndicator() {
         System.out.println("Language switched to: " + selectedLanguage);
         // You can add more logic here to handle dynamic language switching
     }
-
-    private String selectedLanguage = "English";
 }

@@ -17,44 +17,46 @@ package client;
 
 import static com.google.inject.Guice.createInjector;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-
 import client.scenes.NoteEditCtrl;
 import com.google.inject.Injector;
 
 import client.scenes.MainCtrl;
 import client.utils.ServerUtils;
 import javafx.application.Application;
+import javafx.scene.Parent;
 import javafx.stage.Stage;
+import javafx.util.Pair;
+
+import java.util.Locale;
 
 public class Main extends Application {
 
     private static final Injector INJECTOR = createInjector(new MyModule());
     private static final MyFXML FXML = new MyFXML(INJECTOR);
-    private NoteEditCtrl noteEditCtrl;
 
-    public static void main(String[] args) throws URISyntaxException, IOException {
+    private static final Locale DEFAULT_LOCALE = Locale.ENGLISH;
+
+    private NoteEditCtrl noteEditCtrl;
+    private MainCtrl mainCtrl;
+
+    private Locale locale = DEFAULT_LOCALE;
+
+    public static void main(String[] args) {
         launch();
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
-
-        var serverUtils = INJECTOR.getInstance(ServerUtils.class);
+    public void start(Stage primaryStage) {
+        ServerUtils serverUtils = INJECTOR.getInstance(ServerUtils.class);
         if (!serverUtils.isServerAvailable()) {
-            var msg = "Server needs to be started before the client, but it does not seem to be available. Shutting down.";
-            System.err.println(msg);
+            System.err.println("Server needs to be started before the client, but it does not seem to be available. Shutting down.");
             return;
         }
 
-        var editView = FXML.load(NoteEditCtrl.class, "client", "scenes", "NoteEditView.fxml");
+        this.mainCtrl = INJECTOR.getInstance(MainCtrl.class);
+        mainCtrl.initialize(primaryStage);
+        this.loadScenes();
 
-        var mainCtrl = INJECTOR.getInstance(MainCtrl.class);
-        mainCtrl.initialize(primaryStage, editView);
-
-        // save changes on exit
-        noteEditCtrl = editView.getKey();
         primaryStage.setOnCloseRequest(_ -> {
             if (noteEditCtrl != null) {
                 noteEditCtrl.saveChanges();
@@ -64,4 +66,16 @@ public class Main extends Application {
             }
         });
     }
+
+    public void loadScenes() {
+        Pair<NoteEditCtrl, Parent> editView = FXML.load(this.locale, "client", "scenes", "NoteEditView.fxml");
+        this.noteEditCtrl = editView.getKey();
+        noteEditCtrl.selectedLanguage.addListener(_ -> {
+            this.locale = noteEditCtrl.selectedLanguage.get();
+            System.out.println("Language changed to " + locale);
+            this.loadScenes();
+        });
+        mainCtrl.showOverview(editView);
+    }
+
 }
