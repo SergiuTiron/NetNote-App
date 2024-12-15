@@ -29,10 +29,13 @@ public class MainCtrl {
 
     private Scene overview;
 
+    private String currentLanguage = "English";
+
     public void initialize(Stage primaryStage, Pair<NoteEditCtrl, Parent> noteEdit) {
         this.primaryStage = primaryStage;
         this.noteEditCtrl = noteEdit.getKey();
         this.overview = new Scene(noteEdit.getValue());
+        noteEditCtrl.initializeLanguage(currentLanguage);
 
         showOverview();
         primaryStage.show();
@@ -48,5 +51,14 @@ public class MainCtrl {
         primaryStage.setScene(overview);
         noteEditCtrl.refresh();
     }
+
+    public String getCurrentLanguage() {
+        return currentLanguage;
+    }
+
+    public void setCurrentLanguage(String currentLanguage) {
+        this.currentLanguage = currentLanguage;
+    }
+
 
 }

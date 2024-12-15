@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
@@ -16,23 +18,23 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.WebView?>
 
-<?import javafx.collections.FXCollections?>
-<?import java.lang.String?>
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.NoteEditCtrl">
     <children>
       <HBox alignment="CENTER" layoutY="25.0" prefHeight="40.0" prefWidth="900.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0">
          <children>
             <AnchorPane prefHeight="40.0" prefWidth="1167.0" HBox.hgrow="ALWAYS">
                <children>
-                  <TextField fx:id="searchField" layoutX="5.0" layoutY="5.0" prefHeight="30.0" prefWidth="650.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="245.0" />
-                  <Button layoutX="655.0" layoutY="5.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#filterNotes" prefHeight="30.0" prefWidth="95.0" text="Search" textAlignment="CENTER" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="150.0" AnchorPane.topAnchor="5.0" />
+                  <TextField fx:id="searchField" layoutX="5.0" layoutY="5.0" prefHeight="30.0" prefWidth="542.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="353.0" />
+                  <Button layoutX="562.0" layoutY="5.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#filterNotes" prefHeight="30.0" prefWidth="95.0" text="Search" textAlignment="CENTER" AnchorPane.bottomAnchor="4.599999999999994" AnchorPane.rightAnchor="242.79999999999995" AnchorPane.topAnchor="5.0" />
                   <ComboBox fx:id="collectionBox" layoutX="786.0" layoutY="8.0" prefHeight="25.0" prefWidth="100.0" promptText="Collections" AnchorPane.rightAnchor="14.0">
                    <items>
                        <FXCollections fx:factory="observableArrayList">
-                           <String fx:value="All"/>
-                           <String fx:value="Edit Collections..."/>
+                           <String fx:value="All" />
+                           <String fx:value="Edit Collections..." />
                        </FXCollections>
                    </items>
+                  </ComboBox>
+                  <ComboBox fx:id="liveLanguageBox" layoutX="676.0" layoutY="7.0" prefHeight="25.0" prefWidth="100.0" promptText="Language" >
                   </ComboBox>
                </children>
             </AnchorPane>

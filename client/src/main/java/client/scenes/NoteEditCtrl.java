@@ -46,6 +46,9 @@ public class NoteEditCtrl implements Initializable {
     @FXML
     private TextField searchField;
 
+    @FXML
+    private ComboBox<String> liveLanguageBox;
+
     @Inject
     public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke, MarkdownUtil markdown) {
         this.server = server;
@@ -55,6 +58,16 @@ public class NoteEditCtrl implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        liveLanguageBox.setItems(FXCollections.observableArrayList("English", "Dutch", "Romanian", "Bulgarian"));
+
+        liveLanguageBox.setValue("English");
+
+        liveLanguageBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                return;
+            }
+        });
+
         noteListView.setCellFactory(_ -> new TextFieldListCell<>(new StringConverter<>(){
             @Override
             public String toString(Note note) {
@@ -305,6 +318,29 @@ public class NoteEditCtrl implements Initializable {
         noteListView.getSelectionModel().clearSelection();
         editingArea.setEditable(false);
         editingArea.setText("Select a note to start editing.");
+    }
+
+    private String selectedLanguage = "English"; // Default language
+
+    private void initializeLanguageComboBox() {
+        liveLanguageBox.setItems(FXCollections.observableArrayList("English", "French", "Spanish", "German"));
+        liveLanguageBox.setValue(selectedLanguage); // Set default value
+
+        liveLanguageBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                selectedLanguage = newValue;
+                updateLanguageIndicator();
+            }
+        });
+    }
+    public void initializeLanguage(String initialLanguage) {
+        this.selectedLanguage = initialLanguage;
+        liveLanguageBox.setValue(initialLanguage);
+        updateLanguageIndicator();
+    }
+
+    private void updateLanguageIndicator() {
+        System.out.println("Language switched to: " + selectedLanguage);
     }
 
 }
