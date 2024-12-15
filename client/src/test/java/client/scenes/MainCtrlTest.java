@@ -18,6 +18,7 @@ package client.scenes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.*;
 public class MainCtrlTest {
 
     private MainCtrl sut;
@@ -28,8 +29,13 @@ public class MainCtrlTest {
     }
 
     @Test
-    public void writeSomeTests() {
-        // TODO create replacement objects and write some tests
-        // sut.initialize(null, null, null);
+    public void testGetCurrentLanguage() {
+        assertEquals("English", sut.getCurrentLanguage());
+    }
+
+    @Test
+    public void testSetCurrentLanguage() {
+        sut.setCurrentLanguage("Hungarian");
+        assertEquals("Hungarian", sut.getCurrentLanguage());
     }
 }
