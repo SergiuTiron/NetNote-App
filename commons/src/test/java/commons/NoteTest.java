@@ -21,5 +21,4 @@ public class NoteTest {
         assertEquals(note1, note2);
         assertNotEquals(note1, note3);
     }
-
 }
