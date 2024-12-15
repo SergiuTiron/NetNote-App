@@ -4,6 +4,7 @@ import client.utils.KeyStrokeUtil;
 import client.utils.LocaleUtil;
 import client.utils.MarkdownUtil;
 import client.utils.ServerUtils;
+import commons.Collection;
 import commons.Note;
 import jakarta.inject.Inject;
 import javafx.animation.FadeTransition;
@@ -34,7 +35,7 @@ public class NoteEditCtrl implements Initializable {
     private final KeyStrokeUtil keyStroke;
     private final MarkdownUtil markdown;
     private final LocaleUtil localeUtil;
-
+    private final MainCtrl mainCtrl;
     private ResourceBundle resourceBundle;
 
     @FXML
@@ -53,7 +54,7 @@ public class NoteEditCtrl implements Initializable {
     private TextField searchField;
 
     @FXML
-    private ComboBox collectionBox;
+    private MenuButton collectionBox;
 
     @FXML
     private ComboBox<Locale> liveLanguageBox;
@@ -62,11 +63,12 @@ public class NoteEditCtrl implements Initializable {
 
     @Inject
     public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke, MarkdownUtil markdown, LocaleUtil localeUtil,
-                        ComboBox<?> collectionBox) {
+                        MenuButton collectionBox, MainCtrl mainCtrl) {
         this.server = server;
         this.keyStroke = keyStroke;
         this.markdown = markdown;
         this.localeUtil = localeUtil;
+        this.mainCtrl = mainCtrl;
 	    this.collectionBox = collectionBox;
     }
 
@@ -144,6 +146,34 @@ public class NoteEditCtrl implements Initializable {
 
     }
 
+    /**
+     * Handler for "All" option
+     */
+    public void handleAllCollectionsSelected() {
+        System.out.println("All button pressed");
+        collectionBox.setText("All");
+    }
+
+    /**
+     * Handler for "Edit collections"
+     */
+    public void handleEditCollections() {
+        System.out.println("Edit button pressed");
+        mainCtrl.showCollectionEdit();
+    }
+
+    /**
+     * Displaying a given list of notes (from a collection) in the listview
+     * @param selectedItem - collection
+     */
+    private void handleSpecificCollectionSelected(Collection selectedItem) {
+        List<Note> notes = server.getNotesByCollection(selectedItem.getId());
+        // Clear the current list
+        noteListView.getItems().clear();
+
+        // Add the notes to the ListView
+        noteListView.getItems().addAll(notes);
+    }
     // Method to render markdown
     private void renderMarkdown(String markdownContent) {
         URL cssFileUrl = MarkdownUtil.class.getResource("/css/markdown-style.css");
@@ -270,7 +300,7 @@ public class NoteEditCtrl implements Initializable {
         note.setContent(editingArea.getText());
         server.addNote(note);
         saveLabelTransition();
-        //System.out.println("Changes saved"); This line is just for debugging purpose
+        System.out.println("Changes saved");// This line is just for debugging purpose
     }
 
     /**

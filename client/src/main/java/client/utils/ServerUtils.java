@@ -49,6 +49,11 @@ public class ServerUtils {
         return this.addNote(emptyNote);
     }
 
+    public Collection newEmptyCollection() {
+        Collection emptyCollection = new Collection("New Collection");
+        return this.addCollection(emptyCollection);
+    }
+
     public Note addNote(Note note) {
         return ClientBuilder.newClient(new ClientConfig())
                 .target(SERVER).path("api/notes")

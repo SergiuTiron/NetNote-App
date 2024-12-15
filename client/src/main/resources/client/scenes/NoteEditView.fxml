@@ -19,6 +19,9 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.web.WebView?>
 
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+<?import javafx.scene.control.MenuButton?>
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.NoteEditCtrl">
     <children>
       <HBox alignment="CENTER" layoutY="25.0" prefHeight="40.0" prefWidth="900.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0">
@@ -27,16 +30,13 @@
                <children>
                   <TextField fx:id="searchField" layoutX="5.0" layoutY="5.0" prefHeight="30.0" prefWidth="542.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="353.0" />
                   <Button layoutX="562.0" layoutY="5.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#filterNotes" prefHeight="30.0" prefWidth="95.0" text="%buttons.search" textAlignment="CENTER" AnchorPane.bottomAnchor="4.599999999999994" AnchorPane.rightAnchor="242.79999999999995" AnchorPane.topAnchor="5.0" />
-                  <ComboBox fx:id="collectionBox" layoutX="786.0" layoutY="8.0" prefHeight="25.0" prefWidth="100.0" promptText="%buttons.collections" AnchorPane.rightAnchor="14.0">
-                   <items>
-                       <FXCollections fx:factory="observableArrayList">
-                           <!-- TODO use %collections.all and %collections.edit -->
-                           <String fx:value="All" />
-                           <String fx:value="Edit Collections..." />
-                       </FXCollections>
-                   </items>
-                  </ComboBox>
-                  <ComboBox fx:id="liveLanguageBox" layoutX="676.0" layoutY="7.0" prefHeight="25.0" prefWidth="100.0" promptText="%buttons.language">
+                   <MenuButton fx:id="collectionBox" layoutX="778.0" layoutY="8.0" mnemonicParsing="false" text="Collections" AnchorPane.bottomAnchor="7.0" AnchorPane.rightAnchor="32.0" AnchorPane.topAnchor="8.0">
+                       <items>
+                           <MenuItem fx:id="allButton" mnemonicParsing="false" onAction="#handleAllCollectionsSelected" text="All" />
+                           <MenuItem fx:id="editCollectionButton" mnemonicParsing="false" onAction="#handleEditCollections" text="EditCollections..." />
+                       </items>
+                   </MenuButton>
+                  <ComboBox fx:id="liveLanguageBox" layoutX="676.0" layoutY="7.0" prefHeight="25.0" prefWidth="100.0" promptText="%buttons.language" >
                   </ComboBox>
                </children>
             </AnchorPane>
