@@ -47,13 +47,17 @@ public class NoteEditCtrl implements Initializable {
     private TextField searchField;
 
     @FXML
+    private ComboBox collectionBox;
+
+    @FXML
     private ComboBox<String> liveLanguageBox;
 
     @Inject
-    public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke, MarkdownUtil markdown) {
+    public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke, MarkdownUtil markdown, ComboBox collectionBox) {
         this.server = server;
         this.keyStroke = keyStroke;
         this.markdown = markdown;
+	    this.collectionBox = collectionBox;
     }
 
     @Override
@@ -101,6 +105,7 @@ public class NoteEditCtrl implements Initializable {
                 saveChanges(old);
                 this.handleNoteSelect(current);
             });
+
         editingArea.textProperty().addListener((_, _, newText) ->
                 markdown.renderMarkdownInWebView(newText, markdownPreview));
 
@@ -318,29 +323,6 @@ public class NoteEditCtrl implements Initializable {
         noteListView.getSelectionModel().clearSelection();
         editingArea.setEditable(false);
         editingArea.setText("Select a note to start editing.");
-    }
-
-    private String selectedLanguage = "English"; // Default language
-
-    private void initializeLanguageComboBox() {
-        liveLanguageBox.setItems(FXCollections.observableArrayList("English", "French", "Spanish", "German"));
-        liveLanguageBox.setValue(selectedLanguage); // Set default value
-
-        liveLanguageBox.valueProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                selectedLanguage = newValue;
-                updateLanguageIndicator();
-            }
-        });
-    }
-    public void initializeLanguage(String initialLanguage) {
-        this.selectedLanguage = initialLanguage;
-        liveLanguageBox.setValue(initialLanguage);
-        updateLanguageIndicator();
-    }
-
-    private void updateLanguageIndicator() {
-        System.out.println("Language switched to: " + selectedLanguage);
     }
 
 }
