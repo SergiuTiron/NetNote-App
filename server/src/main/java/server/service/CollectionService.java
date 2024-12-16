@@ -2,10 +2,13 @@ package server.service;
 
 import commons.Collection;
 import commons.Note;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import server.database.CollectionRepository;
 import server.database.NoteRepository;
+
+import java.util.Optional;
 
 @Service
 public class CollectionService {
@@ -33,5 +36,16 @@ public class CollectionService {
         collection.addNote(noteRequest);
 
         return collectionRepository.save(collection);
+    }
+
+    @PostConstruct
+    public Collection getOrCreateDefaultCollection(){
+        Optional<Collection> existingCollection = collectionRepository.findByName("Default Collection");
+        if (existingCollection.isPresent()) {
+            return existingCollection.get();
+        } else {
+            Collection newCollection = new Collection("Default Collection");
+            return collectionRepository.save(newCollection);
+        }
     }
 }

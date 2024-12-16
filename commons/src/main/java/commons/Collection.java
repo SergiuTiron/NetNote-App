@@ -52,6 +52,10 @@ public class Collection {
         return notes.get(index);
     }
 
+    public int NoteCount() {
+        return notes.size();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

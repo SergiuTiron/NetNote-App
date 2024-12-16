@@ -283,6 +283,9 @@ public class NoteEditCtrl implements Initializable {
     // Called whenever the user clicks the "New Note" button.
     public void createNewNote() {
         Note note = server.newEmptyNote();
+        Collection defaultCollection = server.getDefaultCollection();
+        note.setCollection(defaultCollection);
+        server.linkNoteToCollection(defaultCollection.getId(), note);
         noteListView.getItems().add(note);
         // Updates the location of the editing area on the note  currently created
         noteListView.getSelectionModel().select(note);
