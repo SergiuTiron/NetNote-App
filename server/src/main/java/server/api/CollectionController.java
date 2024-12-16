@@ -42,4 +42,11 @@ public class CollectionController {
         collectionService.deleteCollectionByID(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/default")
+    public ResponseEntity<Collection> getDefaultCollection() {
+        Collection defaultCollection = collectionService.getOrCreateDefaultCollection();
+        return ResponseEntity.ok(defaultCollection);
+    }
+
 }

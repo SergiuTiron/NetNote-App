@@ -156,13 +156,13 @@ public class ServerUtils {
 
     /**
      * Associates a note to a specific collection
-     *
      * @param collectionId - id of the collection
-     * @param note         - note to be linked
+     * @param note - note to be linked
      * @return - the updated Collection
      */
     public Collection linkNoteToCollection(long collectionId, Note note) {
-        String url = SERVER + "api/collections/" + collectionId + "/notes";
+        // I edited Stepan's implementation, as the commented part of the URL was not correct mapping
+        String url = SERVER + "api/collections/" + collectionId; //+ "/notes";
         return ClientBuilder.newClient(new ClientConfig())
                 .target(url)
                 .request(APPLICATION_JSON)
@@ -171,7 +171,6 @@ public class ServerUtils {
 
     /**
      * Get a list of all notes in a collection
-     *
      * @param collectionId - id of the collection
      * @return - list of all notes
      */
@@ -180,7 +179,17 @@ public class ServerUtils {
         return ClientBuilder.newClient(new ClientConfig())
                 .target(url)
                 .request(APPLICATION_JSON)
-                .get(new GenericType<>() {
-                });
+                .get(new GenericType<>() {});
+    }
+
+    /**
+     * Fetch the default collection.
+     * @return - The default Collection.
+     */
+    public Collection getDefaultCollection() {
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/collections/default")
+                .request(APPLICATION_JSON)
+                .get(Collection.class);
     }
 }

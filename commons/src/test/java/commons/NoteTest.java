@@ -28,7 +28,6 @@ public class NoteTest {
         assertEquals(note1, note2);
         assertNotEquals(note1, note3);
     }
-
     @Test
     public void testHashCode() {
         Note note1 = new Note();
