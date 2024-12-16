@@ -52,11 +52,7 @@ public class Collection {
         return notes.get(index);
     }
 
-    public List<Note> getNotes() {
-        return notes;
-    }
-
-    public int getNoteCount() {
+    public int NoteCount() {
         return notes.size();
     }
 
