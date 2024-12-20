@@ -12,7 +12,6 @@ public class Note {
     @SequenceGenerator(name = "generator", sequenceName = "my_sequence2", allocationSize = 1)
     private long id;
     private String title;
-
     @Column(columnDefinition = "TEXT")
     private String content;
 
