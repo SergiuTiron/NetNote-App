@@ -180,13 +180,12 @@ public class NoteEditCtrl implements Initializable {
     public void addCollectionToMenuButton(Collection collection) {
         MenuItem newCollectionItem = new MenuItem(collection.getName());
 
-        // Set an action for when the user clicks the new menu item
         newCollectionItem.setOnAction(event -> {
             // Handle the collection selection (update the ListView with notes from that collection)
             handleSpecificCollectionSelected(collection);
         });
 
-        // Add the new MenuItem to the MenuButton's menu
+        // Add the new MenuItem to the MenuButton
         collectionBox.getItems().add(newCollectionItem);
     }
 

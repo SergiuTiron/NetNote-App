@@ -42,9 +42,11 @@ public class CollectionEditCtrl implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         collectionListView.setEditable(false);
 
+        // Retrieve all collections from server and add them to listView
         List<Collection> collections = server.getCollections();
         collectionListView.setItems(FXCollections.observableList(collections));
 
+        // Create default collection if not present
         Collection defaultCollection = server.getDefaultCollection();
         if (!collections.contains(defaultCollection)) {
             collections.add(0, defaultCollection); // Add default collection to the beginning or wherever you prefer
@@ -63,7 +65,6 @@ public class CollectionEditCtrl implements Initializable {
                 if (selectedCollection != null) {
                     selectedCollection.setName(newTitle);
                 }
-                Collection defaultCollection = server.getDefaultCollection();
                 return selectedCollection;
             }
         }));
@@ -82,10 +83,13 @@ public class CollectionEditCtrl implements Initializable {
         // Show the dialog and wait for a response
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(collectionName -> {
+            // Add collection to server
             Collection collection = new Collection(collectionName);
             server.addCollection(collection);
+            // Add collection to listView
             collectionListView.getItems().add(collection);
             collectionListView.getSelectionModel().select(collection);
+            // Add collection to MenuButton
             noteEditCtrl.addCollectionToMenuButton(collection);
             System.out.println("Collection created successfully");
         });
