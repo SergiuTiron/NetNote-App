@@ -9,18 +9,22 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.util.StringConverter;
+import org.checkerframework.checker.units.qual.C;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class CollectionEditCtrl implements Initializable {
     private final ServerUtils server;
     //private final MainCtrl mainCtrl;
+    private final NoteEditCtrl noteEditCtrl;
 
     public final ObjectProperty<Locale> selectedLanguage = new SimpleObjectProperty<>();
 
@@ -28,13 +32,26 @@ public class CollectionEditCtrl implements Initializable {
     private ListView<Collection> collectionListView;
 
     @Inject
-    public CollectionEditCtrl(ServerUtils server, MainCtrl mainCtrl) {
+    public CollectionEditCtrl(ServerUtils server, MainCtrl mainCtrl, NoteEditCtrl noteEditCtrl) {
         this.server = server;
-    //   this.mainCtrl = mainCtrl;
+//        this.mainCtrl = mainCtrl;
+        this.noteEditCtrl = noteEditCtrl;
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        collectionListView.setEditable(false);
+
+        // Retrieve all collections from server and add them to listView
+        List<Collection> collections = server.getCollections();
+        collectionListView.setItems(FXCollections.observableList(collections));
+
+        // Create default collection if not present
+        Collection defaultCollection = server.getDefaultCollection();
+        if (!collections.contains(defaultCollection)) {
+            collections.add(0, defaultCollection); // Add default collection to the beginning or wherever you prefer
+        }
+
         collectionListView.setCellFactory(_ -> new TextFieldListCell<>(new StringConverter<>() {
             @Override
             public String toString(Collection collection) {
@@ -53,11 +70,29 @@ public class CollectionEditCtrl implements Initializable {
         }));
     }
 
+    /**
+     * Method for creating a new collection based on user input
+     */
     public void createCollection() {
-        Collection collection = server.newEmptyCollection();
-        collectionListView.getItems().add(collection);
-        collectionListView.getSelectionModel().select(collection);
-        System.out.println("Collection created successfully");
+        // Create a TextInputDialog for entering the collection name
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("New Collection");
+        dialog.setHeaderText("Enter the name of the new collection:");
+        dialog.setContentText("Collection name:");
+
+        // Show the dialog and wait for a response
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(collectionName -> {
+            // Add collection to server
+            Collection collection = new Collection(collectionName);
+            server.addCollection(collection);
+            // Add collection to listView
+            collectionListView.getItems().add(collection);
+            collectionListView.getSelectionModel().select(collection);
+            // Add collection to MenuButton
+            noteEditCtrl.addCollectionToMenuButton(collection);
+            System.out.println("Collection created successfully");
+        });
     }
 
     /**

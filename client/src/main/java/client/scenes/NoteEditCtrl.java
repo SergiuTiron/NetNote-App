@@ -76,6 +76,17 @@ public class NoteEditCtrl implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         this.resourceBundle = resourceBundle;
 
+        // Load collections from the server
+        List<Collection> collections = server.getCollections();
+        // Add the collections as menuItems
+        for (Collection collection : collections) {
+            MenuItem collectionItem = new MenuItem(collection.getName());
+            collectionItem.setOnAction(event -> handleSpecificCollectionSelected(collection));
+            collectionBox.getItems().add(collectionItem);
+        }
+        // Set the "All" option as default selection
+        collectionBox.setText("All");
+
         liveLanguageBox.setItems(FXCollections.observableList(localeUtil.getAvailableLocales()));
         liveLanguageBox.setCellFactory(_ -> new TextFieldListCell<>(new StringConverter<>() {
             @Override
@@ -160,6 +171,22 @@ public class NoteEditCtrl implements Initializable {
     public void handleEditCollections() {
         System.out.println("Edit button pressed");
         mainCtrl.showCollectionEdit();
+    }
+
+    /**
+     * A method to add a button for a new collection to the collectionBox (MenuButton)
+     * @param collection - collection to add
+     */
+    public void addCollectionToMenuButton(Collection collection) {
+        MenuItem newCollectionItem = new MenuItem(collection.getName());
+
+        newCollectionItem.setOnAction(event -> {
+            // Handle the collection selection (update the ListView with notes from that collection)
+            handleSpecificCollectionSelected(collection);
+        });
+
+        // Add the new MenuItem to the MenuButton
+        collectionBox.getItems().add(newCollectionItem);
     }
 
     /**
