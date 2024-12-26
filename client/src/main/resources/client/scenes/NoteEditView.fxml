@@ -33,7 +33,7 @@
                    <MenuButton fx:id="collectionBox" layoutX="778.0" layoutY="8.0" mnemonicParsing="false" text="Collections" AnchorPane.bottomAnchor="7.0" AnchorPane.rightAnchor="32.0" AnchorPane.topAnchor="8.0">
                        <items>
                            <MenuItem fx:id="allButton" mnemonicParsing="false" onAction="#handleAllCollectionsSelected" text="All" />
-                           <MenuItem fx:id="editCollectionButton" mnemonicParsing="false" onAction="#handleEditCollections" text="EditCollections..." />
+                           <MenuItem fx:id="editCollectionButton" mnemonicParsing="false" onAction="#handleEditCollections" text="Edit Collections..." />
                        </items>
                    </MenuButton>
                   <ComboBox fx:id="liveLanguageBox" layoutX="676.0" layoutY="7.0" prefHeight="25.0" prefWidth="100.0" promptText="%buttons.language" >
