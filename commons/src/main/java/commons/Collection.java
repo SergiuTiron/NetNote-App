@@ -21,6 +21,7 @@ public class Collection {
     private List<Note> notes;
 
     public Collection() {
+        this.notes = new ArrayList<>();
     }
 
     public Collection(String name) {
@@ -50,6 +51,10 @@ public class Collection {
 
     public Note getNote(int index) {
         return notes.get(index);
+    }
+
+    public List<Note> getNotes() {
+        return notes;
     }
 
     public int NoteCount() {
