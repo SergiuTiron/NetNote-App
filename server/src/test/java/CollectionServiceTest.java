@@ -40,6 +40,7 @@ public class CollectionServiceTest {
     void deleteCollectionByID_Exists() {
         // Test whether it deletes the collection when it exists
         long collectionId = 1L;
+        
         when(collectionRepository.existsById(collectionId)).thenReturn(true);
         collectionService.deleteCollectionByID(collectionId);
         verify(collectionRepository, times(1)).deleteById(collectionId);
@@ -49,6 +50,7 @@ public class CollectionServiceTest {
     void deleteCollectionByID_DoesNotExist() {
         // Test whether it throws an exception when the collection does not exist
         long collectionId = 1L;
+
         when(collectionRepository.existsById(collectionId)).thenReturn(false);
         Exception exception = assertThrows(IllegalArgumentException.class, () ->
             collectionService.deleteCollectionByID(collectionId));
@@ -62,6 +64,7 @@ public class CollectionServiceTest {
         long collectionId = 1L;
         Note note = new Note("some note");
         Collection collection = new Collection("some collection");
+
         when(collectionRepository.findById(collectionId)).thenReturn(Optional.of(collection));
         when(collectionRepository.save(collection)).thenReturn(collection);
 
@@ -73,7 +76,7 @@ public class CollectionServiceTest {
 
     @Test
     void addNoteToCollection_CollectionDoesNotExist() {
-        // Should add the note when collection does not exist
+        // Should throw exception when collection does not exist
         long collectionId = 1L;
         Note note = new Note("some note");
         when(collectionRepository.findById(collectionId)).thenReturn(Optional.empty());
@@ -85,8 +88,24 @@ public class CollectionServiceTest {
     }
 
     @Test
+    void addNoteToCollection_NoteDoesNotExist() {
+        // Should throw an exception when the note request is null
+        long collectionId = 1L;
+
+        Collection collection = new Collection("some collection");
+        when(collectionRepository.findById(collectionId)).thenReturn(Optional.of(collection));
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () ->
+            collectionService.addNoteToCollection(collectionId, null));
+
+        assertEquals("Note cannot be null", exception.getMessage());
+        // Ensure that save was never called since the note was null
+        verify(collectionRepository, never()).save(any(Collection.class));
+    }
+
+    @Test
     void getOrCreateDefaultCollection_Get() {
-        // Mock findByName to return empty Optional
+        // Test whether the collection is returned
         when(collectionRepository.findByName("Default Collection")).thenReturn(Optional.empty());
 
         Collection collection = new Collection("Default Collection");
