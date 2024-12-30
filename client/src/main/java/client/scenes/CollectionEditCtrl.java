@@ -91,6 +91,7 @@ public class CollectionEditCtrl implements Initializable {
             collectionListView.getSelectionModel().select(collection);
             // Add collection to MenuButton
             noteEditCtrl.addCollectionToMenuButton(collection);
+            refresh();
             System.out.println("Collection created successfully");
         });
     }
@@ -100,15 +101,20 @@ public class CollectionEditCtrl implements Initializable {
      */
     public void deleteCollection() throws IOException {
         Collection selectedCollection = collectionListView.getSelectionModel().getSelectedItem();
-        try {
-            server.deleteCollection(selectedCollection.getId());
-            collectionListView.getItems().remove(selectedCollection);
-            refresh();
-        } catch (IOException e) {
-            System.err.println("Failed to delete collection");
-            e.printStackTrace();
+        if(selectedCollection != null) {
+            try {
+                server.deleteCollection(selectedCollection.getId());
+                collectionListView.getItems().remove(selectedCollection);
+                refresh();
+            } catch (IOException e) {
+                System.err.println("Failed to delete collection");
+                e.printStackTrace();
+            }
+            System.out.println("Collection deleted successfully");
         }
-        System.out.println("Collection deleted successfully");
+        else {
+            System.err.println("Delete attempt with no collection selected");
+        }
     }
 
     public void refresh() {
