@@ -38,7 +38,7 @@ public class CollectionEditCtrl implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        collectionListView.setEditable(false);
+        collectionListView.setEditable(true);
 
         // Retrieve all collections from server and add them to listView
         List<Collection> collections = server.getCollections();
@@ -58,14 +58,44 @@ public class CollectionEditCtrl implements Initializable {
             }
 
             @Override
-            public Collection fromString(String newTitle) {
+            public Collection fromString(String newName) {
                 Collection selectedCollection = collectionListView.getSelectionModel().getSelectedItem();
-                if (selectedCollection != null) {
-                    selectedCollection.setName(newTitle);
+                if (selectedCollection != null){
+                    if(selectedCollection.equals(defaultCollection)){
+                        System.err.println("Default collection's name cannot be changed");
+                        return selectedCollection;
+                    }
+
+                    //ensure titles are unique
+                    boolean isUnique = true;
+                    for(Collection collection: collections){
+                        if(collection.getName().equals(newName.strip()) && !collection.equals(selectedCollection)){
+                            isUnique = false;
+                            break;
+                        }
+                    }
+                    if (!isUnique) {
+                        System.out.println("Collection name must be unique.");
+                        return selectedCollection;
+                    }
+
+                    selectedCollection.setName(newName.strip());
+                    server.addCollection(selectedCollection);
+                    System.out.println("Collection title changed");
+                    refresh();
                 }
                 return selectedCollection;
             }
         }));
+
+        collectionListView.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                int index = collectionListView.getSelectionModel().getSelectedIndex();
+                if (index != -1) {
+                    collectionListView.edit(index);
+                }
+            }
+        });
     }
 
     /**
@@ -92,6 +122,8 @@ public class CollectionEditCtrl implements Initializable {
             refresh();
             System.out.println("Collection created successfully");
         });
+
+
     }
 
     /**
