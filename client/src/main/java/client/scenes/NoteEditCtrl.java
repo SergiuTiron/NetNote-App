@@ -37,6 +37,7 @@ public class NoteEditCtrl implements Initializable {
     private final LocaleUtil localeUtil;
     private final MainCtrl mainCtrl;
     private ResourceBundle resourceBundle;
+    private static boolean DELETE_FLAG;
 
     @FXML
     private Label saveLabel;
@@ -70,6 +71,7 @@ public class NoteEditCtrl implements Initializable {
         this.localeUtil = localeUtil;
         this.mainCtrl = mainCtrl;
 	    this.collectionBox = collectionBox;
+        DELETE_FLAG = false;
     }
 
     @Override
@@ -135,6 +137,11 @@ public class NoteEditCtrl implements Initializable {
 
         noteListView.getSelectionModel().selectedItemProperty()
             .addListener((_, old, current) -> {
+                if(DELETE_FLAG)
+                {
+                    DELETE_FLAG = false;
+                    return;
+                }
                 saveChanges(old);
                 this.handleNoteSelect(current);
             });
@@ -386,6 +393,7 @@ public class NoteEditCtrl implements Initializable {
             return;
         }
         try {
+            DELETE_FLAG = true;
             server.deleteNoteFromServer(selectedNote.getId());
             noteListView.getItems().remove(selectedNote);
             clearFields();
