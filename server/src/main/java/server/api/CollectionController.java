@@ -44,6 +44,7 @@ public class CollectionController {
         if (id.equals(defaultCollectionId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+        collectionService.deleteCollectionByID(id);
         return ResponseEntity.noContent().build();
     }
 
