@@ -1,8 +1,6 @@
 package commons;
 
 import jakarta.persistence.*;
-import net.minidev.json.annotate.JsonIgnore;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
