@@ -138,12 +138,13 @@ public class ServerUtils {
     public void deleteCollection(long id) throws IOException {
         URL url = new URL(SERVER + "api/collections/" + id);
         HttpURLConnection connection = null;
-
         try {
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("DELETE");
 
             int responseCode = connection.getResponseCode();
+            if(responseCode == HttpURLConnection.HTTP_FORBIDDEN)
+                throw new RuntimeException("Default Collection cannot be deleted. " + responseCode);
             if (responseCode != HttpURLConnection.HTTP_NO_CONTENT) {
                 throw new RuntimeException("Failed to delete collection. " + responseCode);
             }

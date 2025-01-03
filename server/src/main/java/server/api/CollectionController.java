@@ -2,6 +2,7 @@ package server.api;
 
 import commons.Collection;
 import commons.Note;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import server.database.CollectionRepository;
@@ -39,6 +40,10 @@ public class CollectionController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCollection(@PathVariable Long id) {
+        Long defaultCollectionId = getDefaultCollection().getBody().getId();
+        if (id.equals(defaultCollectionId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         collectionService.deleteCollectionByID(id);
         return ResponseEntity.noContent().build();
     }

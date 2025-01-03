@@ -12,7 +12,6 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.util.StringConverter;
-import org.checkerframework.checker.units.qual.C;
 
 import java.io.IOException;
 import java.net.URL;
@@ -32,9 +31,8 @@ public class CollectionEditCtrl implements Initializable {
     private ListView<Collection> collectionListView;
 
     @Inject
-    public CollectionEditCtrl(ServerUtils server, MainCtrl mainCtrl, NoteEditCtrl noteEditCtrl) {
+    public CollectionEditCtrl(ServerUtils server, NoteEditCtrl noteEditCtrl) {
         this.server = server;
-//        this.mainCtrl = mainCtrl;
         this.noteEditCtrl = noteEditCtrl;
     }
 
@@ -91,6 +89,7 @@ public class CollectionEditCtrl implements Initializable {
             collectionListView.getSelectionModel().select(collection);
             // Add collection to MenuButton
             noteEditCtrl.addCollectionToMenuButton(collection);
+            refresh();
             System.out.println("Collection created successfully");
         });
     }
@@ -100,15 +99,20 @@ public class CollectionEditCtrl implements Initializable {
      */
     public void deleteCollection() throws IOException {
         Collection selectedCollection = collectionListView.getSelectionModel().getSelectedItem();
-        try {
-            server.deleteCollection(selectedCollection.getId());
-            collectionListView.getItems().remove(selectedCollection);
-            refresh();
-        } catch (IOException e) {
-            System.err.println("Failed to delete collection");
-            e.printStackTrace();
+        if(selectedCollection != null) {
+            try {
+                server.deleteCollection(selectedCollection.getId());
+                collectionListView.getItems().remove(selectedCollection);
+                refresh();
+                System.out.println("Collection deleted successfully");
+            } catch (IOException e) {
+                System.err.println("Failed to delete collection");
+                e.printStackTrace();
+            }
         }
-        System.out.println("Collection deleted successfully");
+        else {
+            System.err.println("Delete attempt with no collection selected");
+        }
     }
 
     public void refresh() {
