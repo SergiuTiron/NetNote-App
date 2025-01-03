@@ -1,6 +1,7 @@
 package commons;
 
 import jakarta.persistence.*;
+import net.minidev.json.annotate.JsonIgnore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +18,7 @@ public class Collection {
     private String name;
 
     //one-to-many relation between collection and notes
-    @OneToMany(mappedBy = "collection", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "collection", cascade = CascadeType.ALL, orphanRemoval = false)
     private List<Note> notes;
 
     public Collection() {
@@ -42,10 +43,13 @@ public class Collection {
 
     public void addNote(Note note) {
         notes.add(note);
+        note.setCollection(this);
     }
 
+    //we could move the note back to the default collection instead of assigning a null value to the collection field
     public void removeNote(Note note) {
         notes.remove(note);
+        note.setCollection(null);
     }
 
     public Note getNote(int index) {

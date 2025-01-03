@@ -18,7 +18,7 @@ public class Note {
     @ManyToOne
     @JoinColumn(name = "collection_id", nullable = true)
     //TODO: change it back to false once the frontend logic is implemented
-    private Collection collection;
+    private Collection  collection;
 
     public Note() {
     }
