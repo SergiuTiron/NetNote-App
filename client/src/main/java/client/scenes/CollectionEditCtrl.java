@@ -135,6 +135,7 @@ public class CollectionEditCtrl implements Initializable {
             try {
                 server.deleteCollection(selectedCollection.getId());
                 collectionListView.getItems().remove(selectedCollection);
+                noteEditCtrl.deleteCollectionToMenuButton(selectedCollection);
                 refresh();
                 System.out.println("Collection deleted successfully");
             } catch (IOException e) {

@@ -1,5 +1,6 @@
 package commons;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +17,7 @@ public class Collection {
     private String name;
 
     //one-to-many relation between collection and notes
+    @JsonIgnore
     @OneToMany(mappedBy = "collection", cascade = CascadeType.ALL, orphanRemoval = false)
     private List<Note> notes;
 
