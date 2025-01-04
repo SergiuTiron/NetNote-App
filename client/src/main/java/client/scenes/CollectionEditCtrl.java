@@ -12,7 +12,6 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.util.StringConverter;
-import org.checkerframework.checker.units.qual.C;
 
 import java.io.IOException;
 import java.net.URL;
@@ -32,15 +31,14 @@ public class CollectionEditCtrl implements Initializable {
     private ListView<Collection> collectionListView;
 
     @Inject
-    public CollectionEditCtrl(ServerUtils server, MainCtrl mainCtrl, NoteEditCtrl noteEditCtrl) {
+    public CollectionEditCtrl(ServerUtils server, NoteEditCtrl noteEditCtrl) {
         this.server = server;
-//        this.mainCtrl = mainCtrl;
         this.noteEditCtrl = noteEditCtrl;
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        collectionListView.setEditable(false);
+        collectionListView.setEditable(true);
 
         // Retrieve all collections from server and add them to listView
         List<Collection> collections = server.getCollections();
@@ -60,14 +58,44 @@ public class CollectionEditCtrl implements Initializable {
             }
 
             @Override
-            public Collection fromString(String newTitle) {
+            public Collection fromString(String newName) {
                 Collection selectedCollection = collectionListView.getSelectionModel().getSelectedItem();
-                if (selectedCollection != null) {
-                    selectedCollection.setName(newTitle);
+                if (selectedCollection != null){
+                    if(selectedCollection.equals(defaultCollection)){
+                        System.err.println("Default collection's name cannot be changed");
+                        return selectedCollection;
+                    }
+
+                    //ensure titles are unique
+                    boolean isUnique = true;
+                    for(Collection collection: collections){
+                        if(collection.getName().equals(newName.strip()) && !collection.equals(selectedCollection)){
+                            isUnique = false;
+                            break;
+                        }
+                    }
+                    if (!isUnique) {
+                        System.out.println("Collection name must be unique.");
+                        return selectedCollection;
+                    }
+
+                    selectedCollection.setName(newName.strip());
+                    server.addCollection(selectedCollection);
+                    System.out.println("Collection title changed");
+                    refresh();
                 }
                 return selectedCollection;
             }
         }));
+
+        collectionListView.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                int index = collectionListView.getSelectionModel().getSelectedIndex();
+                if (index != -1) {
+                    collectionListView.edit(index);
+                }
+            }
+        });
     }
 
     /**
@@ -91,8 +119,11 @@ public class CollectionEditCtrl implements Initializable {
             collectionListView.getSelectionModel().select(collection);
             // Add collection to MenuButton
             noteEditCtrl.addCollectionToMenuButton(collection);
+            refresh();
             System.out.println("Collection created successfully");
         });
+
+
     }
 
     /**
@@ -100,15 +131,20 @@ public class CollectionEditCtrl implements Initializable {
      */
     public void deleteCollection() throws IOException {
         Collection selectedCollection = collectionListView.getSelectionModel().getSelectedItem();
-        try {
-            server.deleteCollection(selectedCollection.getId());
-            collectionListView.getItems().remove(selectedCollection);
-            refresh();
-        } catch (IOException e) {
-            System.err.println("Failed to delete collection");
-            e.printStackTrace();
+        if(selectedCollection != null) {
+            try {
+                server.deleteCollection(selectedCollection.getId());
+                collectionListView.getItems().remove(selectedCollection);
+                refresh();
+                System.out.println("Collection deleted successfully");
+            } catch (IOException e) {
+                System.err.println("Failed to delete collection");
+                e.printStackTrace();
+            }
         }
-        System.out.println("Collection deleted successfully");
+        else {
+            System.err.println("Delete attempt with no collection selected");
+        }
     }
 
     public void refresh() {

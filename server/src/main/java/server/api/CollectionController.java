@@ -2,6 +2,7 @@ package server.api;
 
 import commons.Collection;
 import commons.Note;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import server.database.CollectionRepository;
@@ -39,6 +40,10 @@ public class CollectionController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCollection(@PathVariable Long id) {
+        Long defaultCollectionId = getDefaultCollection().getBody().getId();
+        if (id.equals(defaultCollectionId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         collectionService.deleteCollectionByID(id);
         return ResponseEntity.noContent().build();
     }
@@ -48,5 +53,16 @@ public class CollectionController {
         Collection defaultCollection = collectionService.getOrCreateDefaultCollection();
         return ResponseEntity.ok(defaultCollection);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Collection> updateCollection(@PathVariable Long id, @RequestBody Collection collection) {
+        try {
+            Collection updatedCollection = collectionService.updateCollection(id, collection);
+            return ResponseEntity.ok(updatedCollection);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
 
 }

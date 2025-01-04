@@ -29,7 +29,12 @@ public class CollectionService {
     }
 
     public Collection addNoteToCollection(Long collectionId, Note noteRequest) {
-        //Check whether the provided collection exists
+        // Check whether the note exists
+        if (noteRequest == null) {
+            throw new IllegalArgumentException("Note cannot be null");
+        }
+
+        // Check whether the provided collection exists
         Collection collection = collectionRepository.findById(collectionId)
                 .orElseThrow(() -> new RuntimeException("Collection not found"));
 
@@ -48,4 +53,12 @@ public class CollectionService {
             return collectionRepository.save(newCollection);
         }
     }
+
+    public Collection updateCollection(Long id, Collection updatedCollection) {
+        Collection existingCollection = collectionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Collection with ID " + id + " does not exist"));
+        existingCollection.setName(updatedCollection.getName());
+        return collectionRepository.save(existingCollection);
+    }
+
 }

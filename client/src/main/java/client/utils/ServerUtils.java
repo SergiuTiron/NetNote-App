@@ -130,6 +130,20 @@ public class ServerUtils {
     }
 
     /**
+     * updates the collection name on the server
+     * @param collection - collection to update
+     * @return - updated collection
+     */
+    public Collection updateCollection(Collection collection) {
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/collections/{id}")
+                .resolveTemplate("id", collection.getId()) // Use the collection's ID
+                .request(APPLICATION_JSON)
+                .put(Entity.entity(collection, APPLICATION_JSON), Collection.class);
+    }
+
+
+    /**
      * Deletes a collection from the backend
      *
      * @param id - id of the collection to delete
@@ -138,12 +152,13 @@ public class ServerUtils {
     public void deleteCollection(long id) throws IOException {
         URL url = new URL(SERVER + "api/collections/" + id);
         HttpURLConnection connection = null;
-
         try {
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("DELETE");
 
             int responseCode = connection.getResponseCode();
+            if(responseCode == HttpURLConnection.HTTP_FORBIDDEN)
+                throw new RuntimeException("Default Collection cannot be deleted. " + responseCode);
             if (responseCode != HttpURLConnection.HTTP_NO_CONTENT) {
                 throw new RuntimeException("Failed to delete collection. " + responseCode);
             }

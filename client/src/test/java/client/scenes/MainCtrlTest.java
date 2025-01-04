@@ -19,7 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
-//deleted old-versioned tests
+//test methods deleted, as they were not up-to-date with the project
 public class MainCtrlTest {
 
     private MainCtrl sut;
