@@ -38,6 +38,7 @@ public class NoteEditCtrl implements Initializable {
     private final MainCtrl mainCtrl;
     private ResourceBundle resourceBundle;
     private static boolean DELETE_FLAG;
+]    private Collection currentCollection;
 
     @FXML
     private Label saveLabel;
@@ -170,6 +171,15 @@ public class NoteEditCtrl implements Initializable {
     public void handleAllCollectionsSelected() {
         System.out.println("All button pressed");
         collectionBox.setText("All");
+
+        List<Note> notes = server.getNotes();
+        currentCollection = server.getDefaultCollection();
+
+        // Clear the current list
+        noteListView.getItems().clear();
+
+        // Add the notes to the ListView
+        noteListView.getItems().addAll(notes);
     }
 
     /**
@@ -221,7 +231,8 @@ public class NoteEditCtrl implements Initializable {
     private void handleSpecificCollectionSelected(Collection selectedItem) {
         System.out.println("Collection handled"); //for debugging purposes
         List<Note> notes = server.getNotesByCollection(selectedItem.getId());
-
+        currentCollection = selectedItem;
+        collectionBox.setText(selectedItem.getName()); //set the name of the collection to show in the MenuButton
         // Clear the current list
         noteListView.getItems().clear();
 
@@ -338,10 +349,16 @@ public class NoteEditCtrl implements Initializable {
     public void createNewNote() {
         Note note = server.newEmptyNote();
         Collection defaultCollection = server.getDefaultCollection();
-        note.setCollection(defaultCollection);
-        server.linkNoteToCollection(defaultCollection.getId(), note);
+        if(currentCollection == null || currentCollection == defaultCollection) {
+            note.setCollection(defaultCollection);
+            server.linkNoteToCollection(defaultCollection.getId(), note);
+
+        } else {
+            note.setCollection(currentCollection);
+            server.linkNoteToCollection(currentCollection.getId(), note);
+        }
         noteListView.getItems().add(note);
-        // Updates the location of the editing area on the note  currently created
+        // Updates the location of the editing area on the note currently created
         noteListView.getSelectionModel().select(note);
         editingArea.setEditable(true);
     }
