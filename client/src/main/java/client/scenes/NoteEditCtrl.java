@@ -38,7 +38,7 @@ public class NoteEditCtrl implements Initializable {
     private final MainCtrl mainCtrl;
     private ResourceBundle resourceBundle;
     private static boolean DELETE_FLAG;
-]    private Collection currentCollection;
+    private Collection currentCollection;
 
     @FXML
     private Label saveLabel;
