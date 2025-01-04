@@ -67,6 +67,10 @@ public class CollectionTest {
         }
     }
 
+    /**
+     * test changed because I edited orphan removal for the notes field from true to false
+     * TO DO: move note back to Default Collection when removing them from other collections
+     */
     @Test
     public void testCascadingDelete() {
         testCollection3.addNote(note1);
@@ -74,8 +78,10 @@ public class CollectionTest {
 
         testCollection3 = null; // Simulating deletion of the collection
 
-        assertNull(note1.getCollection());
-        assertNull(note2.getCollection());
+//      assertNull(note1.getCollection());
+//      assertNull(note2.getCollection());
+        assertNotNull(note1.getCollection());
+        assertNotNull(note2.getCollection());
     }
 
     @Test

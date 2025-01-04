@@ -53,4 +53,12 @@ public class CollectionService {
             return collectionRepository.save(newCollection);
         }
     }
+
+    public Collection updateCollection(Long id, Collection updatedCollection) {
+        Collection existingCollection = collectionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Collection with ID " + id + " does not exist"));
+        existingCollection.setName(updatedCollection.getName());
+        return collectionRepository.save(existingCollection);
+    }
+
 }
