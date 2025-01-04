@@ -145,6 +145,8 @@ public class NoteEditCtrl implements Initializable {
             }
         }));
 
+        titleField.setEditable(false);
+
         noteListView.setEditable(true);
         //double-click triggers note editing
         noteListView.setOnMouseClicked(event -> {
@@ -159,14 +161,15 @@ public class NoteEditCtrl implements Initializable {
                 .addListener((_, old, current) -> {
                     if (DELETE_FLAG) {
                         DELETE_FLAG = false;
+                        titleField.setText(current.getTitle());
                         return;
                     }
-                    saveChanges(old);
-                    if (current.getTitle() == null || current.getTitle().isEmpty()) {
+                    if (current == null || current.getTitle().isEmpty()) {
                         return;
                     } else {
                         titleField.setText(current.getTitle());
                     }
+                    saveChanges(old);
                     this.handleNoteSelect(current);
                 });
 
@@ -458,8 +461,8 @@ public class NoteEditCtrl implements Initializable {
             DELETE_FLAG = true;
             server.deleteNoteFromServer(selectedNote.getId());
             noteListView.getItems().remove(selectedNote);
-            clearFields();
-            refresh();
+            //clearFields();
+            //refresh();
         } catch (IOException e) {
             editingArea.setText("Failed to delete note. Please try again.");
             e.printStackTrace();
