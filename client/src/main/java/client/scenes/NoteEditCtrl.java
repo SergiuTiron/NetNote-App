@@ -17,11 +17,13 @@ import javafx.fxml.Initializable;
 
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 
@@ -56,6 +58,9 @@ public class NoteEditCtrl implements Initializable {
     private TextField searchField;
 
     @FXML
+    private TextField titleField;
+
+    @FXML
     private MenuButton collectionBox;
 
     @FXML
@@ -64,14 +69,12 @@ public class NoteEditCtrl implements Initializable {
     public final ObjectProperty<Locale> selectedLanguage = new SimpleObjectProperty<>();
 
     @Inject
-    public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke, MarkdownUtil markdown, LocaleUtil localeUtil,
-                        MenuButton collectionBox, MainCtrl mainCtrl) {
+    public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke, MarkdownUtil markdown, LocaleUtil localeUtil, MainCtrl mainCtrl) {
         this.server = server;
         this.keyStroke = keyStroke;
         this.markdown = markdown;
         this.localeUtil = localeUtil;
         this.mainCtrl = mainCtrl;
-        this.collectionBox = collectionBox;
         DELETE_FLAG = false;
     }
 
@@ -119,13 +122,30 @@ public class NoteEditCtrl implements Initializable {
             @Override
             public Note fromString(String newTitle) {
                 Note selectedNote = noteListView.getSelectionModel().getSelectedItem();
-                if (selectedNote != null) {
+                Optional<Note> duplicatedTitle = server.getNotes()
+                        .stream()
+                        .filter(note -> note.getTitle().equals(newTitle))
+                        .findAny();
+                if (selectedNote != null && duplicatedTitle.isEmpty()) {
                     selectedNote.setTitle(newTitle);
+                    titleField.setText(newTitle);
                     server.updateNote(selectedNote);
+                } else if (duplicatedTitle.isPresent()) {
+                    System.out.println("Title already exists");
+                    Alert alert = new Alert(Alert.AlertType.WARNING); // Alert type
+                    Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+                    alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+                    alert.setTitle("Title Warnings");
+                    alert.setHeaderText("This note title already exists");
+                    alert.setContentText("Please enter a unique note title");
+
+                    alert.showAndWait();
                 }
                 return selectedNote;
             }
         }));
+
+        titleField.setEditable(false);
 
         noteListView.setEditable(true);
         //double-click triggers note editing
@@ -141,7 +161,13 @@ public class NoteEditCtrl implements Initializable {
                 .addListener((_, old, current) -> {
                     if (DELETE_FLAG) {
                         DELETE_FLAG = false;
+                        titleField.setText(current.getTitle());
                         return;
+                    }
+                    if (current == null || current.getTitle().isEmpty()) {
+                        return;
+                    } else {
+                        titleField.setText(current.getTitle());
                     }
                     saveChanges(old);
                     this.handleNoteSelect(current);
@@ -348,8 +374,9 @@ public class NoteEditCtrl implements Initializable {
     // Called whenever the user clicks the "New Note" button.
     public void createNewNote() {
         Note note = server.newEmptyNote();
+        titleField.setText(note.getTitle());
         Collection defaultCollection = server.getDefaultCollection();
-        if(currentCollection == null || currentCollection == defaultCollection) {
+        if (currentCollection == null || currentCollection == defaultCollection) {
             note.setCollection(defaultCollection);
             server.linkNoteToCollection(defaultCollection.getId(), note);
 
@@ -434,8 +461,8 @@ public class NoteEditCtrl implements Initializable {
             DELETE_FLAG = true;
             server.deleteNoteFromServer(selectedNote.getId());
             noteListView.getItems().remove(selectedNote);
-            clearFields();
-            refresh();
+            //clearFields();
+            //refresh();
         } catch (IOException e) {
             editingArea.setText("Failed to delete note. Please try again.");
             e.printStackTrace();
