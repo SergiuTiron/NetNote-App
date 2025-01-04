@@ -176,10 +176,8 @@ public class ServerUtils {
      * @return - the updated Collection
      */
     public Collection linkNoteToCollection(long collectionId, Note note) {
-        // I edited Stepan's implementation, as the commented part of the URL was not correct mapping
-        String url = SERVER + "api/collections/" + collectionId; //+ "/notes";
         return ClientBuilder.newClient(new ClientConfig())
-                .target(url)
+                .target(SERVER).path("api/collections/" + collectionId)
                 .request(APPLICATION_JSON)
                 .post(Entity.entity(note, APPLICATION_JSON), Collection.class);
     }
@@ -190,9 +188,8 @@ public class ServerUtils {
      * @return - list of all notes
      */
     public List<Note> getNotesByCollection(long collectionId) {
-        String url = SERVER + "api/collections/" + collectionId + "/notes";
         return ClientBuilder.newClient(new ClientConfig())
-                .target(url)
+                .target(SERVER).path("api/collections/" + collectionId + "/notes")
                 .request(APPLICATION_JSON)
                 .get(new GenericType<>() {});
     }

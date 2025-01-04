@@ -26,6 +26,15 @@ public class CollectionController {
         return repo.findAll();
     }
 
+    @GetMapping("/{collectionId}/notes")
+    public ResponseEntity<List<Note>> getNotes(@PathVariable Long collectionId) {
+        if (repo.findById(collectionId).isPresent()) {
+            return ResponseEntity.ok(repo.findById(collectionId).get().getNotes());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
     @PostMapping(path = { "", "/" })
     public ResponseEntity<Collection> addCollection(@RequestBody Collection collection) {
         Collection saved = repo.save(collection);
