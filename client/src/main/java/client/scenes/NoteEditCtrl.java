@@ -70,7 +70,7 @@ public class NoteEditCtrl implements Initializable {
         this.markdown = markdown;
         this.localeUtil = localeUtil;
         this.mainCtrl = mainCtrl;
-	    this.collectionBox = collectionBox;
+        this.collectionBox = collectionBox;
         DELETE_FLAG = false;
     }
 
@@ -108,12 +108,13 @@ public class NoteEditCtrl implements Initializable {
             this.setLanguage(newValue);
         });
 
-        noteListView.setCellFactory(_ -> new TextFieldListCell<>(new StringConverter<>(){
+        noteListView.setCellFactory(_ -> new TextFieldListCell<>(new StringConverter<>() {
             @Override
             public String toString(Note note) {
                 if (note == null) return "";
                 return note.getTitle();
             }
+
             @Override
             public Note fromString(String newTitle) {
                 Note selectedNote = noteListView.getSelectionModel().getSelectedItem();
@@ -130,28 +131,27 @@ public class NoteEditCtrl implements Initializable {
         noteListView.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
                 int selectedNoteIndex = noteListView.getSelectionModel().getSelectedIndex();
-                if(selectedNoteIndex != -1)
+                if (selectedNoteIndex != -1)
                     noteListView.edit(selectedNoteIndex);
             }
         });
 
         noteListView.getSelectionModel().selectedItemProperty()
-            .addListener((_, old, current) -> {
-                if(DELETE_FLAG)
-                {
-                    DELETE_FLAG = false;
-                    return;
-                }
-                saveChanges(old);
-                this.handleNoteSelect(current);
-            });
+                .addListener((_, old, current) -> {
+                    if (DELETE_FLAG) {
+                        DELETE_FLAG = false;
+                        return;
+                    }
+                    saveChanges(old);
+                    this.handleNoteSelect(current);
+                });
 
         editingArea.textProperty().addListener((_, _, newText) ->
                 markdown.renderMarkdownInWebView(newText, markdownPreview));
 
         editingArea.setOnKeyTyped(event -> {
             keyStroke.increaseCounter();
-            if(keyStroke.getCounter() == keyStroke.getTrigger() && !editingArea.getText().isEmpty()){
+            if (keyStroke.getCounter() == keyStroke.getTrigger() && !editingArea.getText().isEmpty()) {
                 autoSave();
                 keyStroke.counterReset();
             }
@@ -182,9 +182,11 @@ public class NoteEditCtrl implements Initializable {
 
     /**
      * A method to add a button for a new collection to the collectionBox (MenuButton)
+     *
      * @param collection - collection to add
      */
     public void addCollectionToMenuButton(Collection collection) {
+        System.out.println("Collection button added"); //for debugging purposes
         MenuItem newCollectionItem = new MenuItem(collection.getName());
 
         newCollectionItem.setOnAction(event -> {
@@ -197,17 +199,36 @@ public class NoteEditCtrl implements Initializable {
     }
 
     /**
+     * A method to delete a button for a deleted collection from the collectionBox (MenuButton)
+     *
+     * @param selectedCollection - collection to find the button that needs to be deleted
+     */
+    public void deleteCollectionToMenuButton(Collection selectedCollection) {
+        System.out.println("Collection button deleted");
+        MenuItem comboBoxButton = collectionBox.getItems()
+                .stream()
+                .filter(x -> x.getText().equals(selectedCollection.getName()))
+                .findFirst()
+                .get();
+        collectionBox.getItems().remove(comboBoxButton);
+    }
+
+    /**
      * Displaying a given list of notes (from a collection) in the listview
+     *
      * @param selectedItem - collection
      */
     private void handleSpecificCollectionSelected(Collection selectedItem) {
+        System.out.println("Collection handled"); //for debugging purposes
         List<Note> notes = server.getNotesByCollection(selectedItem.getId());
+
         // Clear the current list
         noteListView.getItems().clear();
 
         // Add the notes to the ListView
         noteListView.getItems().addAll(notes);
     }
+
     // Method to render markdown
     private void renderMarkdown(String markdownContent) {
         URL cssFileUrl = MarkdownUtil.class.getResource("/css/markdown-style.css");
@@ -254,17 +275,16 @@ public class NoteEditCtrl implements Initializable {
         alert.getDialogPane().setContent(content);
 
         alert.showAndWait().ifPresent(response -> {
-            if(response == ButtonType.OK && !textField.getText().isEmpty()){
-                try{
+            if (response == ButtonType.OK && !textField.getText().isEmpty()) {
+                try {
                     keyStroke.setTriggerCount(Integer.parseInt(textField.getText()));
-                }catch (NumberFormatException e){
+                } catch (NumberFormatException e) {
                     Alert error = new Alert(Alert.AlertType.ERROR);
                     error.setTitle(resourceBundle.getString("popup.autosave.invalid.title"));
                     error.setHeaderText(resourceBundle.getString("popup.autosave.invalid.text"));
                     error.showAndWait();
                 }
-            }
-            else if(response == ButtonType.CANCEL){
+            } else if (response == ButtonType.CANCEL) {
                 alert.close();
             }
         });
@@ -352,6 +372,7 @@ public class NoteEditCtrl implements Initializable {
         saveLabelTransition();
         System.out.println("Changes were saved.");
     }
+
     /**
      * Called when switching notes in ListView and when exiting the app
      */
@@ -367,13 +388,13 @@ public class NoteEditCtrl implements Initializable {
     //called when the user clicks the "Search" button
     public void filterNotes() {
         String query = searchField.getText();
-        if(query == null || query.isEmpty()) {
+        if (query == null || query.isEmpty()) {
             noteListView.setItems(FXCollections.observableList(server.getNotes()));
             return;
         }
         List<Note> filteredNotes = new ArrayList<>();
-        for(Note note : server.getNotes())
-            if(note.getContent().toLowerCase().contains(query.toLowerCase()))
+        for (Note note : server.getNotes())
+            if (note.getContent().toLowerCase().contains(query.toLowerCase()))
                 filteredNotes.add(note);
 
         noteListView.setItems(FXCollections.observableList(filteredNotes));
@@ -420,5 +441,4 @@ public class NoteEditCtrl implements Initializable {
         this.selectedLanguage.setValue(locale);
         liveLanguageBox.setValue(locale);
     }
-
 }
