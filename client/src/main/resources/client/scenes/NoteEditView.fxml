@@ -52,7 +52,7 @@
                         <ScrollPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                         <VBox prefHeight="531.0" prefWidth="398.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                            <children>
-                              <TextField prefHeight="47.0" prefWidth="399.0" text="Title" VBox.vgrow="ALWAYS">
+                              <TextField fx:id="titleField" prefHeight="47.0" prefWidth="399.0" text="Select a note to start editing." VBox.vgrow="ALWAYS">
                                  <font>
                                     <Font size="18.0" />
                                  </font></TextField>
