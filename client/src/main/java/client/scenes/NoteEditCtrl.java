@@ -504,6 +504,9 @@ public class NoteEditCtrl implements Initializable {
         liveLanguageBox.setValue(locale);
     }
 
+    /**
+     * triggered when the changeCollection button is pressed
+     */
     public void moveNoteToCollection(){
         Note selectedNote = noteListView.getSelectionModel().getSelectedItem();
         if(selectedNote == null){
