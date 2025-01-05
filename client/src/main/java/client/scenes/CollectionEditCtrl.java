@@ -122,12 +122,12 @@ public class CollectionEditCtrl implements Initializable {
             }
             // Add collection to server
             Collection collection = new Collection(collectionName);
-            server.addCollection(collection);
+            Collection savedCollection = server.addCollection(collection);
             // Add collection to listView
-            collectionListView.getItems().add(collection);
-            collectionListView.getSelectionModel().select(collection);
+            collectionListView.getItems().add(savedCollection);
+            collectionListView.getSelectionModel().select(savedCollection);
             // Add collection to MenuButton
-            noteEditCtrl.addCollectionToMenuButton(collection);
+            noteEditCtrl.addCollectionToMenuButton(savedCollection);
             refresh();
             System.out.println("Collection created successfully");
         });
