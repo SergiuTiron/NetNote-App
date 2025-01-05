@@ -75,7 +75,7 @@ public class CollectionEditCtrl implements Initializable {
                         }
                     }
                     if (!isUnique) {
-                        System.out.println("Collection name must be unique.");
+                        System.err.println("Collection name must be unique.");
                         return selectedCollection;
                     }
 
@@ -111,6 +111,15 @@ public class CollectionEditCtrl implements Initializable {
         // Show the dialog and wait for a response
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(collectionName -> {
+            if(collectionName.isBlank())
+                throw new IllegalArgumentException("Collection name cannot be blank.");
+
+            List<Collection> existingCollections = server.getCollections();
+            for(Collection collection: existingCollections){
+                if(collection.getName().equals(collectionName.strip())){
+                    throw new IllegalArgumentException("Collection name cannot be duplicated.");
+                }
+            }
             // Add collection to server
             Collection collection = new Collection(collectionName);
             server.addCollection(collection);
