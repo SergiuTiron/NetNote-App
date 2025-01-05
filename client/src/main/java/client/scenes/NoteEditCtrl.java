@@ -41,6 +41,8 @@ public class NoteEditCtrl implements Initializable {
     private ResourceBundle resourceBundle;
     private static boolean DELETE_FLAG;
     private Collection currentCollection;
+    private boolean moveMode = false;
+    private Note noteToMove = null;
 
     @FXML
     private Label saveLabel;
@@ -87,7 +89,23 @@ public class NoteEditCtrl implements Initializable {
         // Add the collections as menuItems
         for (Collection collection : collections) {
             MenuItem collectionItem = new MenuItem(collection.getName());
-            collectionItem.setOnAction(event -> handleSpecificCollectionSelected(collection));
+            collectionItem.setOnAction(event -> {
+                if(moveMode){
+                    noteToMove.setCollection(collection);
+                    server.updateNote(noteToMove);
+                    noteListView.getItems().remove(noteToMove);
+
+                    Alert info = new Alert(Alert.AlertType.INFORMATION, "Note moved to " + collection.getName());
+                    info.showAndWait();
+
+                    moveMode = false;
+                    noteToMove = null;
+                    refresh();
+                }
+                else{
+                    handleSpecificCollectionSelected(collection);
+                }
+            });
             collectionBox.getItems().add(collectionItem);
         }
         // Set the "All" option as default selection
@@ -485,4 +503,19 @@ public class NoteEditCtrl implements Initializable {
         this.selectedLanguage.setValue(locale);
         liveLanguageBox.setValue(locale);
     }
+
+    public void moveNoteToCollection(){
+        Note selectedNote = noteListView.getSelectionModel().getSelectedItem();
+        if(selectedNote == null){
+            Alert warning = new Alert(Alert.AlertType.WARNING, "No note selected. Please select a note first");
+            warning.showAndWait();
+            return;
+        }
+        noteToMove = selectedNote;
+        moveMode = true;
+        collectionBox.show();
+    }
+
+
+
 }
