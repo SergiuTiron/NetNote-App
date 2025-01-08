@@ -8,9 +8,12 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.cell.TextFieldListCell;
+import javafx.scene.image.Image;
+import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
 import java.io.IOException;
@@ -47,7 +50,7 @@ public class CollectionEditCtrl implements Initializable {
         // Create default collection if not present
         Collection defaultCollection = server.getDefaultCollection();
         if (!collections.contains(defaultCollection)) {
-            collections.add(0, defaultCollection); // Add default collection to the beginning or wherever you prefer
+            collections.addFirst(defaultCollection); // Add default collection to the beginning or wherever you prefer
         }
 
         collectionListView.setCellFactory(_ -> new TextFieldListCell<>(new StringConverter<>() {
@@ -63,19 +66,44 @@ public class CollectionEditCtrl implements Initializable {
                 if (selectedCollection != null){
                     if(selectedCollection.equals(defaultCollection)){
                         System.err.println("Default collection's name cannot be changed");
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                        alert.setTitle("Default collection warning");
+                        alert.setHeaderText("Default collection's name cannot be changed");
+                        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+                        alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+                        alert.setContentText(null);
+                        alert.getDialogPane();
+                        alert.showAndWait();
+                        return selectedCollection;
+                    }
+
+                    if(newName.isBlank()){
+                        System.err.println("Collection name must not be empty.");
+                        Alert alert = new Alert(Alert.AlertType.WARNING);
+                        alert.setTitle("Collection name warning");
+                        alert.setHeaderText("Collection name cannot be empty");
+                        alert.setContentText("Please try to choose a proper collection title.");
+                        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+                        alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+                        alert.getDialogPane();
+                        alert.showAndWait();
                         return selectedCollection;
                     }
 
                     //ensure titles are unique
-                    boolean isUnique = true;
-                    for(Collection collection: collections){
-                        if(collection.getName().equals(newName.strip()) && !collection.equals(selectedCollection)){
-                            isUnique = false;
-                            break;
-                        }
-                    }
-                    if (!isUnique) {
+                    if(collections.stream()
+                            .anyMatch(collection -> collection.getName().equals(newName)
+                                    && !collection.equals(selectedCollection)))
+                    {
                         System.err.println("Collection name must be unique.");
+                        Alert alert = new Alert(Alert.AlertType.WARNING);
+                        alert.setTitle("Collection name warning");
+                        alert.setHeaderText("There is already a title with the given name");
+                        alert.setContentText("Please try to choose a unique collection title.");
+                        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+                        alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+                        alert.getDialogPane();
+                        alert.showAndWait();
                         return selectedCollection;
                     }
 
@@ -111,15 +139,37 @@ public class CollectionEditCtrl implements Initializable {
         // Show the dialog and wait for a response
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(collectionName -> {
-            if(collectionName.isBlank())
-                throw new IllegalArgumentException("Collection name cannot be blank.");
+            if(collectionName.isBlank()){
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Collection name warning");
+                alert.setHeaderText("Collection name cannot be empty");
+                alert.setContentText("Please try to choose a proper collection title.");
+                Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+                alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+                alert.getDialogPane();
+                alert.showAndWait();
+                return;
+                //throw new IllegalArgumentException("Collection name cannot be blank.");
+
+            }
 
             List<Collection> existingCollections = server.getCollections();
-            for(Collection collection: existingCollections){
-                if(collection.getName().equals(collectionName.strip())){
-                    throw new IllegalArgumentException("Collection name cannot be duplicated.");
+            if(existingCollections
+                    .stream()
+                    .anyMatch(collection -> collection.getName()
+                            .equals(collectionName.strip())))
+            {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Collection name warning");
+                    alert.setHeaderText("There is already a title with the given name");
+                    alert.setContentText("Please try to choose a unique collection title.");
+                    Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+                    alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+                    alert.getDialogPane();
+                    alert.showAndWait();
+                    return;
+                    //throw new IllegalArgumentException("Collection name cannot be duplicated.");
                 }
-            }
             // Add collection to server
             Collection collection = new Collection(collectionName);
             Collection savedCollection = server.addCollection(collection);
@@ -171,13 +221,10 @@ public class CollectionEditCtrl implements Initializable {
     private Collection findCollectionById(String name) {
         List<Collection> collections = server.getCollections();
 
-        Collection collectionToFind = null;
-        for (Collection collection : collections) {
-            if (collection.getName().equalsIgnoreCase(name)) {
-                collectionToFind = collection;
-                break;
-            }
-        }
+        Collection collectionToFind = collections.stream()
+                .filter(collection -> collection.getName().equalsIgnoreCase(name))
+                .findAny().orElse(null);
+
         if (collectionToFind == null) {
             throw new RuntimeException("Collection not found");
         } else {
