@@ -91,16 +91,7 @@ public class NoteEditCtrl implements Initializable {
             MenuItem collectionItem = new MenuItem(collection.getName());
             collectionItem.setOnAction(event -> {
                 if(moveMode){
-                    noteToMove.setCollection(collection);
-                    server.updateNote(noteToMove);
-                    noteListView.getItems().remove(noteToMove);
-
-                    Alert info = new Alert(Alert.AlertType.INFORMATION, "Note moved to " + collection.getName());
-                    info.showAndWait();
-
-                    moveMode = false;
-                    noteToMove = null;
-                    refresh();
+                    moveNoteToCollection(collection);
                 }
                 else{
                     handleSpecificCollectionSelected(collection);
@@ -244,8 +235,12 @@ public class NoteEditCtrl implements Initializable {
         MenuItem newCollectionItem = new MenuItem(collection.getName());
 
         newCollectionItem.setOnAction(event -> {
-            // Handle the collection selection (update the ListView with notes from that collection)
-            handleSpecificCollectionSelected(collection);
+            if(moveMode){
+                moveNoteToCollection(collection);
+            }
+            else{
+                handleSpecificCollectionSelected(collection);
+            }
         });
 
         // Add the new MenuItem to the MenuButton
@@ -507,7 +502,7 @@ public class NoteEditCtrl implements Initializable {
     /**
      * triggered when the changeCollection button is pressed
      */
-    public void moveNoteToCollection(){
+    public void moveNoteToCollectionSetup(){
         Note selectedNote = noteListView.getSelectionModel().getSelectedItem();
         if(selectedNote == null){
             Alert warning = new Alert(Alert.AlertType.WARNING, "No note selected. Please select a note first");
@@ -516,7 +511,28 @@ public class NoteEditCtrl implements Initializable {
         }
         noteToMove = selectedNote;
         moveMode = true;
+
+        Alert info = new Alert(Alert.AlertType.INFORMATION, "Select a collection to move the note to.");
+        info.showAndWait();
+
         collectionBox.show();
+    }
+
+    public void moveNoteToCollection(Collection collection){
+        try {
+            noteToMove.setCollection(collection);
+            server.updateNote(noteToMove);
+            noteListView.getItems().remove(noteToMove);
+            Alert info = new Alert(Alert.AlertType.INFORMATION, "Note successfully moved to " + collection.getName() + ".");
+            info.showAndWait();
+        } catch (Exception e) {
+            Alert error = new Alert(Alert.AlertType.ERROR, "Failed to move the note. Please try again.");
+            error.showAndWait();
+            e.printStackTrace();
+        } finally {
+            moveMode = false;
+            noteToMove = null;
+        }
     }
 
 
