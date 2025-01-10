@@ -46,7 +46,9 @@ public class ServerUtils {
 
     public Note newEmptyNote() {
         Note emptyNote = new Note("");
-        return this.addNote(emptyNote);
+        Note savedNote = this.addNote(emptyNote);
+        savedNote.setTitle("New Note " + savedNote.getId());
+        return this.updateNote(savedNote);
     }
 
     public Collection newEmptyCollection() {
