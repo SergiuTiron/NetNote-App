@@ -160,6 +160,10 @@ public class NoteEditCtrl implements Initializable {
 
         titleField.setEditable(false);
 
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filterNotes();
+        });
+
         noteListView.setEditable(true);
         //double-click triggers note editing
         noteListView.setOnMouseClicked(event -> {
@@ -455,12 +459,18 @@ public class NoteEditCtrl implements Initializable {
             noteListView.setItems(FXCollections.observableList(server.getNotes()));
             return;
         }
-        List<Note> filteredNotes = new ArrayList<>();
-        for (Note note : server.getNotes())
-            if (note.getContent().toLowerCase().contains(query.toLowerCase()) ||
-            note.getTitle().toLowerCase().contains(query.toLowerCase()))
-                filteredNotes.add(note);
-
+        List<Note> notesInCurrentCollection;
+        if(currentCollection == null) {
+            notesInCurrentCollection = server.getNotes();
+        }
+        else{
+            notesInCurrentCollection = server.getNotesByCollection(currentCollection.getId());
+        }
+        List<Note> filteredNotes = notesInCurrentCollection
+                .stream()
+                .filter(note -> note.getContent().toLowerCase().contains(query.toLowerCase()) ||
+                        note.getTitle().toLowerCase().contains(query.toLowerCase()))
+                .toList();
         noteListView.setItems(FXCollections.observableList(filteredNotes));
     }
 
