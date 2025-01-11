@@ -491,7 +491,7 @@ public class NoteEditCtrl implements Initializable {
             DELETE_FLAG = true;
             server.deleteNoteFromServer(selectedNote.getId());
             noteListView.getItems().remove(selectedNote);
-            clearFields();
+            //clearFields();
             //refresh();
         } catch (IOException e) {
             editingArea.setText("Failed to delete note. Please try again.");
