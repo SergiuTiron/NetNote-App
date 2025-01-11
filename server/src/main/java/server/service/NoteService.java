@@ -28,7 +28,7 @@ public class NoteService {
     public Note updateNote(Long id, Note updatedNote) throws RuntimeException {
         Optional<Note> retrievedNote = noteRepository.findById(id);
         if (retrievedNote.isEmpty()) {
-            throw new IllegalArgumentException("Note with ID" + id + " does not exist");
+            throw new IllegalArgumentException("Note with ID " + id + " does not exist");
         }
         if(updatedNote == null)
             throw new IllegalArgumentException("There is no update to note (updateNote is null).");

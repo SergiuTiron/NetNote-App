@@ -52,6 +52,7 @@ class NoteServiceTest {
 
 	@Test
 	void updateNote_Exists() {
+		// Test to check whether updateNote works with an existing note
 		long noteId = 1L;
 		Note existingNote = new Note();
 		existingNote.setTitle("Old Title");
@@ -72,6 +73,7 @@ class NoteServiceTest {
 
 	@Test
 	void updateNote_DoesNotExist() {
+		// Test to check whether updateNote throws an exception when the note does not exist
 		long noteId = 1L;
 		Note updatedNote = new Note();
 
@@ -82,10 +84,13 @@ class NoteServiceTest {
 
 		verify(noteRepository, times(1)).findById(noteId);
 		verify(noteRepository, never()).save(any(Note.class)); // Ensure the note was never saved
+
+		assertEquals("Note with ID " + noteId + " does not exist", exception.getMessage());
 	}
 
 	@Test
 	void updateNote_NullUpdated() {
+		// Test to check whether updateNote throws an exception when the note is updated with null
 		long noteId = 1L;
 		Note exisitngNote = new Note();
 
