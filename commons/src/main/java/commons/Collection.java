@@ -1,6 +1,7 @@
 package commons;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,7 @@ public class Collection {
     private long id;
 
     private String name;
+    private boolean isDefault;
 
     //one-to-many relation between collection and notes
     @JsonIgnore
@@ -45,6 +47,19 @@ public class Collection {
     public void addNote(Note note) {
         notes.add(note);
         note.setCollection(this);
+    }
+
+    public boolean isDefault() {
+        return isDefault;
+    }
+
+    public void setDefault(boolean aDefault) {
+        isDefault = aDefault;
+    }
+
+    @Override
+    public String toString() {
+        return this.name;
     }
 
     //we could move the note back to the default collection instead of assigning a null value to the collection field
