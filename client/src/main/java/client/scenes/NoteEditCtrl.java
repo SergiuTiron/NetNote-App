@@ -452,25 +452,27 @@ public class NoteEditCtrl implements Initializable {
         System.out.println("Changes were saved.");
     }
 
-    //called when the user clicks the "Search" button
+    /**
+     *     called when the user clicks the "Search" button
+     *     This method displays all the notes in the current collection that contain the given keyword.
+     */
     public void filterNotes() {
         String query = searchField.getText();
-        if (query == null || query.isEmpty()) {
-            noteListView.setItems(FXCollections.observableList(server.getNotes()));
+        if(query == null || query.isEmpty()){
+            if(currentCollection != null){
+                handleSpecificCollectionSelected(currentCollection);
+            }
+            else{
+                handleAllCollectionsSelected();
+            }
             return;
         }
-        List<Note> notesInCurrentCollection;
-        if(currentCollection == null) {
-            notesInCurrentCollection = server.getNotes();
+        List<Note> filteredNotes;
+        if (currentCollection == null) {
+            filteredNotes = server.searchKeyword(query, null);
+        } else {
+            filteredNotes = server.searchKeyword(query, currentCollection.getId());
         }
-        else{
-            notesInCurrentCollection = server.getNotesByCollection(currentCollection.getId());
-        }
-        List<Note> filteredNotes = notesInCurrentCollection
-                .stream()
-                .filter(note -> note.getContent().toLowerCase().contains(query.toLowerCase()) ||
-                        note.getTitle().toLowerCase().contains(query.toLowerCase()))
-                .toList();
         noteListView.setItems(FXCollections.observableList(filteredNotes));
     }
 
