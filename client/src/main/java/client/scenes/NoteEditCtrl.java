@@ -32,6 +32,7 @@ import javafx.util.StringConverter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class NoteEditCtrl implements Initializable {
 
@@ -608,7 +609,10 @@ public class NoteEditCtrl implements Initializable {
 
     @FXML
     private void onSelectLanguage(ActionEvent event) {
-        List<String> languages = Arrays.asList("English", "Dutch", "Romanian", "Bulgarian", "Italian");
+        List<Locale> availableLocales = Arrays.asList(Locale.getAvailableLocales());
+        List<String> languages = availableLocales.stream()
+                .map(Locale::getDisplayName)
+                .collect(Collectors.toList());
 
         ChoiceDialog<String> dialog = new ChoiceDialog<>("English", languages);
         dialog.setTitle("Select Language");
