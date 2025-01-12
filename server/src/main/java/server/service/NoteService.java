@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import server.database.NoteRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -37,5 +38,22 @@ public class NoteService {
 	    noteToSave.setTitle(updatedNote.getTitle());
 	    return noteRepository.save(updatedNote);
     }
+
+    /**
+     * method that triggers the search of the keyword in the note repository
+     * @param keyword
+     * @param collectionId the id of the currently selected collection
+     * @return the list of notes containing the keyword
+     */
+    public List<Note> searchKeyword(String keyword, Long collectionId) {
+        if (collectionId == null) {
+            return noteRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(keyword, keyword);
+        }
+        return noteRepository.findByCollectionIdAndTitleContainingIgnoreCaseOrContentContainingIgnoreCase(
+                collectionId, keyword, keyword
+        );
+    }
+
+
 
 }
