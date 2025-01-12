@@ -546,8 +546,8 @@ public class NoteEditCtrl implements Initializable {
             config.removeNote(selectedNote);
             saveConfig(config);
             noteListView.getItems().remove(selectedNote);
-            //clearFields();
-            //refresh();
+            clearFields();
+            refresh();
         } catch (IOException e) {
             editingArea.setText("Failed to delete note. Please try again.");
             e.printStackTrace();
@@ -588,6 +588,17 @@ public class NoteEditCtrl implements Initializable {
         }
         try {
             Collection newCollection = server.getCollectionByName(collectionChangeItem.getText());
+            if (currentNote.getCollection().equals(newCollection)) {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Warning");
+                alert.setHeaderText("The note is trying to be moved to the same collection");
+                alert.setContentText("Please select a different collection when moving this note");
+                Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+                alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+                alert.getDialogPane();
+                alert.showAndWait();
+                return;
+            }
             currentNote.setCollection(newCollection);
             server.updateNote(currentNote);
             Alert info = new Alert(Alert.AlertType.INFORMATION, "Note successfully moved to " + newCollection.getName() + ".");
