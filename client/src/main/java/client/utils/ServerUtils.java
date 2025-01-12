@@ -209,6 +209,13 @@ public class ServerUtils {
                 .get(Collection.class);
     }
 
+    public Collection getCollectionByName(String name) {
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/collections/" + name)
+                .request(APPLICATION_JSON)
+                .get(Collection.class);
+    }
+
     /**
      * Searches for notes based on a keyword and optionally a collection ID.
      *
@@ -232,7 +239,5 @@ public class ServerUtils {
             throw new RuntimeException("Error encoding or executing search request", e);
         }
     }
-
-
 
 }

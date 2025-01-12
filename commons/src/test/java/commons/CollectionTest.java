@@ -26,11 +26,44 @@ public class CollectionTest {
         testCollection2.addNote(note2);
         testCollection3.addNote(note1);
         testCollection3.addNote(note2);
+        testCollection3.addNote(note3);
     }
 
     @Test
-    public void testEquals() {
+    public void testConstructor() {
+        assertNotNull(testCollection3.getName());
+        assertEquals(note1, testCollection2.getNote(0));
+    }
+
+    @Test
+    public void testDefaultConstructor() {
+        assertNotNull(testCollection1);
+    }
+
+    @Test
+    public void testGetId() {
+        assertEquals(0,testCollection1.getId());
+    }
+
+    @Test
+    public void testSetName() {
+        testCollection1.setName("new name");
+        assertEquals("new name",testCollection1.getName());
+        testCollection2.setName("new name v2");
+        assertEquals("new name v2",testCollection2.getName());
+        testCollection3.setName("new name v3");
+        assertEquals("new name v3",testCollection3.getName());
+    }
+
+    @Test
+    public void testEquals1() {
         assertEquals(testCollection3, testCollection3);
+        assertNotEquals(testCollection1, testCollection3);
+    }
+
+    @Test
+    public void testEquals2() {
+        assertNotEquals(testCollection2, testCollection3);
         assertNotEquals(testCollection1, testCollection3);
     }
 
@@ -49,9 +82,9 @@ public class CollectionTest {
     @Test
     public void testRemoveNote() {
         testCollection3.addNote(note3);
-        assertEquals(3, testCollection3.NoteCount());
+        assertEquals(4, testCollection3.NoteCount());
         testCollection3.removeNote(note3);
-        assertEquals(2, testCollection3.NoteCount());
+        assertEquals(3, testCollection3.NoteCount());
     }
 
     /**
