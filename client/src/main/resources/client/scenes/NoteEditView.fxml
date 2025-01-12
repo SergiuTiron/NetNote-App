@@ -32,7 +32,7 @@
                            <MenuItem fx:id="editCollectionButton" mnemonicParsing="false" onAction="#handleEditCollections" text="Edit Collections..." />
                        </items>
                    </MenuButton>
-                  <ComboBox fx:id="liveLanguageBox" layoutX="676.0" layoutY="7.0" prefHeight="25.0" prefWidth="100.0" promptText="%buttons.language">
+                  <ComboBox fx:id="liveLanguageBox" layoutX="676.0" layoutY="7.0" prefHeight="25.0" prefWidth="100.0" promptText="%buttons.language" AnchorPane.rightAnchor="124.0">
                   </ComboBox>
                </children>
             </AnchorPane>
@@ -52,11 +52,17 @@
                         <ScrollPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                         <VBox prefHeight="531.0" prefWidth="398.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                            <children>
-                              <TextField fx:id="titleField" prefHeight="47.0" prefWidth="399.0" text="Select a note to start editing." VBox.vgrow="ALWAYS">
-                                 <font>
-                                    <Font size="18.0" />
-                                 </font></TextField>
-                              <TextArea fx:id="editingArea" VBox.vgrow="ALWAYS" />
+                              <AnchorPane prefHeight="45.0" prefWidth="399.0">
+                                 <children>
+                                    <TextField fx:id="titleField" prefHeight="47.0" prefWidth="399.0" text="Select a note to start editing." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                       <font>
+                                          <Font size="18.0" />
+                                       </font>
+                                    </TextField>
+                                    <MenuButton fx:id="currentCollectionDrop" layoutX="266.0" layoutY="8.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="127.0" text="ChangeCollection" AnchorPane.rightAnchor="19.0" />
+                                 </children>
+                              </AnchorPane>
+                              <TextArea fx:id="editingArea" prefHeight="456.0" prefWidth="399.0" VBox.vgrow="ALWAYS" />
                            </children>
                         </VBox>
                      </children>
@@ -79,7 +85,6 @@
                   <Button layoutX="95.0" layoutY="7.5" mnemonicParsing="false" onAction="#deleteButton" prefHeight="25.0" prefWidth="75.0" text="%buttons.delete" AnchorPane.bottomAnchor="7.5" AnchorPane.topAnchor="7.5" />
                   <Button layoutX="10.0" layoutY="7.5" maxHeight="25.0" maxWidth="75.0" minHeight="25.0" minWidth="75.0" mnemonicParsing="false" onAction="#createNewNote" prefHeight="25.0" prefWidth="75.0" text="%buttons.addNote" AnchorPane.bottomAnchor="7.5" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="7.5" />
                   <Button layoutX="715.0" layoutY="7.5" maxHeight="25.0" maxWidth="75.0" minHeight="25.0" minWidth="75.0" mnemonicParsing="false" onAction="#refresh" prefHeight="25.0" prefWidth="75.0" text="%buttons.refresh" AnchorPane.bottomAnchor="7.5" AnchorPane.rightAnchor="110.0" AnchorPane.topAnchor="7.5" />
-                  <Button layoutX="190.0" layoutY="7.0" mnemonicParsing="false" onAction="#moveNoteToCollectionSetup" prefHeight="26.0" prefWidth="114.0" text="Change Collection" />
                </children>
             </AnchorPane>
          </children>
