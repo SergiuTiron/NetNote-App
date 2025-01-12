@@ -20,6 +20,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -122,17 +123,34 @@ public class NoteEditCtrl implements Initializable {
         }
 
         liveLanguageBox.setItems(FXCollections.observableList(localeUtil.getAvailableLocales()));
-        liveLanguageBox.setCellFactory(_ -> new TextFieldListCell<>(new StringConverter<>() {
-            @Override
-            public String toString(Locale locale) {
-                return locale.getDisplayName(selectedLanguage.get());
+        liveLanguageBox.setCellFactory(_ -> new ListCell<>() {
+            private final ImageView flagView = new ImageView();
+
+            {
+                flagView.setFitHeight(20);
+                flagView.setPreserveRatio(true);
             }
 
             @Override
-            public Locale fromString(String s) {
-                return Locale.of(s);
+            protected void updateItem(Locale locale, boolean empty) {
+                super.updateItem(locale, empty);
+                if (empty) {
+                    this.setGraphic(null);
+                    this.setText(null);
+                } else {
+                    flagView.setImage(localeUtil.getFlagImage(locale));
+                    this.setGraphic(this.flagView);
+                    this.setText(locale.getDisplayName(selectedLanguage.get()));
+                }
             }
-        }));
+        });
+        liveLanguageBox.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(Locale locale, boolean empty) {
+                super.updateItem(locale, empty);
+                this.setText(!empty ? locale.getDisplayName(selectedLanguage.get()) : null);
+            }
+        });
         liveLanguageBox.getSelectionModel().selectedItemProperty().addListener((_, _, newValue) -> {
             if (newValue == null) {
                 return;
@@ -547,8 +565,8 @@ public class NoteEditCtrl implements Initializable {
             config.removeNote(selectedNote);
             saveConfig(config);
             noteListView.getItems().remove(selectedNote);
-            //clearFields();
-            //refresh();
+            clearFields();
+            refresh();
         } catch (IOException e) {
             editingArea.setText("Failed to delete note. Please try again.");
             e.printStackTrace();
@@ -589,6 +607,17 @@ public class NoteEditCtrl implements Initializable {
         }
         try {
             Collection newCollection = server.getCollectionByName(collectionChangeItem.getText());
+            if (currentNote.getCollection().equals(newCollection)) {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Warning");
+                alert.setHeaderText("The note is trying to be moved to the same collection");
+                alert.setContentText("Please select a different collection when moving this note");
+                Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+                alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+                alert.getDialogPane();
+                alert.showAndWait();
+                return;
+            }
             currentNote.setCollection(newCollection);
             server.updateNote(currentNote);
             Alert info = new Alert(Alert.AlertType.INFORMATION, "Note successfully moved to " + newCollection.getName() + ".");
