@@ -501,13 +501,7 @@ public class NoteEditCtrl implements Initializable {
      * Called on exiting the app
      */
     public void saveChanges() {
-        Note note = noteListView.getSelectionModel().getSelectedItem();
-        if (note == null)
-            return;
-        note.setContent(editingArea.getText());
-        server.addNote(note);
-        saveLabelTransition();
-        System.out.println("Changes were saved.");
+        this.saveChanges(noteListView.getSelectionModel().getSelectedItem());
     }
 
     /**
@@ -517,9 +511,28 @@ public class NoteEditCtrl implements Initializable {
         if (note == null)
             return;
         note.setContent(editingArea.getText());
-        server.addNote(note);
-        saveLabelTransition();
-        System.out.println("Changes were saved.");
+
+        try {
+            server.addNote(note);
+            this.saveLabelTransition();
+            System.out.println("Changes were saved to note " + note.getId());
+        } catch (Exception ex) {
+            System.err.println("Saving changes to note " + note.getId() + " failed:");
+            ex.printStackTrace();
+
+            ButtonType cancelButton = new ButtonType(resourceBundle.getString("popup.savingFailed.cancel"));
+            ButtonType retryButton = new ButtonType(resourceBundle.getString("popup.savingFailed.retry"));
+
+            Alert alert = new Alert(Alert.AlertType.ERROR, resourceBundle.getString("popup.savingFailed.title"),
+                    cancelButton, retryButton);
+            alert.setContentText(resourceBundle.getString("popup.savingFailed.text")
+                    .replace("%id%", String.valueOf(note.getId())));
+            Optional<ButtonType> response = alert.showAndWait();
+            if (response.isPresent() && response.get() == retryButton) {
+                // Start the process again
+                this.saveChanges(note);
+            }
+        }
     }
 
     /**
