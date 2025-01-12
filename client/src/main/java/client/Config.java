@@ -34,7 +34,22 @@ public class Config {
 		return notes;
 	}
 
-	// Getters and setters for your fields
+	public Collection getCollection(Collection collection) {
+		if (collections.contains(collection)){
+			return collection;
+		} else {
+			throw new IllegalArgumentException("No such collection exists");
+		}
+	}
+
+	public Note getNote(Note note) {
+		if (notes.contains(note)){
+			return note;
+		} else {
+			throw new IllegalArgumentException("No such note exists");
+		}
+	}
+
 	public Collection getDefaultCollection() {
 		return defaultCollection;
 	}

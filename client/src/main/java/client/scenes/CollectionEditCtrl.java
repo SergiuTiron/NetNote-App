@@ -5,7 +5,6 @@ import client.ConfigManager;
 import client.utils.ServerUtils;
 import commons.Collection;
 import jakarta.inject.Inject;
-import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -54,12 +53,10 @@ public class CollectionEditCtrl implements Initializable {
         if (!collections.contains(defaultCollection)) {
             collections.addFirst(defaultCollection); // Add default collection to the beginning or wherever you prefer
         }
-        config.setDefaultCollection(defaultCollection);
-        try {
-            configManager.saveConfig(config);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        config.setDefaultCollection(defaultCollection); // For now, we're setting the config default as the server default
+        saveConfig(config);
+
+        collections.addAll(config.getCollections()); // add all config collections
 
         collectionListView.setItems(FXCollections.observableList(collections));
 
@@ -116,7 +113,8 @@ public class CollectionEditCtrl implements Initializable {
                         alert.showAndWait();
                         return selectedCollection;
                     }
-
+                    config.getCollection(selectedCollection).setName(newName);
+                    saveConfig(config);
                     selectedCollection.setName(newName.strip());
                     server.addCollection(selectedCollection);
                     System.out.println("Collection title changed");
@@ -132,13 +130,6 @@ public class CollectionEditCtrl implements Initializable {
                 if (index != -1) {
                     collectionListView.edit(index);
                 }
-            }
-        });
-
-        Platform.runLater(() -> {
-            for (Collection collection : config.getCollections()) {
-                collections.add(collection);
-                noteEditCtrl.addCollectionToMenuButton(collection);
             }
         });
     }
@@ -190,12 +181,10 @@ public class CollectionEditCtrl implements Initializable {
             // Add collection to server
             Collection collection = new Collection(collectionName);
             Collection savedCollection = server.addCollection(collection);
-            config.addCollection(savedCollection);
-            try {
-                configManager.saveConfig(config);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+
+            config.addCollection(savedCollection); // add collection to config
+            saveConfig(config);
+
             // Add collection to listView
             collectionListView.getItems().add(savedCollection);
             collectionListView.getSelectionModel().select(savedCollection);
@@ -209,6 +198,18 @@ public class CollectionEditCtrl implements Initializable {
     }
 
     /**
+     * Method to save the config
+     * @param config - config to save
+     */
+    public void saveConfig(Config config) {
+        try {
+            configManager.saveConfig(config);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
      * Delete selected collection
      */
     public void deleteCollection() throws IOException {
@@ -217,11 +218,7 @@ public class CollectionEditCtrl implements Initializable {
             try {
                 server.deleteCollection(selectedCollection.getId());
                 config.removeCollection(selectedCollection);
-                try {
-                    configManager.saveConfig(config);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                saveConfig(config);
                 collectionListView.getItems().remove(selectedCollection);
                 noteEditCtrl.deleteCollectionToMenuButton(selectedCollection);
                 refresh();
