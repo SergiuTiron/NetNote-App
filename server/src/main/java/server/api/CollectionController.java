@@ -26,6 +26,15 @@ public class CollectionController {
         return repo.findAll();
     }
 
+    @GetMapping("/{collectionName}")
+    public ResponseEntity<Collection> get(@PathVariable String collectionName) {
+        if(repo.findByName(collectionName).isPresent()) {
+            return ResponseEntity.ok(repo.findByName(collectionName).get());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
     @GetMapping("/{collectionId}/notes")
     public ResponseEntity<List<Note>> getNotes(@PathVariable Long collectionId) {
         if (repo.findById(collectionId).isPresent()) {
