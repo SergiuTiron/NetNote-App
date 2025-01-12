@@ -25,3 +25,7 @@ CTRL + N : User creates a new note
 CTRL + D : User deletes the selected note
 CTRL + S : User saves the selected note that he is editing
 CTRL + R : User refreshes
+
+### Attribution
+
+Flag images from Twemoji 15.0.3, retrieved via [Emojipedia](https://emojipedia.org).
