@@ -584,6 +584,36 @@ public class NoteEditCtrl implements Initializable {
         }
     }
 
+    @FXML
+    private void onSelectLanguage(ActionEvent event) {
+        List<String> languages = Arrays.asList("English", "Dutch", "Romanian", "Bulgarian", "Italian");
 
+        ChoiceDialog<String> dialog = new ChoiceDialog<>("English", languages);
+        dialog.setTitle("Select Language");
+        dialog.setHeaderText("Choose Your Preferred Language");
+        dialog.setContentText("Language:");
+
+        Optional<String> result = dialog.showAndWait();
+
+        result.ifPresent(selectedLanguage -> {
+            System.out.println("Saved Language: " + selectedLanguage);
+            // TODO: Save the selected language in the database
+            // savePreferredLanguage(selectedLanguage);
+
+            Locale newLocale = mapLanguageToLocale(selectedLanguage);
+            setLanguage(newLocale);
+
+        });
+    }
+
+    private Locale mapLanguageToLocale(String language) {
+        return switch (language) {
+            case "Dutch" -> new Locale("nl");
+            case "Romanian" -> new Locale("ro");
+            case "Bulgarian" -> new Locale("bg");
+            case "Italian" -> new Locale("it");
+            default -> Locale.ENGLISH;
+        };
+    }
 
 }

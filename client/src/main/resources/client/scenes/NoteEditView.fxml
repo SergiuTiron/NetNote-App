@@ -89,7 +89,7 @@
           <Menu mnemonicParsing="false" text="%menu.settings">
             <items>
               <MenuItem mnemonicParsing="false" onAction="#changeNoteSavingSettings" text="%menu.settings.autosave" />
-                  <MenuItem mnemonicParsing="false" text="%menu.settings.selectLanguage" />
+                  <MenuItem mnemonicParsing="false" onAction="#onSelectLanguage" text="%menu.settings.selectLanguage" />
             </items>
           </Menu>
           <Menu mnemonicParsing="false" text="%menu.edit">
