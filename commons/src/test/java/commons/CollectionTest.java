@@ -26,6 +26,18 @@ public class CollectionTest {
         testCollection2.addNote(note2);
         testCollection3.addNote(note1);
         testCollection3.addNote(note2);
+        testCollection3.addNote(note3);
+    }
+
+    @Test
+    public void testConstructor() {
+        assertNotNull(testCollection1.getName());
+        assertEquals(note1, testCollection2.getNote(0));
+    }
+
+    @Test
+    public void testDefaultConstructor() {
+        assertNotNull(testCollection1);
     }
 
     @Test
@@ -44,8 +56,14 @@ public class CollectionTest {
     }
 
     @Test
-    public void testEquals() {
+    public void testEquals1() {
         assertEquals(testCollection3, testCollection3);
+        assertNotEquals(testCollection1, testCollection3);
+    }
+
+    @Test
+    public void testEquals2() {
+        assertNotEquals(testCollection2, testCollection3);
         assertNotEquals(testCollection1, testCollection3);
     }
 
