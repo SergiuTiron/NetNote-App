@@ -23,6 +23,7 @@ import com.google.inject.Injector;
 
 import client.scenes.MainCtrl;
 import client.utils.ServerUtils;
+import commons.Note;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.Parent;
@@ -86,11 +87,14 @@ public class Main extends Application {
     private final ChangeListener<Locale> localeChangeListener = (_, _, _) -> this.handleLocaleChange();
 
     private void handleLocaleChange() {
+        Note currentNote = noteEditCtrl.getCurrentNote();
+        noteEditCtrl.saveChanges();
         noteEditCtrl.selectedLanguage.removeListener(this.localeChangeListener);
 
         this.locale = noteEditCtrl.selectedLanguage.get();
         System.out.println("Reloading scenes with new locale: " + locale);
         this.loadScenes();
+        noteEditCtrl.setCurrentNote(currentNote); // Reselect the note we had open before reloading the scenes
     }
 
 }
