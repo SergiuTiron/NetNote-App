@@ -43,8 +43,6 @@ public class NoteEditCtrl implements Initializable {
     private ResourceBundle resourceBundle;
     private static boolean DELETE_FLAG;
     private Collection currentCollection;
-    private boolean moveMode = false;
-    private Note noteToMove = null;
 
     private final Config config;
     private final ConfigManager configManager;
@@ -73,7 +71,11 @@ public class NoteEditCtrl implements Initializable {
     @FXML
     private ComboBox<Locale> liveLanguageBox;
 
+    @FXML
+    private MenuButton currentCollectionDrop;
+
     public final ObjectProperty<Locale> selectedLanguage = new SimpleObjectProperty<>();
+    private Note currentNote;
 
     @Inject
     public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke, MarkdownUtil markdown, LocaleUtil localeUtil, MainCtrl mainCtrl, Config config, ConfigManager configManager) {
@@ -97,13 +99,9 @@ public class NoteEditCtrl implements Initializable {
         for (Collection collection : collections) {
             MenuItem collectionItem = new MenuItem(collection.getName());
             collectionItem.setOnAction(event -> {
-                if(moveMode){
-                    moveNoteToCollection(collection);
-                }
-                else{
-                    handleSpecificCollectionSelected(collection);
-                }
+                handleSpecificCollectionSelected(collection);
             });
+
             collectionBox.getItems().add(collectionItem);
         }
         for (Collection collection : config.getCollections()) {
@@ -112,6 +110,15 @@ public class NoteEditCtrl implements Initializable {
         }
         // Set the "All" option as default selection
         collectionBox.setText("All");
+
+        for (Collection collection : collections) {
+            MenuItem collectionChangeItem = new MenuItem(collection.getName());
+            collectionChangeItem.setOnAction(event -> {
+                moveNoteToCollection(currentNote, collectionChangeItem);
+            });
+
+            currentCollectionDrop.getItems().add(collectionChangeItem);
+        }
 
         liveLanguageBox.setItems(FXCollections.observableList(localeUtil.getAvailableLocales()));
         liveLanguageBox.setCellFactory(_ -> new TextFieldListCell<>(new StringConverter<>() {
@@ -191,7 +198,7 @@ public class NoteEditCtrl implements Initializable {
                 .addListener((_, old, current) -> {
                     if (DELETE_FLAG) {
                         DELETE_FLAG = false;
-                        if(current != null) {
+                        if (current != null) {
                             titleField.setText(current.getTitle());
                         }
                         return;
@@ -269,18 +276,19 @@ public class NoteEditCtrl implements Initializable {
     public void addCollectionToMenuButton(Collection collection) {
         System.out.println("Collection button added"); //for debugging purposes
         MenuItem newCollectionItem = new MenuItem(collection.getName());
+        MenuItem newCollectionChangeItem = new MenuItem(collection.getName());
 
         newCollectionItem.setOnAction(event -> {
-            if(moveMode){
-                moveNoteToCollection(collection);
-            }
-            else{
-                handleSpecificCollectionSelected(collection);
-            }
+            handleSpecificCollectionSelected(collection);
+        });
+
+        newCollectionChangeItem.setOnAction(event -> {
+            moveNoteToCollection(currentNote, newCollectionChangeItem);
         });
 
         // Add the new MenuItem to the MenuButton
         collectionBox.getItems().add(newCollectionItem);
+        currentCollectionDrop.getItems().add(newCollectionChangeItem);
     }
 
     /**
@@ -290,12 +298,18 @@ public class NoteEditCtrl implements Initializable {
      */
     public void deleteCollectionToMenuButton(Collection selectedCollection) {
         System.out.println("Collection button deleted");
-        MenuItem comboBoxButton = collectionBox.getItems()
+        MenuItem collectionsButton = collectionBox.getItems()
                 .stream()
                 .filter(x -> x.getText().equals(selectedCollection.getName()))
                 .findFirst()
                 .get();
-        collectionBox.getItems().remove(comboBoxButton);
+        MenuItem collectionChangeButton = currentCollectionDrop.getItems()
+                .stream()
+                .filter(x -> x.getText().equals(selectedCollection.getName()))
+                .findFirst()
+                .get();
+        collectionBox.getItems().remove(collectionsButton);
+        currentCollectionDrop.getItems().remove(collectionChangeButton);
     }
 
     /**
@@ -307,7 +321,9 @@ public class NoteEditCtrl implements Initializable {
         System.out.println("Collection handled"); //for debugging purposes
         List<Note> notes = server.getNotesByCollection(selectedItem.getId());
         currentCollection = selectedItem;
+        currentNote = null;
         collectionBox.setText(selectedItem.getName()); //set the name of the collection to show in the MenuButton
+        clearFields();
         // Clear the current list
         noteListView.getItems().clear();
 
@@ -416,8 +432,10 @@ public class NoteEditCtrl implements Initializable {
             return;
         }
         // If a note is selected, enable editing and display its content
+        currentNote = note;
         editingArea.setEditable(true);
         editingArea.setText(note.getContent());
+        currentCollectionDrop.setText(note.getCollection().getName());
     }
 
     // Called whenever the user clicks the "New Note" button.
@@ -428,7 +446,7 @@ public class NoteEditCtrl implements Initializable {
         if (currentCollection == null || currentCollection == defaultCollection) {
             note.setCollection(defaultCollection);
             server.linkNoteToCollection(defaultCollection.getId(), note);
-
+            currentCollectionDrop.setText(defaultCollection.getName());
         } else {
             note.setCollection(currentCollection);
             server.linkNoteToCollection(currentCollection.getId(), note);
@@ -443,7 +461,12 @@ public class NoteEditCtrl implements Initializable {
 
     // Called whenever the user clicks the "Refresh" button.
     public void refresh() {
-        List<Note> notes = server.getNotes();
+        List<Note> notes;
+        if (currentCollection == null && collectionBox.getText().equals("All")) {
+            notes = server.getNotes();
+        } else {
+            notes = server.getNotesByCollection(currentCollection.getId());
+        }
         noteListView.setItems(FXCollections.observableList(notes));
     }
 
@@ -540,7 +563,9 @@ public class NoteEditCtrl implements Initializable {
     private void clearFields() {
         noteListView.getSelectionModel().clearSelection();
         editingArea.setEditable(false);
-        editingArea.setText(resourceBundle.getString("initialText"));
+        editingArea.setText("Select a note to start editing");
+        titleField.setText("Select a note to start editing");
+        currentCollectionDrop.setText("ChangeCollection");
     }
 
     public void setLanguage(Locale locale) {
@@ -548,42 +573,36 @@ public class NoteEditCtrl implements Initializable {
         liveLanguageBox.setValue(locale);
     }
 
-    /**
-     * triggered when the changeCollection button is pressed
-     */
-    public void moveNoteToCollectionSetup(){
-        Note selectedNote = noteListView.getSelectionModel().getSelectedItem();
-        if(selectedNote == null){
-            Alert warning = new Alert(Alert.AlertType.WARNING, "No note selected. Please select a note first");
-            warning.showAndWait();
+    public void moveNoteToCollection(Note currentNote, MenuItem collectionChangeItem) {
+        System.out.println("Collection trying to be moved");
+        if (currentNote == null) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("There is no current note selected");
+            alert.setContentText("Please select a note when trying to move to another collection");
+            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+            alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+            alert.getDialogPane();
+            alert.showAndWait();
             return;
         }
-        noteToMove = selectedNote;
-        moveMode = true;
-
-        Alert info = new Alert(Alert.AlertType.INFORMATION, "Select a collection to move the note to.");
-        info.showAndWait();
-
-        collectionBox.show();
-    }
-
-    public void moveNoteToCollection(Collection collection){
         try {
-            noteToMove.setCollection(collection);
-            server.updateNote(noteToMove);
-            noteListView.getItems().remove(noteToMove);
-            Alert info = new Alert(Alert.AlertType.INFORMATION, "Note successfully moved to " + collection.getName() + ".");
+            Collection newCollection = server.getCollectionByName(collectionChangeItem.getText());
+            currentNote.setCollection(newCollection);
+            server.updateNote(currentNote);
+            Alert info = new Alert(Alert.AlertType.INFORMATION, "Note successfully moved to " + newCollection.getName() + ".");
+            Stage alertStage = (Stage) info.getDialogPane().getScene().getWindow();
+            alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+            info.getDialogPane();
             info.showAndWait();
+            refresh();
+            clearFields();
         } catch (Exception e) {
             Alert error = new Alert(Alert.AlertType.ERROR, "Failed to move the note. Please try again.");
+            Stage alertStage = (Stage) error.getDialogPane().getScene().getWindow();
+            alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+            error.getDialogPane();
             error.showAndWait();
-            e.printStackTrace();
-        } finally {
-            moveMode = false;
-            noteToMove = null;
         }
     }
-
-
-
 }
