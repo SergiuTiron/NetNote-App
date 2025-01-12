@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import commons.Collection;
@@ -213,4 +215,29 @@ public class ServerUtils {
                 .request(APPLICATION_JSON)
                 .get(Collection.class);
     }
+
+    /**
+     * Searches for notes based on a keyword and optionally a collection ID.
+     *
+     * @param keyword      - the keyword to search for.
+     * @param collectionId - (optional) the ID of the collection to filter notes within.
+     * @return - list of filtered notes matching the keyword and collection (if provided).
+     */
+    public List<Note> searchKeyword(String keyword, Long collectionId) {
+        try {
+            String encodedKeyword = URLEncoder.encode(keyword, StandardCharsets.UTF_8);
+            String baseUrl = SERVER + "api/notes/search?keyword=" + encodedKeyword;
+            if (collectionId != null) {
+                baseUrl += "&collectionId=" + collectionId;
+            }
+            String url = baseUrl;
+            return ClientBuilder.newClient(new ClientConfig())
+                    .target(url)
+                    .request(APPLICATION_JSON)
+                    .get(new GenericType<>() {});
+        } catch (Exception e) {
+            throw new RuntimeException("Error encoding or executing search request", e);
+        }
+    }
+
 }
