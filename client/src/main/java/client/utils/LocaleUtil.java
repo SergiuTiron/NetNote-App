@@ -1,5 +1,8 @@
 package client.utils;
 
+import javafx.scene.image.Image;
+
+import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -32,4 +35,14 @@ public class LocaleUtil {
 
         return availableLocales;
     }
+
+    public Image getFlagImage(Locale locale) {
+        try {
+            return new Image("flags/" + locale.toLanguageTag() + ".png");
+        } catch (IllegalArgumentException ex) {
+            System.err.println("Loading flag image failed for " + locale);
+            return null;
+        }
+    }
+
 }
