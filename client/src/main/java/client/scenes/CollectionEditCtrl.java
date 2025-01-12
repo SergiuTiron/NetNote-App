@@ -1,5 +1,6 @@
 package client.scenes;
 
+import client.Config;
 import client.utils.ServerUtils;
 import commons.Collection;
 import jakarta.inject.Inject;
@@ -25,7 +26,7 @@ import java.util.ResourceBundle;
 
 public class CollectionEditCtrl implements Initializable {
     private final ServerUtils server;
-    //private final MainCtrl mainCtrl;
+    private final Config config;
     private final NoteEditCtrl noteEditCtrl;
 
     public final ObjectProperty<Locale> selectedLanguage = new SimpleObjectProperty<>();
@@ -34,9 +35,17 @@ public class CollectionEditCtrl implements Initializable {
     private ListView<Collection> collectionListView;
 
     @Inject
-    public CollectionEditCtrl(ServerUtils server, NoteEditCtrl noteEditCtrl) {
+    public CollectionEditCtrl(ServerUtils server, NoteEditCtrl noteEditCtrl, Config config) {
         this.server = server;
         this.noteEditCtrl = noteEditCtrl;
+        this.config = config;
+        System.out.println("Config injected into CollectionEditCtrl: " + config);
+    }
+
+    public void addNewCollection(String name) {
+        // Use config to manage collections
+        Collection newCollection = new Collection(name);
+        config.addCollection(newCollection);
     }
 
     @Override

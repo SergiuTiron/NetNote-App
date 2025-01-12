@@ -44,12 +44,16 @@ public class Main extends Application {
 
     private Locale locale = DEFAULT_LOCALE;
 
+    private ConfigManager configManager;
+    private Config config;
+
     public static void main(String[] args) {
         launch();
     }
 
     @Override
     public void start(Stage primaryStage) {
+
         ServerUtils serverUtils = INJECTOR.getInstance(ServerUtils.class);
         if (!serverUtils.isServerAvailable()) {
             System.err.println("Server needs to be started before the client, but it does not seem to be available. Shutting down.");
