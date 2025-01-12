@@ -554,7 +554,10 @@ public class NoteEditCtrl implements Initializable {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
             alert.setHeaderText("There is no current note selected");
-            alert.setContentText(null);
+            alert.setContentText("Please select a note when trying to move to another collection");
+            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+            alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+            alert.getDialogPane();
             alert.showAndWait();
             return;
         }
@@ -563,11 +566,17 @@ public class NoteEditCtrl implements Initializable {
             currentNote.setCollection(newCollection);
             server.updateNote(currentNote);
             Alert info = new Alert(Alert.AlertType.INFORMATION, "Note successfully moved to " + newCollection.getName() + ".");
+            Stage alertStage = (Stage) info.getDialogPane().getScene().getWindow();
+            alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+            info.getDialogPane();
             info.showAndWait();
             refresh();
             clearFields();
         }catch (Exception e) {
             Alert error = new Alert(Alert.AlertType.ERROR, "Failed to move the note. Please try again.");
+            Stage alertStage = (Stage) error.getDialogPane().getScene().getWindow();
+            alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+            error.getDialogPane();
             error.showAndWait();
         }
     }

@@ -29,6 +29,21 @@ public class CollectionTest {
     }
 
     @Test
+    public void testGetId() {
+        assertEquals(0,testCollection1.getId());
+    }
+
+    @Test
+    public void testSetName() {
+        testCollection1.setName("new name");
+        assertEquals("new name",testCollection1.getName());
+        testCollection2.setName("new name v2");
+        assertEquals("new name v2",testCollection2.getName());
+        testCollection3.setName("new name v3");
+        assertEquals("new name v3",testCollection3.getName());
+    }
+
+    @Test
     public void testEquals() {
         assertEquals(testCollection3, testCollection3);
         assertNotEquals(testCollection1, testCollection3);
