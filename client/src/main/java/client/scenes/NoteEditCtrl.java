@@ -32,6 +32,7 @@ import javafx.util.StringConverter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class NoteEditCtrl implements Initializable {
 
@@ -605,4 +606,40 @@ public class NoteEditCtrl implements Initializable {
             error.showAndWait();
         }
     }
+
+    @FXML
+    private void onSelectLanguage(ActionEvent event) {
+        List<Locale> availableLocales = Arrays.asList(Locale.getAvailableLocales());
+        List<String> languages = availableLocales.stream()
+                .map(Locale::getDisplayName)
+                .collect(Collectors.toList());
+
+        ChoiceDialog<String> dialog = new ChoiceDialog<>("English", languages);
+        dialog.setTitle("Select Language");
+        dialog.setHeaderText("Choose Your Preferred Language");
+        dialog.setContentText("Language:");
+
+        Optional<String> result = dialog.showAndWait();
+
+        result.ifPresent(selectedLanguage -> {
+            System.out.println("Saved Language: " + selectedLanguage);
+            // TODO: Save the selected language in the database
+            // savePreferredLanguage(selectedLanguage);
+
+            Locale newLocale = mapLanguageToLocale(selectedLanguage);
+            setLanguage(newLocale);
+
+        });
+    }
+
+    private Locale mapLanguageToLocale(String language) {
+        return switch (language) {
+            case "Dutch" -> new Locale("nl");
+            case "Romanian" -> new Locale("ro");
+            case "Bulgarian" -> new Locale("bg");
+            case "Italian" -> new Locale("it");
+            default -> Locale.ENGLISH;
+        };
+    }
+
 }
