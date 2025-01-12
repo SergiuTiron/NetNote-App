@@ -1,5 +1,7 @@
 package client.scenes;
 
+import client.Config;
+import client.ConfigManager;
 import client.utils.ServerUtils;
 import commons.Collection;
 import jakarta.inject.Inject;
@@ -18,14 +20,12 @@ import javafx.util.StringConverter;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class CollectionEditCtrl implements Initializable {
     private final ServerUtils server;
-    //private final MainCtrl mainCtrl;
+    private final Config config;
+    private final ConfigManager configManager;
     private final NoteEditCtrl noteEditCtrl;
 
     public final ObjectProperty<Locale> selectedLanguage = new SimpleObjectProperty<>();
@@ -34,9 +34,11 @@ public class CollectionEditCtrl implements Initializable {
     private ListView<Collection> collectionListView;
 
     @Inject
-    public CollectionEditCtrl(ServerUtils server, NoteEditCtrl noteEditCtrl) {
+    public CollectionEditCtrl(ServerUtils server, NoteEditCtrl noteEditCtrl, Config config, ConfigManager configManager) {
         this.server = server;
         this.noteEditCtrl = noteEditCtrl;
+        this.config = config;
+	    this.configManager = configManager;
     }
 
     @Override
@@ -45,13 +47,18 @@ public class CollectionEditCtrl implements Initializable {
 
         // Retrieve all collections from server and add them to listView
         List<Collection> collections = server.getCollections();
-        collectionListView.setItems(FXCollections.observableList(collections));
 
         // Create default collection if not present
         Collection defaultCollection = server.getDefaultCollection();
         if (!collections.contains(defaultCollection)) {
             collections.addFirst(defaultCollection); // Add default collection to the beginning or wherever you prefer
         }
+        config.setDefaultCollection(defaultCollection); // For now, we're setting the config default as the server default
+        saveConfig(config);
+
+        collections.addAll(config.getCollections()); // add all config collections
+
+        collectionListView.setItems(FXCollections.observableList(collections));
 
         collectionListView.setCellFactory(_ -> new TextFieldListCell<>(new StringConverter<>() {
             @Override
@@ -106,7 +113,8 @@ public class CollectionEditCtrl implements Initializable {
                         alert.showAndWait();
                         return selectedCollection;
                     }
-
+                    config.getCollection(selectedCollection).setName(newName);
+                    saveConfig(config);
                     selectedCollection.setName(newName.strip());
                     server.addCollection(selectedCollection);
                     System.out.println("Collection title changed");
@@ -173,6 +181,10 @@ public class CollectionEditCtrl implements Initializable {
             // Add collection to server
             Collection collection = new Collection(collectionName);
             Collection savedCollection = server.addCollection(collection);
+
+            config.addCollection(savedCollection); // add collection to config
+            saveConfig(config);
+
             // Add collection to listView
             collectionListView.getItems().add(savedCollection);
             collectionListView.getSelectionModel().select(savedCollection);
@@ -186,6 +198,18 @@ public class CollectionEditCtrl implements Initializable {
     }
 
     /**
+     * Method to save the config
+     * @param config - config to save
+     */
+    public void saveConfig(Config config) {
+        try {
+            configManager.saveConfig(config);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
      * Delete selected collection
      */
     public void deleteCollection() throws IOException {
@@ -193,6 +217,8 @@ public class CollectionEditCtrl implements Initializable {
         if(selectedCollection != null) {
             try {
                 server.deleteCollection(selectedCollection.getId());
+                config.removeCollection(selectedCollection);
+                saveConfig(config);
                 collectionListView.getItems().remove(selectedCollection);
                 noteEditCtrl.deleteCollectionToMenuButton(selectedCollection);
                 refresh();
@@ -209,6 +235,7 @@ public class CollectionEditCtrl implements Initializable {
 
     public void refresh() {
         List<Collection> collections = server.getCollections();
+        System.out.println(collections.toString());
         collectionListView.setItems(FXCollections.observableList(collections));
         System.out.println("Collection refreshed");
     }

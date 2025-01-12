@@ -1,5 +1,7 @@
 package client.scenes;
 
+import client.Config;
+import client.ConfigManager;
 import client.utils.KeyStrokeUtil;
 import client.utils.LocaleUtil;
 import client.utils.MarkdownUtil;
@@ -44,6 +46,9 @@ public class NoteEditCtrl implements Initializable {
     private boolean moveMode = false;
     private Note noteToMove = null;
 
+    private final Config config;
+    private final ConfigManager configManager;
+
     @FXML
     private Label saveLabel;
 
@@ -71,13 +76,15 @@ public class NoteEditCtrl implements Initializable {
     public final ObjectProperty<Locale> selectedLanguage = new SimpleObjectProperty<>();
 
     @Inject
-    public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke, MarkdownUtil markdown, LocaleUtil localeUtil, MainCtrl mainCtrl) {
+    public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke, MarkdownUtil markdown, LocaleUtil localeUtil, MainCtrl mainCtrl, Config config, ConfigManager configManager) {
         this.server = server;
         this.keyStroke = keyStroke;
         this.markdown = markdown;
         this.localeUtil = localeUtil;
         this.mainCtrl = mainCtrl;
-        DELETE_FLAG = false;
+	    this.config = config;
+	    this.configManager = configManager;
+	    DELETE_FLAG = false;
     }
 
     @Override
@@ -98,6 +105,10 @@ public class NoteEditCtrl implements Initializable {
                 }
             });
             collectionBox.getItems().add(collectionItem);
+        }
+        for (Collection collection : config.getCollections()) {
+            collections.add(collection);
+            addCollectionToMenuButton(collection);
         }
         // Set the "All" option as default selection
         collectionBox.setText("All");
@@ -143,6 +154,8 @@ public class NoteEditCtrl implements Initializable {
                     selectedNote.setTitle(newTitle.strip());
                     titleField.setText(newTitle.strip());
                     server.updateNote(selectedNote);
+                    config.getNote(selectedNote).setTitle(newTitle);
+                    saveConfig(config);
                 } else if (duplicatedTitle.isPresent()) {
                     System.out.println("Title already exists");
                     Alert alert = new Alert(Alert.AlertType.WARNING); // Alert type
@@ -225,6 +238,19 @@ public class NoteEditCtrl implements Initializable {
 
         // Add the notes to the ListView
         noteListView.getItems().addAll(notes);
+        noteListView.getItems().addAll(config.getNotes());
+    }
+
+    /**
+     * Method to save the config
+     * @param config - config to save
+     */
+    public void saveConfig(Config config) {
+        try {
+            configManager.saveConfig(config);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -407,6 +433,8 @@ public class NoteEditCtrl implements Initializable {
             note.setCollection(currentCollection);
             server.linkNoteToCollection(currentCollection.getId(), note);
         }
+        config.addNote(note);
+        saveConfig(config);
         noteListView.getItems().add(note);
         // Updates the location of the editing area on the note currently created
         noteListView.getSelectionModel().select(note);
@@ -490,6 +518,8 @@ public class NoteEditCtrl implements Initializable {
         try {
             DELETE_FLAG = true;
             server.deleteNoteFromServer(selectedNote.getId());
+            config.removeNote(selectedNote);
+            saveConfig(config);
             noteListView.getItems().remove(selectedNote);
             //clearFields();
             //refresh();
