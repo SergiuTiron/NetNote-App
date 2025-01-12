@@ -570,19 +570,5 @@ public class NoteEditCtrl implements Initializable {
             Alert error = new Alert(Alert.AlertType.ERROR, "Failed to move the note. Please try again.");
             error.showAndWait();
         }
-        /*try {
-            noteToMove.setCollection(collection);
-            server.updateNote(noteToMove);
-            noteListView.getItems().remove(noteToMove);
-            Alert info = new Alert(Alert.AlertType.INFORMATION, "Note successfully moved to " + collection.getName() + ".");
-            info.showAndWait();
-        } catch (Exception e) {
-            Alert error = new Alert(Alert.AlertType.ERROR, "Failed to move the note. Please try again.");
-            error.showAndWait();
-            e.printStackTrace();
-        } finally {
-            moveMode = false;
-            noteToMove = null;
-        }*/
     }
 }
