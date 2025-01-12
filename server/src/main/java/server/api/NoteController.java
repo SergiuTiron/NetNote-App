@@ -71,4 +71,16 @@ public class NoteController {
         }
     }
 
+    /**
+     *     method that calls the searchKeyword method in noteService to perform the keyword search
+     */
+    @GetMapping("/search")
+    public ResponseEntity<List<Note>> searchNotes(
+            @RequestParam String keyword,
+            @RequestParam(required = false) Long collectionId) {
+        List<Note> filteredNotes = noteService.searchKeyword(keyword, collectionId);
+        return ResponseEntity.ok(filteredNotes);
+    }
+
+
 }
