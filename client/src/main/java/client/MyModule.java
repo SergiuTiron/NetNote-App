@@ -30,5 +30,20 @@ public class MyModule implements Module {
         binder.bind(MainCtrl.class).in(Scopes.SINGLETON);
         binder.bind(NoteEditCtrl.class).in(Scopes.SINGLETON);
         binder.bind(CollectionEditCtrl.class).in(Scopes.SINGLETON);
+
+        // Bind ConfigManager and load Config
+        ConfigManager configManager = new ConfigManager();
+        Config config;
+        try {
+            // Load configuration from the configuration manager
+            config = configManager.loadConfig();
+        } catch (Exception e) {
+            System.err.println("Failed to load configuration: " + e.getMessage());
+            // Fallback to default configuration if loading fails
+            config = new Config();
+        }
+
+        // Bind Config as a singleton instance
+        binder.bind(Config.class).toInstance(config);
     }
 }
