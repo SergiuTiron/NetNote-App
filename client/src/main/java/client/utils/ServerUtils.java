@@ -206,4 +206,11 @@ public class ServerUtils {
                 .request(APPLICATION_JSON)
                 .get(Collection.class);
     }
+
+    public Collection getCollectionByName(String name) {
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/collections/" + name)
+                .request(APPLICATION_JSON)
+                .get(Collection.class);
+    }
 }
