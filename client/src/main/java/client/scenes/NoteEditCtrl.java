@@ -131,13 +131,17 @@ public class NoteEditCtrl implements Initializable {
             @Override
             public Note fromString(String newTitle) {
                 Note selectedNote = noteListView.getSelectionModel().getSelectedItem();
+                if (selectedNote.getTitle().equals(newTitle.strip())) {
+                    System.out.println("Title is unchanged. No action taken.");
+                    return selectedNote;
+                }
                 Optional<Note> duplicatedTitle = server.getNotes()
                         .stream()
-                        .filter(note -> note.getTitle().equals(newTitle))
+                        .filter(note -> note.getTitle().equals(newTitle.strip()))
                         .findAny();
                 if (selectedNote != null && duplicatedTitle.isEmpty()) {
-                    selectedNote.setTitle(newTitle);
-                    titleField.setText(newTitle);
+                    selectedNote.setTitle(newTitle.strip());
+                    titleField.setText(newTitle.strip());
                     server.updateNote(selectedNote);
                 } else if (duplicatedTitle.isPresent()) {
                     System.out.println("Title already exists");
@@ -156,6 +160,10 @@ public class NoteEditCtrl implements Initializable {
 
         titleField.setEditable(false);
 
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filterNotes();
+        });
+
         noteListView.setEditable(true);
         //double-click triggers note editing
         noteListView.setOnMouseClicked(event -> {
@@ -170,7 +178,9 @@ public class NoteEditCtrl implements Initializable {
                 .addListener((_, old, current) -> {
                     if (DELETE_FLAG) {
                         DELETE_FLAG = false;
-                        titleField.setText(current.getTitle());
+                        if(current != null) {
+                            titleField.setText(current.getTitle());
+                        }
                         return;
                     }
                     if (current == null || current.getTitle().isEmpty()) {
@@ -449,11 +459,18 @@ public class NoteEditCtrl implements Initializable {
             noteListView.setItems(FXCollections.observableList(server.getNotes()));
             return;
         }
-        List<Note> filteredNotes = new ArrayList<>();
-        for (Note note : server.getNotes())
-            if (note.getContent().toLowerCase().contains(query.toLowerCase()))
-                filteredNotes.add(note);
-
+        List<Note> notesInCurrentCollection;
+        if(currentCollection == null) {
+            notesInCurrentCollection = server.getNotes();
+        }
+        else{
+            notesInCurrentCollection = server.getNotesByCollection(currentCollection.getId());
+        }
+        List<Note> filteredNotes = notesInCurrentCollection
+                .stream()
+                .filter(note -> note.getContent().toLowerCase().contains(query.toLowerCase()) ||
+                        note.getTitle().toLowerCase().contains(query.toLowerCase()))
+                .toList();
         noteListView.setItems(FXCollections.observableList(filteredNotes));
     }
 
