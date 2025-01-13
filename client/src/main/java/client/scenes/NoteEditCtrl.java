@@ -182,8 +182,6 @@ public class NoteEditCtrl implements Initializable {
                     selectedNote.setTitle(newTitle.strip());
                     titleField.setText(newTitle.strip());
                     server.updateNote(selectedNote);
-                    config.getNote(selectedNote).setTitle(newTitle);
-                    saveConfig(config);
                 } else {
                     System.out.println("Title already exists");
                     dialogUtil.showDialog(resourceBundle, Alert.AlertType.WARNING,
@@ -259,19 +257,6 @@ public class NoteEditCtrl implements Initializable {
 
         // Add the notes to the ListView
         noteListView.getItems().addAll(notes);
-        noteListView.getItems().addAll(config.getNotes());
-    }
-
-    /**
-     * Method to save the config
-     * @param config - config to save
-     */
-    public void saveConfig(Config config) {
-        try {
-            configManager.saveConfig(config);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     /**
@@ -456,8 +441,6 @@ public class NoteEditCtrl implements Initializable {
             note.setCollection(currentCollection);
             server.linkNoteToCollection(currentCollection.getId(), note);
         }
-        config.addNote(note);
-        saveConfig(config);
         noteListView.getItems().add(note);
         // Updates the location of the editing area on the note currently created
         noteListView.getSelectionModel().select(note);
@@ -561,8 +544,6 @@ public class NoteEditCtrl implements Initializable {
         try {
             DELETE_FLAG = true;
             server.deleteNoteFromServer(selectedNote.getId());
-            config.removeNote(selectedNote);
-            saveConfig(config);
             noteListView.getItems().remove(selectedNote);
             clearFields();
             refresh();

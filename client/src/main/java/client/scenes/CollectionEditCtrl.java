@@ -113,7 +113,8 @@ public class CollectionEditCtrl implements Initializable {
                         alert.showAndWait();
                         return selectedCollection;
                     }
-                    config.getCollection(selectedCollection).setName(newName);
+
+                    config.setCollectionName(selectedCollection, newName.strip());
                     saveConfig(config);
                     selectedCollection.setName(newName.strip());
                     server.addCollection(selectedCollection);

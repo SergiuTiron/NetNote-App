@@ -21,6 +21,7 @@ public class ConfigManager {
 
 		// Write the JSON string to the config file
 		Files.write(CONFIG_FILE_PATH, configJson.getBytes());
+		System.out.println("Config saved");
 	}
 
 
