@@ -11,6 +11,7 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.cell.TextFieldListCell;
@@ -48,12 +49,11 @@ public class CollectionEditCtrl implements Initializable {
         // Retrieve all collections from server and add them to listView
         List<Collection> collections = server.getCollections();
 
-        // Create default collection if not present
-        Collection defaultCollection = server.getDefaultCollection();
+        Collection defaultCollection = configManager.getDefaultCollection();
         if (!collections.contains(defaultCollection)) {
-            collections.addFirst(defaultCollection); // Add default collection to the beginning or wherever you prefer
+            collections.addFirst(defaultCollection);
         }
-        config.setDefaultCollection(defaultCollection); // For now, we're setting the config default as the server default
+        config.setDefaultCollection(defaultCollection);
         saveConfig(config);
 
         collections.addAll(config.getCollections()); // add all config collections
@@ -71,19 +71,6 @@ public class CollectionEditCtrl implements Initializable {
             public Collection fromString(String newName) {
                 Collection selectedCollection = collectionListView.getSelectionModel().getSelectedItem();
                 if (selectedCollection != null){
-                    if(selectedCollection.equals(defaultCollection)){
-                        System.err.println("Default collection's name cannot be changed");
-                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                        alert.setTitle("Default collection warning");
-                        alert.setHeaderText("Default collection's name cannot be changed");
-                        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-                        alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
-                        alert.setContentText(null);
-                        alert.getDialogPane();
-                        alert.showAndWait();
-                        return selectedCollection;
-                    }
-
                     if(newName.isBlank()){
                         System.err.println("Collection name must not be empty.");
                         Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -238,7 +225,7 @@ public class CollectionEditCtrl implements Initializable {
         List<Collection> collections = server.getCollections();
         System.out.println(collections.toString());
         collectionListView.setItems(FXCollections.observableList(collections));
-        System.out.println("Collection refreshed");
+        System.out.println("Collections refreshed");
     }
 
     /**
@@ -262,5 +249,34 @@ public class CollectionEditCtrl implements Initializable {
 
     public void setLanguage(Locale locale) {
         this.selectedLanguage.setValue(locale);
+    }
+
+    /**
+     * method triggered when pressing the "Make Default Button"
+     * it sets the selected method as default and displays an informative message
+     */
+    public void setCollectionAsDefault(){
+        Collection selectedCollection =collectionListView.getSelectionModel().getSelectedItem();
+        if(selectedCollection == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Default Collection Warning");
+            alert.setHeaderText("No collection selected");
+            alert.setContentText("Please select a collection first.");
+            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+            alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+            alert.getDialogPane();
+            alert.showAndWait();
+        }
+        else{
+            config.setDefaultCollection(selectedCollection);
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Default Collection Information");
+            alert.setHeaderText("Default Collection Selected");
+            alert.setContentText("Your new default collection is " + selectedCollection.getName() +".");
+            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+            alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+            alert.getDialogPane();
+            alert.showAndWait();
+        }
     }
 }
