@@ -222,7 +222,7 @@ public class NoteEditCtrl implements Initializable {
                     } else {
                         titleField.setText(current.getTitle());
                     }
-                    saveChanges(old);
+                    this.saveChanges(old);
                     this.handleNoteSelect(current);
                 });
 
@@ -652,6 +652,14 @@ public class NoteEditCtrl implements Initializable {
             case "Italian" -> new Locale("it");
             default -> Locale.ENGLISH;
         };
+    }
+
+    public Note getCurrentNote() {
+        return currentNote;
+    }
+
+    public void setCurrentNote(Note note) {
+        noteListView.getSelectionModel().select(note);
     }
 
 }
