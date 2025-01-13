@@ -43,17 +43,6 @@ public class CollectionService {
         return collectionRepository.save(collection);
     }
 
-    @PostConstruct
-    public Collection getOrCreateDefaultCollection(){
-        Optional<Collection> existingCollection = collectionRepository.findByName("Default Collection");
-        if (existingCollection.isPresent()) {
-            return existingCollection.get();
-        } else {
-            Collection newCollection = new Collection("Default Collection");
-            return collectionRepository.save(newCollection);
-        }
-    }
-
     public Collection updateCollection(Long id, Collection updatedCollection) {
         Collection existingCollection = collectionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Collection with ID " + id + " does not exist"));
@@ -61,4 +50,21 @@ public class CollectionService {
         return collectionRepository.save(existingCollection);
     }
 
+    public Collection getCollectionById(Long id) {
+        return collectionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Collection not found with ID: " + id));
+    }
+
+    /**
+     * method that creates the default collection when
+     * no defaultCollectionId has been found in the config file
+     * @return the newly created Default Collection
+     */
+    public Collection createDefaultCollection() {
+        Collection defaultCollection = new Collection("Initial Collection");
+        return collectionRepository.save(defaultCollection);
+    }
+
 }
+
+
