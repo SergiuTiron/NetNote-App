@@ -1,5 +1,6 @@
 import commons.Note;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -26,11 +27,14 @@ public class CollectionServiceTest {
         MockitoAnnotations.openMocks(this); // Initialize mocks
     }
 
+    //test disabled, as the method does not exist anymore
     @Test
+    @Disabled
     public void testNoDuplicateDefaultCollection() {
         Collection existingCollection = new Collection("Default Collection");
         when(collectionRepository.findByName("Default Collection")).thenReturn(Optional.of(existingCollection));
-        Collection defaultCollection = collectionService.getOrCreateDefaultCollection();
+        Collection defaultCollection = null;
+        //Collection defaultCollection = collectionService.getOrCreateDefaultCollection();
         assertNotNull(defaultCollection, "Returned collection should not be null");
         assertEquals(existingCollection, defaultCollection, "Should return the existing Default Collection");
         verify(collectionRepository, never()).save(any(Collection.class));
@@ -103,15 +107,17 @@ public class CollectionServiceTest {
         verify(collectionRepository, never()).save(any(Collection.class));
     }
 
+    //test disabled, as the method does not exist anymore
     @Test
+    @Disabled
     void getOrCreateDefaultCollection_Get() {
         // Test whether the collection is returned
         when(collectionRepository.findByName("Default Collection")).thenReturn(Optional.empty());
 
         Collection collection = new Collection("Default Collection");
         when(collectionRepository.save(any(Collection.class))).thenReturn(collection);
-
-        Collection result = collectionService.getOrCreateDefaultCollection();
+        Collection result = null;
+        //Collection result = collectionService.getOrCreateDefaultCollection();
 
         verify(collectionRepository, times(1)).findByName("Default Collection");
         verify(collectionRepository, times(1)).save(any(Collection.class));
