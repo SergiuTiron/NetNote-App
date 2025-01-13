@@ -2,6 +2,7 @@ package client.scenes;
 
 import client.Config;
 import client.ConfigManager;
+import client.utils.DialogUtil;
 import client.utils.ServerUtils;
 import commons.Collection;
 import jakarta.inject.Inject;
@@ -10,10 +11,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
@@ -25,25 +23,49 @@ import java.util.*;
 
 public class CollectionEditCtrl implements Initializable {
     private final ServerUtils server;
+    private final DialogUtil dialogUtil;
+
     private final Config config;
     private final ConfigManager configManager;
+
     private final NoteEditCtrl noteEditCtrl;
 
+    private Collection currentCollection;
+
+    private ResourceBundle resourceBundle;
     public final ObjectProperty<Locale> selectedLanguage = new SimpleObjectProperty<>();
 
     @FXML
     private ListView<Collection> collectionListView;
 
+    @FXML
+    private TextField collectionNameField;
+
+    @FXML
+    private TextField serverField;
+
+    @FXML
+    private TextField titleField;
+
+    @FXML
+    private Label serverStatus;
+
+
+
     @Inject
-    public CollectionEditCtrl(ServerUtils server, NoteEditCtrl noteEditCtrl, Config config, ConfigManager configManager) {
+    public CollectionEditCtrl(ServerUtils server, NoteEditCtrl noteEditCtrl, Config config, ConfigManager configManager, DialogUtil dialogUtil) {
         this.server = server;
         this.noteEditCtrl = noteEditCtrl;
         this.config = config;
 	    this.configManager = configManager;
+        this.dialogUtil = dialogUtil;
+        this.currentCollection = null;
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        this.resourceBundle = resourceBundle;
+
         collectionListView.setEditable(true);
 
         // Retrieve all collections from server and add them to listView
@@ -56,7 +78,7 @@ public class CollectionEditCtrl implements Initializable {
         config.setDefaultCollection(defaultCollection);
         saveConfig(config);
 
-        collections.addAll(config.getCollections()); // add all config collections
+        collections.addAll(config.getCollections().stream().filter(x -> !collections.contains(x)).toList()); // add all config collections
 
         collectionListView.setItems(FXCollections.observableList(collections));
 
@@ -85,10 +107,9 @@ public class CollectionEditCtrl implements Initializable {
                     }
 
                     //ensure titles are unique
-                    if(collections.stream()
+                    if (server.getCollections().stream()
                             .anyMatch(collection -> collection.getName().equals(newName)
-                                    && !collection.equals(selectedCollection)))
-                    {
+                                    && !collection.equals(selectedCollection))) {
                         System.err.println("Collection name must be unique.");
                         Alert alert = new Alert(Alert.AlertType.WARNING);
                         alert.setTitle("Collection name warning");
@@ -111,7 +132,12 @@ public class CollectionEditCtrl implements Initializable {
                 return selectedCollection;
             }
         }));
-
+        //listener for the ListView
+        collectionListView.getSelectionModel().selectedItemProperty()
+                        .addListener((_, _, current) -> handleSelectedCollection(current));
+        //listener for the title change
+        titleField.textProperty().addListener((_,_,text)-> statusListnerMethod(text));
+        //change title on double click
         collectionListView.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
                 int index = collectionListView.getSelectionModel().getSelectedIndex();
@@ -120,6 +146,122 @@ public class CollectionEditCtrl implements Initializable {
                 }
             }
         });
+        //on initialization no note is selected
+        handleSelectedCollection(null);
+    }
+
+    private void statusListnerMethod(String text) {
+        collectionNameField.setText(text); // TODO: Figure out if this should get updated with the note title
+        if(server.getCollections()
+                .stream()
+                .anyMatch(collection -> collection.getName().equals(text))){
+            serverStatus.setText("Collection already exists");
+            return;
+
+        }
+        if(text.isBlank()) {
+            serverStatus.setText("Blank Collection Title");
+            return;
+        }
+        if(server.getCollections()
+                .stream()
+                .noneMatch(collection -> collection.getName().equals(text))) {
+            serverStatus.setText("Collection can be created");
+            return;
+        }
+        serverStatus.setText("Collection exists");
+    }
+
+    /**
+     * Called by the listener inside initialize method whenever a collection is selected,
+     * sets the fields on the right hand side accordingly to the collection selected or
+     * if no collection is selected sets a default text in all fields
+     * @param selectedCollection the collection that is selected
+     */
+    public void handleSelectedCollection(Collection selectedCollection) {
+        if(selectedCollection == null) {
+            //show a basic prompt if no collection selected
+            titleField.setText("Select a collection to edit");
+            serverField.setText("Select a collection to edit");
+            collectionNameField.setText("Select a collection to edit");
+            return;
+        }
+        //update the current collection
+        currentCollection = selectedCollection;
+        System.out.println("Collection " + selectedCollection.getName() + " selected");
+
+        //update the fields accordingly
+        titleField.setText(selectedCollection.getName());
+        serverField.setText(server.getServerPath());
+        collectionNameField.setText(selectedCollection.getName());
+        serverStatus.setText("Collection exists");
+    }
+
+    public void changeCollectionTitle() {
+        if(currentCollection == null){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("No collection selected");
+            alert.setContentText("Please select a collection first.");
+            alert.showAndWait();
+            handleSelectedCollection(null);
+            return;
+        }
+        String newTitle = titleField.getText();
+        if(newTitle.isBlank()){
+            System.err.println("Collection name must not be empty.");
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Collection name warning");
+            alert.setHeaderText("Collection name cannot be empty");
+            alert.setContentText("Please try to choose a proper collection title.");
+            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+            alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+            alert.getDialogPane();
+            alert.showAndWait();
+            return;
+        }
+        if(server.getCollections()
+                .stream()
+                .anyMatch(collection -> collection.getName().equals(newTitle))) {
+            System.err.println("Collection name must be unique.");
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Collection name warning");
+            alert.setHeaderText("There is already a title with the given name");
+            alert.setContentText("Please try to choose a unique collection title.");
+            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+            alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+            alert.getDialogPane();
+            alert.showAndWait();
+            return;
+        }
+
+        Collection modifiedCollection = currentCollection;
+        modifiedCollection.setName(newTitle);
+        server.addCollection(modifiedCollection);
+        System.out.println("Collection title changed to " + newTitle);
+        refresh();
+    }
+
+    public void changeCollectionServer() {
+        if(currentCollection == null){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("No collection selected");
+            alert.setContentText("Please select a collection first.");
+            alert.showAndWait();
+            handleSelectedCollection(null);
+        }
+        String serverPath = serverField.getText();
+        //TODO: CHECK IF THE SERVER PATH IS VALID ?
+    }
+
+    public void changeCollectionName() {
+        if(currentCollection == null){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("No collection selected");
+            alert.setContentText("Please select a collection first.");
+            alert.showAndWait();
+            handleSelectedCollection(null);
+        }
+        //TODO: FIGURE OUT THE DIFFERENCE BETWEEN THIS AND THE TITLE FIELD
     }
 
     /**
@@ -186,21 +328,9 @@ public class CollectionEditCtrl implements Initializable {
     }
 
     /**
-     * Method to save the config
-     * @param config - config to save
-     */
-    public void saveConfig(Config config) {
-        try {
-            configManager.saveConfig(config);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
      * Delete selected collection
      */
-    public void deleteCollection() throws IOException {
+    public void deleteCollection() {
         Collection selectedCollection = collectionListView.getSelectionModel().getSelectedItem();
         if(selectedCollection != null) {
             try {
@@ -211,7 +341,7 @@ public class CollectionEditCtrl implements Initializable {
                 noteEditCtrl.deleteCollectionToMenuButton(selectedCollection);
                 refresh();
                 System.out.println("Collection deleted successfully");
-            } catch (IOException e) {
+            } catch (Exception e) {
                 System.err.println("Failed to delete collection");
                 e.printStackTrace();
             }
@@ -229,24 +359,21 @@ public class CollectionEditCtrl implements Initializable {
     }
 
     /**
-     * Find a given collection by its id
-     * @param name - name of collection to find
-     * @return - id of collection
+     * Method to save the config
+     * @param config - config to save
      */
-    private Collection findCollectionById(String name) {
-        List<Collection> collections = server.getCollections();
-
-        Collection collectionToFind = collections.stream()
-                .filter(collection -> collection.getName().equalsIgnoreCase(name))
-                .findAny().orElse(null);
-
-        if (collectionToFind == null) {
-            throw new RuntimeException("Collection not found");
-        } else {
-            return collectionToFind;
+    public void saveConfig(Config config) {
+        try {
+            configManager.saveConfig(config);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
+    /**
+     * Method to set the Language of the scene
+     * @param locale the Locale with the language that needs to be set for the scene
+     */
     public void setLanguage(Locale locale) {
         this.selectedLanguage.setValue(locale);
     }
