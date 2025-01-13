@@ -38,8 +38,6 @@ import java.util.stream.Collectors;
 
 public class NoteEditCtrl implements Initializable {
 
-    private static boolean DELETE_FLAG;
-
     private final ServerUtils server;
     private final KeyStrokeUtil keyStroke;
     private final MarkdownUtil markdown;
@@ -47,10 +45,16 @@ public class NoteEditCtrl implements Initializable {
     private final DialogUtil dialogUtil;
 
     private final MainCtrl mainCtrl;
+
     private ResourceBundle resourceBundle;
+    public final ObjectProperty<Locale> selectedLanguage = new SimpleObjectProperty<>();
 
     private final Config config;
     private final ConfigManager configManager;
+
+    private boolean deleteFlag;
+    private Collection currentCollection;
+    private Note currentNote;
 
     @FXML
     private Label saveLabel;
@@ -79,10 +83,6 @@ public class NoteEditCtrl implements Initializable {
     @FXML
     private MenuButton currentCollectionDrop;
 
-    public final ObjectProperty<Locale> selectedLanguage = new SimpleObjectProperty<>();
-    private Collection currentCollection;
-    private Note currentNote;
-
     @Inject
     public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke, MarkdownUtil markdown, LocaleUtil localeUtil,
                         DialogUtil dialogUtil, MainCtrl mainCtrl, Config config, ConfigManager configManager) {
@@ -94,7 +94,7 @@ public class NoteEditCtrl implements Initializable {
         this.mainCtrl = mainCtrl;
 	    this.config = config;
 	    this.configManager = configManager;
-	    DELETE_FLAG = false;
+	    this.deleteFlag = false;
     }
 
     @Override
@@ -110,8 +110,10 @@ public class NoteEditCtrl implements Initializable {
             collectionBox.getItems().add(collectionItem);
         }
         for (Collection collection : config.getCollections()) {
-            collections.add(collection);
-            addCollectionToMenuButton(collection);
+            if(!collections.contains(collection)) {
+                collections.add(collection);
+                addCollectionToMenuButton(collection);
+            }
         }
         // Set the "All" option as default selection
         collectionBox.setText("All");
@@ -173,6 +175,12 @@ public class NoteEditCtrl implements Initializable {
                     return selectedNote;
                 }
 
+                if(newTitle.isBlank()) {
+                    System.out.println("Title is empty");
+                    /* To be added in the resource bundle
+                    dialogUtil.showDialog(resourceBundle, Alert.AlertType.WARNING,
+                            "popup.sameTitle"); */
+                }
                 Optional<Note> duplicatedTitle = server.getNotes()
                         .stream()
                         .filter(note -> note.getTitle().equals(newTitle.strip()))
@@ -208,8 +216,8 @@ public class NoteEditCtrl implements Initializable {
 
         noteListView.getSelectionModel().selectedItemProperty()
                 .addListener((_, old, current) -> {
-                    if (DELETE_FLAG) {
-                        DELETE_FLAG = false;
+                    if (deleteFlag) {
+                        this.deleteFlag = false;
                         if (current != null) {
                             titleField.setText(current.getTitle());
                         }
@@ -480,7 +488,6 @@ public class NoteEditCtrl implements Initializable {
         if (note == null)
             return;
         note.setContent(editingArea.getText());
-
         try {
             server.addNote(note);
             this.saveLabelTransition();
@@ -542,7 +549,7 @@ public class NoteEditCtrl implements Initializable {
             return;
         }
         try {
-            DELETE_FLAG = true;
+            deleteFlag = true;
             server.deleteNoteFromServer(selectedNote.getId());
             noteListView.getItems().remove(selectedNote);
             clearFields();

@@ -38,6 +38,10 @@ public class ServerUtils {
 
     private static final String SERVER = "http://localhost:8080/";
 
+    public String getServerPath() {
+        return SERVER;
+    }
+
     public List<Note> getNotes() {
         return ClientBuilder.newClient(new ClientConfig())
                 .target(SERVER).path("api/notes")
