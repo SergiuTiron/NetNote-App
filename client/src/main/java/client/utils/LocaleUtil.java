@@ -2,7 +2,6 @@ package client.utils;
 
 import javafx.scene.image.Image;
 
-import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;

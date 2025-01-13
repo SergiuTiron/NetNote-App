@@ -2,6 +2,7 @@ package client.scenes;
 
 import client.Config;
 import client.ConfigManager;
+import client.utils.DialogUtil;
 import client.utils.KeyStrokeUtil;
 import client.utils.LocaleUtil;
 import client.utils.MarkdownUtil;
@@ -37,14 +38,16 @@ import java.util.stream.Collectors;
 
 public class NoteEditCtrl implements Initializable {
 
+    private static boolean DELETE_FLAG;
+
     private final ServerUtils server;
     private final KeyStrokeUtil keyStroke;
     private final MarkdownUtil markdown;
     private final LocaleUtil localeUtil;
+    private final DialogUtil dialogUtil;
+
     private final MainCtrl mainCtrl;
     private ResourceBundle resourceBundle;
-    private static boolean DELETE_FLAG;
-    private Collection currentCollection;
 
     private final Config config;
     private final ConfigManager configManager;
@@ -77,14 +80,17 @@ public class NoteEditCtrl implements Initializable {
     private MenuButton currentCollectionDrop;
 
     public final ObjectProperty<Locale> selectedLanguage = new SimpleObjectProperty<>();
+    private Collection currentCollection;
     private Note currentNote;
 
     @Inject
-    public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke, MarkdownUtil markdown, LocaleUtil localeUtil, MainCtrl mainCtrl, Config config, ConfigManager configManager) {
+    public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke, MarkdownUtil markdown, LocaleUtil localeUtil,
+                        DialogUtil dialogUtil, MainCtrl mainCtrl, Config config, ConfigManager configManager) {
         this.server = server;
         this.keyStroke = keyStroke;
         this.markdown = markdown;
         this.localeUtil = localeUtil;
+        this.dialogUtil = dialogUtil;
         this.mainCtrl = mainCtrl;
 	    this.config = config;
 	    this.configManager = configManager;
@@ -100,10 +106,7 @@ public class NoteEditCtrl implements Initializable {
         // Add the collections as menuItems
         for (Collection collection : collections) {
             MenuItem collectionItem = new MenuItem(collection.getName());
-            collectionItem.setOnAction(event -> {
-                handleSpecificCollectionSelected(collection);
-            });
-
+            collectionItem.setOnAction(_ -> this.handleSpecificCollectionSelected(collection));
             collectionBox.getItems().add(collectionItem);
         }
         for (Collection collection : config.getCollections()) {
@@ -115,10 +118,7 @@ public class NoteEditCtrl implements Initializable {
 
         for (Collection collection : collections) {
             MenuItem collectionChangeItem = new MenuItem(collection.getName());
-            collectionChangeItem.setOnAction(event -> {
-                moveNoteToCollection(currentNote, collectionChangeItem);
-            });
-
+            collectionChangeItem.setOnAction(_ -> this.moveNoteToCollection(currentNote, collectionChangeItem));
             currentCollectionDrop.getItems().add(collectionChangeItem);
         }
 
@@ -172,36 +172,31 @@ public class NoteEditCtrl implements Initializable {
                     System.out.println("Title is unchanged. No action taken.");
                     return selectedNote;
                 }
+
                 Optional<Note> duplicatedTitle = server.getNotes()
                         .stream()
                         .filter(note -> note.getTitle().equals(newTitle.strip()))
                         .findAny();
-                if (selectedNote != null && duplicatedTitle.isEmpty()) {
+
+                if (duplicatedTitle.isEmpty()) {
                     selectedNote.setTitle(newTitle.strip());
                     titleField.setText(newTitle.strip());
                     server.updateNote(selectedNote);
                     config.getNote(selectedNote).setTitle(newTitle);
                     saveConfig(config);
-                } else if (duplicatedTitle.isPresent()) {
+                } else {
                     System.out.println("Title already exists");
-                    Alert alert = new Alert(Alert.AlertType.WARNING); // Alert type
-                    Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-                    alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
-                    alert.setTitle("Title Warnings");
-                    alert.setHeaderText("This note title already exists");
-                    alert.setContentText("Please enter a unique note title");
-
-                    alert.showAndWait();
+                    dialogUtil.showDialog(resourceBundle, Alert.AlertType.WARNING,
+                            "popup.duplicateTitle");
                 }
+
                 return selectedNote;
             }
         }));
 
         titleField.setEditable(false);
 
-        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
-            filterNotes();
-        });
+        searchField.textProperty().addListener((_, _, _) -> this.filterNotes());
 
         noteListView.setEditable(true);
         //double-click triggers note editing
@@ -234,7 +229,7 @@ public class NoteEditCtrl implements Initializable {
         editingArea.textProperty().addListener((_, _, newText) ->
                 markdown.renderMarkdownInWebView(newText, markdownPreview));
 
-        editingArea.setOnKeyTyped(event -> {
+        editingArea.setOnKeyTyped(_ -> {
             keyStroke.increaseCounter();
             if (keyStroke.getCounter() == keyStroke.getTrigger() && !editingArea.getText().isEmpty()) {
                 autoSave();
@@ -297,13 +292,8 @@ public class NoteEditCtrl implements Initializable {
         MenuItem newCollectionItem = new MenuItem(collection.getName());
         MenuItem newCollectionChangeItem = new MenuItem(collection.getName());
 
-        newCollectionItem.setOnAction(event -> {
-            handleSpecificCollectionSelected(collection);
-        });
-
-        newCollectionChangeItem.setOnAction(event -> {
-            moveNoteToCollection(currentNote, newCollectionChangeItem);
-        });
+        newCollectionItem.setOnAction(_ -> this.handleSpecificCollectionSelected(collection));
+        newCollectionChangeItem.setOnAction(_ -> this.moveNoteToCollection(currentNote, newCollectionChangeItem));
 
         // Add the new MenuItem to the MenuButton
         collectionBox.getItems().add(newCollectionItem);
@@ -376,7 +366,6 @@ public class NoteEditCtrl implements Initializable {
     }
 
     public void changeNoteSavingSettings(ActionEvent event) {
-        //System.out.println("something"); solely for debugging
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
 
         alert.setTitle(resourceBundle.getString("popup.autosave.title"));
@@ -400,10 +389,7 @@ public class NoteEditCtrl implements Initializable {
                 try {
                     keyStroke.setTriggerCount(Integer.parseInt(textField.getText()));
                 } catch (NumberFormatException e) {
-                    Alert error = new Alert(Alert.AlertType.ERROR);
-                    error.setTitle(resourceBundle.getString("popup.autosave.invalid.title"));
-                    error.setHeaderText(resourceBundle.getString("popup.autosave.invalid.text"));
-                    error.showAndWait();
+                    dialogUtil.showDialog(resourceBundle, Alert.AlertType.ERROR, "popup.autosave.invalid");
                 }
             } else if (response == ButtonType.CANCEL) {
                 alert.close();
@@ -501,13 +487,7 @@ public class NoteEditCtrl implements Initializable {
      * Called on exiting the app
      */
     public void saveChanges() {
-        Note note = noteListView.getSelectionModel().getSelectedItem();
-        if (note == null)
-            return;
-        note.setContent(editingArea.getText());
-        server.addNote(note);
-        saveLabelTransition();
-        System.out.println("Changes were saved.");
+        this.saveChanges(noteListView.getSelectionModel().getSelectedItem());
     }
 
     /**
@@ -517,9 +497,28 @@ public class NoteEditCtrl implements Initializable {
         if (note == null)
             return;
         note.setContent(editingArea.getText());
-        server.addNote(note);
-        saveLabelTransition();
-        System.out.println("Changes were saved.");
+
+        try {
+            server.addNote(note);
+            this.saveLabelTransition();
+            System.out.println("Changes were saved to note " + note.getId());
+        } catch (Exception ex) {
+            System.err.println("Saving changes to note " + note.getId() + " failed:");
+            ex.printStackTrace();
+
+            ButtonType cancelButton = new ButtonType(resourceBundle.getString("popup.savingFailed.cancel"));
+            ButtonType retryButton = new ButtonType(resourceBundle.getString("popup.savingFailed.retry"));
+
+            Alert alert = new Alert(Alert.AlertType.ERROR, resourceBundle.getString("popup.savingFailed.title"),
+                    cancelButton, retryButton);
+            alert.setContentText(resourceBundle.getString("popup.savingFailed.text")
+                    .replace("%id%", String.valueOf(note.getId())));
+            Optional<ButtonType> response = alert.showAndWait();
+            if (response.isPresent() && response.get() == retryButton) {
+                // Start the process again
+                this.saveChanges(note);
+            }
+        }
     }
 
     /**
@@ -595,44 +594,29 @@ public class NoteEditCtrl implements Initializable {
     public void moveNoteToCollection(Note currentNote, MenuItem collectionChangeItem) {
         System.out.println("Collection trying to be moved");
         if (currentNote == null) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText("There is no current note selected");
-            alert.setContentText("Please select a note when trying to move to another collection");
-            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-            alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
-            alert.getDialogPane();
-            alert.showAndWait();
+            dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.ERROR, "popup.moveNote.noneSelected");
             return;
         }
         try {
             Collection newCollection = server.getCollectionByName(collectionChangeItem.getText());
             if (currentNote.getCollection().equals(newCollection)) {
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("Warning");
-                alert.setHeaderText("The note is trying to be moved to the same collection");
-                alert.setContentText("Please select a different collection when moving this note");
-                Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-                alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
-                alert.getDialogPane();
-                alert.showAndWait();
+                dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.WARNING,
+                        "popup.moveNote.sameCollection");
                 return;
             }
             currentNote.setCollection(newCollection);
             server.updateNote(currentNote);
+
             Alert info = new Alert(Alert.AlertType.INFORMATION, "Note successfully moved to " + newCollection.getName() + ".");
             Stage alertStage = (Stage) info.getDialogPane().getScene().getWindow();
             alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
-            info.getDialogPane();
             info.showAndWait();
-            refresh();
-            clearFields();
-        } catch (Exception e) {
-            Alert error = new Alert(Alert.AlertType.ERROR, "Failed to move the note. Please try again.");
-            Stage alertStage = (Stage) error.getDialogPane().getScene().getWindow();
-            alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
-            error.getDialogPane();
-            error.showAndWait();
+
+            this.refresh();
+            this.clearFields();
+        } catch (Exception ex) {
+            dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.ERROR, "popup.moveNote.error");
+            ex.printStackTrace();
         }
     }
 
@@ -656,8 +640,7 @@ public class NoteEditCtrl implements Initializable {
             // savePreferredLanguage(selectedLanguage);
 
             Locale newLocale = mapLanguageToLocale(selectedLanguage);
-            setLanguage(newLocale);
-
+            this.setLanguage(newLocale);
         });
     }
 
