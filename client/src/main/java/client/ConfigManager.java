@@ -1,5 +1,6 @@
 package client;
 
+import client.utils.ServerUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import commons.Collection;
 
@@ -12,6 +13,14 @@ import java.nio.file.Paths;
 public class ConfigManager {
 	public static final Path CONFIG_FILE_PATH = Paths.get("config.json");
 	private final ObjectMapper objectMapper = new ObjectMapper();
+	private final ServerUtils server;
+	private final Config config;
+
+
+	public ConfigManager() {
+		server = new ServerUtils();
+		config = new Config();
+	}
 
 	/**Save the Config object to a JSON file
 	@param config - config to save
@@ -48,5 +57,16 @@ public class ConfigManager {
 		}
 
 		return config;
+	}
+
+	public Collection getDefaultCollection() {
+		Collection defaultCollection = config.getDefaultCollection();
+		if (defaultCollection == null) {
+			defaultCollection = server.createDefaultCollection();
+			config.setDefaultCollection(defaultCollection);
+		}
+		return defaultCollection;
+
+
 	}
 }

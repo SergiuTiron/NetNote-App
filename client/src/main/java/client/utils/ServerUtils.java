@@ -202,16 +202,6 @@ public class ServerUtils {
                 .get(new GenericType<>() {});
     }
 
-    /**
-     * Fetch the default collection.
-     * @return - The default Collection.
-     */
-    public Collection getDefaultCollection() {
-        return ClientBuilder.newClient(new ClientConfig())
-                .target(SERVER).path("api/collections/default")
-                .request(APPLICATION_JSON)
-                .get(Collection.class);
-    }
 
     public Collection getCollectionByName(String name) {
         return ClientBuilder.newClient(new ClientConfig())
@@ -244,4 +234,18 @@ public class ServerUtils {
         }
     }
 
+    public Collection getCollectionById(long id) {
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER)
+                .path("api/collections/by-id/" + id)
+                .request(APPLICATION_JSON)
+                .get(Collection.class);
+    }
+
+    public Collection createDefaultCollection() {
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/collections/default")
+                .request(APPLICATION_JSON)
+                .post(Entity.entity(null, APPLICATION_JSON), Collection.class);
+    }
 }

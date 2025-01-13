@@ -258,7 +258,7 @@ public class NoteEditCtrl implements Initializable {
         collectionBox.setText("All");
 
         List<Note> notes = server.getNotes();
-        currentCollection = server.getDefaultCollection();
+        currentCollection = configManager.getDefaultCollection();
 
         // Clear the current list
         noteListView.getItems().clear();
@@ -440,8 +440,8 @@ public class NoteEditCtrl implements Initializable {
     public void createNewNote() {
         Note note = server.newEmptyNote();
         titleField.setText(note.getTitle());
-        Collection defaultCollection = server.getDefaultCollection();
-        if (currentCollection == null || currentCollection == defaultCollection) {
+        Collection defaultCollection = configManager.getDefaultCollection();
+        if (currentCollection == null) {
             note.setCollection(defaultCollection);
             server.linkNoteToCollection(defaultCollection.getId(), note);
             currentCollectionDrop.setText(defaultCollection.getName());

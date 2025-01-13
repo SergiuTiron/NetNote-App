@@ -58,18 +58,8 @@ public class CollectionController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCollection(@PathVariable Long id) {
-        Long defaultCollectionId = getDefaultCollection().getBody().getId();
-        if (id.equals(defaultCollectionId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
         collectionService.deleteCollectionByID(id);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/default")
-    public ResponseEntity<Collection> getDefaultCollection() {
-        Collection defaultCollection = collectionService.getOrCreateDefaultCollection();
-        return ResponseEntity.ok(defaultCollection);
     }
 
     @PutMapping("/{id}")
@@ -79,6 +69,26 @@ public class CollectionController {
             return ResponseEntity.ok(updatedCollection);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
+    @GetMapping("/by-id/{id}")
+    public ResponseEntity<Collection> getCollectionById(@PathVariable Long id) {
+        try {
+            Collection collection = collectionService.getCollectionById(id);
+            return ResponseEntity.ok(collection);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @PostMapping("/default")
+    public ResponseEntity<Collection> createDefaultCollection() {
+        try {
+            Collection defaultCollection = collectionService.createDefaultCollection();
+            return ResponseEntity.ok(defaultCollection);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(null); // Conflict if default collection already exists
         }
     }
 
