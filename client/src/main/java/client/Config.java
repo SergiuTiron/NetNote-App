@@ -2,7 +2,6 @@ package client;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import commons.Collection;
-import commons.Note;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,28 +9,10 @@ import java.util.List;
 public class Config {
 	private Collection defaultCollection;
 	private final List<Collection> collections;
-	private final List<Note> notes;
 
 	public Config() {
-		this.notes = new ArrayList<>();
 		this.defaultCollection = null;
 		this.collections = new ArrayList<>();
-	}
-
-	public void addNote(Note note) {
-		notes.add(note);
-	}
-
-	public void removeNote(Note note) {
-		if (notes.contains(note)){
-			notes.remove(note);
-		} else {
-			throw new IllegalArgumentException("Collection not found");
-		}
-	}
-
-	public List<Note> getNotes() {
-		return notes;
 	}
 
 	public Collection getCollection(Collection collection) {
@@ -39,14 +20,6 @@ public class Config {
 			return collection;
 		} else {
 			throw new IllegalArgumentException("No such collection exists");
-		}
-	}
-
-	public Note getNote(Note note) {
-		if (notes.contains(note)){
-			return note;
-		} else {
-			throw new IllegalArgumentException("No such note exists");
 		}
 	}
 
@@ -58,6 +31,19 @@ public class Config {
 	public void setDefaultCollection(Collection defaultCollection) {
 		defaultCollection.setDefault(true);
 		this.defaultCollection = defaultCollection;
+	}
+
+	public void setCollectionName(Collection collection, String newName) {
+
+		if (collections.contains(collection)){
+			for (Collection value : collections) {
+				if (value.equals(collection)) {
+					value.setName(newName.strip());
+				}
+			}
+		} else {
+			throw new IllegalArgumentException("No such collection exists");
+		}
 	}
 
 	public List<Collection> getCollections() {
