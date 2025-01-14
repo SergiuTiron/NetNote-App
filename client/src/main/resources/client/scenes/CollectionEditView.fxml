@@ -55,26 +55,15 @@
                   <children>
                       <AnchorPane prefHeight="33.0" prefWidth="428.0" HBox.hgrow="ALWAYS">
                           <children>
-                              <Button layoutX="14.0" layoutY="9.0" mnemonicParsing="false" onAction="#createCollection" text="Add Collection" AnchorPane.bottomAnchor="9.0" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="9.0" />
-                              <Button layoutX="123.0" layoutY="9.0" mnemonicParsing="false" onAction="#deleteCollection" text="Delete Collection" AnchorPane.bottomAnchor="9.0" AnchorPane.topAnchor="9.0" />
-                              <Button layoutX="330.0" layoutY="9.0" mnemonicParsing="false" onAction="#refresh" text="Refresh" AnchorPane.bottomAnchor="9.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="9.0" />
+                              <Button layoutX="10.0" layoutY="9.0" mnemonicParsing="false" onAction="#createCollection" text="Add Collection" AnchorPane.bottomAnchor="9.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="9.0" />
+                              <Button layoutX="115.0" layoutY="9.0" mnemonicParsing="false" onAction="#deleteCollection" prefHeight="25.0" prefWidth="110.0" text="Delete Collection" AnchorPane.bottomAnchor="9.0" AnchorPane.topAnchor="9.0" />
+                              <Button layoutX="335.0" layoutY="9.0" mnemonicParsing="false" onAction="#refresh" text="Refresh" AnchorPane.bottomAnchor="9.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="9.0" />
+                        <Button layoutX="235.0" layoutY="9.0" mnemonicParsing="false" onAction="#setCollectionAsDefault" prefHeight="25.0" prefWidth="95.0" text="Make Default" AnchorPane.bottomAnchor="9.0" AnchorPane.rightAnchor="70.0" AnchorPane.topAnchor="9.0" />
                           </children>
                       </AnchorPane>
                   </children>
               </HBox>
             </children>
         </VBox>
-        <HBox layoutY="210.0" prefHeight="43.0" prefWidth="400.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-            <children>
-                <AnchorPane prefHeight="33.0" prefWidth="428.0" HBox.hgrow="ALWAYS">
-                    <children>
-                        <Button layoutX="7.0" layoutY="9.0" mnemonicParsing="false" onAction="#createCollection" text="Add Collection" AnchorPane.bottomAnchor="8.599999999999994" AnchorPane.leftAnchor="7.0" AnchorPane.topAnchor="9.0" />
-                        <Button layoutX="109.0" layoutY="9.0" mnemonicParsing="false" onAction="#deleteCollection" text="Delete Collection" AnchorPane.bottomAnchor="8.599999999999994" AnchorPane.topAnchor="9.0" />
-                        <Button layoutX="330.0" layoutY="9.0" mnemonicParsing="false" onAction="#refresh" text="Refresh" AnchorPane.bottomAnchor="9.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="9.0" />
-                  <Button layoutX="233.0" layoutY="9.0" mnemonicParsing="false" onAction="#setCollectionAsDefault" text="Make Default" />
-                    </children>
-                </AnchorPane>
-            </children>
-        </HBox>
     </children>
 </AnchorPane>
