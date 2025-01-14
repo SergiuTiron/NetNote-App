@@ -92,9 +92,9 @@ public class NoteEditCtrl implements Initializable {
         this.localeUtil = localeUtil;
         this.dialogUtil = dialogUtil;
         this.mainCtrl = mainCtrl;
-	    this.config = config;
-	    this.configManager = configManager;
-	    this.deleteFlag = false;
+        this.config = config;
+        this.configManager = configManager;
+        this.deleteFlag = false;
     }
 
     @Override
@@ -110,7 +110,7 @@ public class NoteEditCtrl implements Initializable {
             collectionBox.getItems().add(collectionItem);
         }
         for (Collection collection : config.getCollections()) {
-            if(!collections.contains(collection)) {
+            if (!collections.contains(collection)) {
                 collections.add(collection);
                 addCollectionToMenuButton(collection);
             }
@@ -175,7 +175,7 @@ public class NoteEditCtrl implements Initializable {
                     return selectedNote;
                 }
 
-                if(newTitle.isBlank()) {
+                if (newTitle.isBlank()) {
                     System.out.println("Title is empty");
                     /* To be added in the resource bundle
                     dialogUtil.showDialog(resourceBundle, Alert.AlertType.WARNING,
@@ -405,20 +405,132 @@ public class NoteEditCtrl implements Initializable {
         });
     }
 
-    // Where all the keycodes combinations are stored
+    /**
+     * Defines keyboard shortcuts for the application's main functions.
+     * Maps key combinations to their corresponding actions using KeyCodeCombination.
+     *
+     * @return A map containing key combinations and their associated actions
+     */
     private Map<KeyCombination, Runnable> keyCodeCombinations() {
-        return Map.of(
-                new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN), this::createNewNote,
-                new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN), this::saveChanges,
-                new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN), this::refresh,
-                new KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_DOWN), () -> {
-                    try {
-                        deleteButton();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-        );
+
+        Map<KeyCombination, Runnable> combinations = new HashMap<>();
+
+        combinations.put(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN), this::createNewNote);
+        combinations.put(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN), this::saveChanges);
+        combinations.put(new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN), this::refresh);
+        combinations.put(new KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_DOWN), () -> {
+            try {
+                deleteButton();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        //new combinations
+        combinations.put(new KeyCodeCombination(KeyCode.ESCAPE), this::focusSearchBar);
+        combinations.put(new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.ALT_DOWN), this::nextCollection);
+        combinations.put(new KeyCodeCombination(KeyCode.LEFT, KeyCombination.ALT_DOWN), this::handleAllCollectionsSelected);
+        combinations.put(new KeyCodeCombination(KeyCode.DOWN, KeyCombination.ALT_DOWN), this::nextNote);
+        combinations.put(new KeyCodeCombination(KeyCode.UP, KeyCombination.ALT_DOWN), this::previousNote);
+        combinations.put(new KeyCodeCombination(KeyCode.ENTER, KeyCombination.CONTROL_DOWN), this::editNoteContent);
+
+        return combinations;
+    }
+
+    /**
+     * Sets the focus to the search field when the ESC key is pressed.
+     * This allows quick access to the search functionality.
+     */
+    private void focusSearchBar() {
+        searchField.requestFocus();
+    }
+
+    /**
+     * Navigates to the next collection in the collection box.
+     * Skips the first two items ("All" and "Edit Collections...") and cycles through the remaining collections.
+     * If no current collection is selected, selects the first available collection.
+     * If at the end of the list, wraps around to the beginning.
+     */
+    public void nextCollection() {
+        System.out.println("Next collection selected");
+        List<MenuItem> menuItems = collectionBox.getItems();
+
+        if (menuItems.size() <= 2) {
+            System.out.println("Not enough collections to scroll through");
+            return;
+        }
+
+        List<MenuItem> collectionItems = menuItems.subList(2, menuItems.size());
+
+        if (currentCollection == null) {
+            System.out.println("No current collection set, defaulting to the first available collection");
+            MenuItem firstCollectionItem = collectionItems.get(0);
+            currentCollection = findCollectionByName(firstCollectionItem.getText());
+            handleSpecificCollectionSelected(currentCollection);
+            return;
+        }
+
+        int currentIndex = -1;
+        for (int i = 0; i < collectionItems.size(); i++) {
+            if (collectionItems.get(i).getText().equals(currentCollection.getName())) {
+                currentIndex = i;
+                break;
+            }
+        }
+
+        int nextIndex = (currentIndex + 1) % collectionItems.size();
+        MenuItem nextCollectionItem = collectionItems.get(nextIndex);
+
+        currentCollection = findCollectionByName(nextCollectionItem.getText());
+        handleSpecificCollectionSelected(currentCollection);
+    }
+
+    /**
+     * Finds a collection by its name in the server's collection list.
+     *
+     * @param name The name of the collection to find
+     * @return The Collection object if found, null otherwise
+     */
+    private Collection findCollectionByName(String name) {
+        return server.getCollections().stream()
+                .filter(collection -> collection.getName().equals(name))
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * Moves the selection to the next note in the note list.
+     * If the current note is the last one, the selection remains unchanged.
+     * Automatically scrolls to make the selected note visible.
+     */
+     private void nextNote() {
+
+        int currentIndex = noteListView.getSelectionModel().getSelectedIndex();
+        if( currentIndex < noteListView.getItems().size() - 1 ) {
+            noteListView.getSelectionModel().select(currentIndex + 1);
+            noteListView.scrollTo(currentIndex + 1);
+        }
+    }
+
+    /**
+     * Moves the selection to the previous note in the note list.
+     * If the current note is the first one, the selection remains unchanged.
+     * Automatically scrolls to make the selected note visible.
+     */
+    private void previousNote() {
+
+        int currentIndex = noteListView.getSelectionModel().getSelectedIndex();
+        if (currentIndex > 0) {
+            noteListView.getSelectionModel().select(currentIndex - 1);
+            noteListView.scrollTo(currentIndex - 1);
+        }
+    }
+
+    /**
+     * Sets the focus to the note editing area when Ctrl+Enter is pressed.
+     * This allows quick access to edit the currently selected note.
+     */
+    private void editNoteContent() {
+        editingArea.requestFocus();
     }
 
     // Called whenever the user clicks on one of the notes in the sidebar.
