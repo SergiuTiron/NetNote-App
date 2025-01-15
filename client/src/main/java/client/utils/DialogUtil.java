@@ -29,8 +29,12 @@ public class DialogUtil {
         );
         alert.setContentText(this.replace(resourceBundle.getString(translationKey + ".text"), placeholders));
 
+        String headerText = resourceBundle.getString("popup." + alertType.name().toLowerCase());
+        alert.setHeaderText(headerText);
+
         Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
         alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+        alertStage.setTitle(headerText);
 
         return alert.showAndWait();
     }
