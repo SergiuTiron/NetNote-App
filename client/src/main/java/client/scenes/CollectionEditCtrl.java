@@ -137,7 +137,7 @@ public class CollectionEditCtrl implements Initializable {
         collectionListView.getSelectionModel().selectedItemProperty()
                 .addListener((_, _, current) -> handleSelectedCollection(current));
         // Listener for the title change
-        titleField.textProperty().addListener((_, _, text) -> statusListnerMethod(text));
+        titleField.textProperty().addListener((_, _, text) -> statusListenerMethod(text));
         // Change title on double click
         collectionListView.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
@@ -248,26 +248,27 @@ public class CollectionEditCtrl implements Initializable {
 
     // UI FIELDS UPDATES
 
-    private void statusListnerMethod(String text) {
+    private void statusListenerMethod(String text) {
         collectionNameField.setText(text); // TODO: Figure out if this should get updated with the note title
+
         if (server.getCollections()
                 .stream()
                 .anyMatch(collection -> collection.getName().equals(text))) {
-            serverStatus.setText("Collection already exists");
+            serverStatus.setText(this.resourceBundle.getString("labels.collections.status.alreadyExists"));
             return;
 
         }
         if (text.isBlank()) {
-            serverStatus.setText("Blank Collection Title");
+            serverStatus.setText(this.resourceBundle.getString("labels.collections.status.blankTitle"));
             return;
         }
         if (server.getCollections()
                 .stream()
                 .noneMatch(collection -> collection.getName().equals(text))) {
-            serverStatus.setText("Collection can be created");
+            serverStatus.setText(this.resourceBundle.getString("labels.collections.status.canBeCreated"));
             return;
         }
-        serverStatus.setText("Collection exists");
+        serverStatus.setText(this.resourceBundle.getString("labels.collections.status.exists"));
     }
 
     /**
@@ -280,20 +281,30 @@ public class CollectionEditCtrl implements Initializable {
     public void handleSelectedCollection(Collection selectedCollection) {
         if (selectedCollection == null) {
             //show a basic prompt if no collection selected
-            titleField.setText("Select a collection to edit");
-            serverField.setText("Select a collection to edit");
-            collectionNameField.setText("Select a collection to edit");
+            titleField.setEditable(false);
+            serverField.setEditable(false);
+            collectionNameField.setEditable(false);
+
+            String initialText = this.resourceBundle.getString("labels.collections.initialText");
+            titleField.setText(initialText);
+            serverField.setText(initialText);
+            collectionNameField.setText(initialText);
             return;
         }
+
         //update the current collection
         currentCollection = selectedCollection;
         System.out.println("Collection " + selectedCollection.getName() + " selected");
 
         //update the fields accordingly
+        titleField.setEditable(true);
+        serverField.setEditable(true);
+        collectionNameField.setEditable(true);
+
         titleField.setText(selectedCollection.getName());
         serverField.setText(server.getServerPath());
         collectionNameField.setText(selectedCollection.getName());
-        serverStatus.setText("Collection exists");
+        serverStatus.setText(this.resourceBundle.getString("labels.collections.status.exists"));
     }
 
     public void changeCollectionTitle() {

@@ -110,7 +110,7 @@ public class NoteEditCtrl implements Initializable {
         // Load resourceBundle
         this.resourceBundle = resourceBundle;
         // Set the "All" option as default selection
-        collectionBox.setText("All");
+        collectionBox.setText(resourceBundle.getString("collections.all"));
         // Set for client start
         titleField.setEditable(false);
         noteListView.setEditable(true);
@@ -649,7 +649,6 @@ public class NoteEditCtrl implements Initializable {
      */
     public void handleAllCollectionsSelected() {
         System.out.println("All button pressed");
-        collectionBox.setText("All");
 
         List<Note> notes = server.getNotes();
         currentCollection = configManager.getDefaultCollection();
@@ -666,7 +665,7 @@ public class NoteEditCtrl implements Initializable {
      */
     public void handleEditCollections() {
         System.out.println("Edit button pressed");
-        mainCtrl.showCollectionEdit();
+        mainCtrl.showCollectionEdit(this.resourceBundle);
     }
 
     /**
@@ -782,8 +781,8 @@ public class NoteEditCtrl implements Initializable {
     private void clearFields() {
         noteListView.getSelectionModel().clearSelection();
         editingArea.setEditable(false);
-        editingArea.setText("Select a note to start editing");
-        titleField.setText("Select a note to start editing");
+        editingArea.setText(resourceBundle.getString("initialText"));
+        titleField.setText(resourceBundle.getString("initialText"));
         currentCollectionDrop.setText("ChangeCollection");
     }
 
