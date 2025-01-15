@@ -177,9 +177,9 @@ public class NoteEditCtrl implements Initializable {
 
                 if (newTitle.isBlank()) {
                     System.out.println("Title is empty");
-                    /* To be added in the resource bundle
                     dialogUtil.showDialog(resourceBundle, Alert.AlertType.WARNING,
-                            "popup.sameTitle"); */
+                            "popup.emptyTitle");
+                    return selectedNote;
                 }
                 Optional<Note> duplicatedTitle = server.getNotes()
                         .stream()
@@ -709,11 +709,8 @@ public class NoteEditCtrl implements Initializable {
             currentNote.setCollection(newCollection);
             server.updateNote(currentNote);
 
-            Alert info = new Alert(Alert.AlertType.INFORMATION, "Note successfully moved to " + newCollection.getName() + ".");
-            Stage alertStage = (Stage) info.getDialogPane().getScene().getWindow();
-            alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
-            info.showAndWait();
-
+            dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
+                    "popup.moveNote.success", Map.of("%collection%", newCollection.getName()));
             this.refresh();
             this.clearFields();
         } catch (Exception ex) {
