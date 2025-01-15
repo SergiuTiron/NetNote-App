@@ -92,8 +92,6 @@ public class Main extends Application {
         noteEditCtrl.selectedLanguage.removeListener(this.localeChangeListener);
 
         this.locale = noteEditCtrl.selectedLanguage.get();
-        Locale.setDefault(this.locale); // Default locale is used to translate e.g. dialogs by JavaFX
-
         System.out.println("Reloading scenes with new locale: " + locale);
         this.loadScenes();
         noteEditCtrl.setCurrentNote(currentNote); // Reselect the note we had open before reloading the scenes

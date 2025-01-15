@@ -5,6 +5,7 @@ import client.ConfigManager;
 import client.utils.DialogUtil;
 import client.utils.ServerUtils;
 import commons.Collection;
+import commons.Note;
 import jakarta.inject.Inject;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -13,6 +14,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
+import javafx.scene.image.Image;
+import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
 import java.io.IOException;
@@ -148,6 +151,9 @@ public class CollectionEditCtrl implements Initializable {
         dialog.setHeaderText(resourceBundle.getString("popup.collections.new.header"));
         dialog.setContentText(resourceBundle.getString("popup.collections.new.input"));
 
+        Stage dialogStage = (Stage) dialog.getDialogPane().getScene().getWindow();
+        dialogStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+
         // Show the dialog and wait for a response
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(collectionName -> {
@@ -174,11 +180,13 @@ public class CollectionEditCtrl implements Initializable {
             saveConfig(config);
 
             // Add collection to listView
+            dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
+                    "popup.collections.createdSuccessfully");
             collectionListView.getItems().add(savedCollection);
             collectionListView.getSelectionModel().select(savedCollection);
             // Add collection to MenuButton
-            noteEditCtrl.addCollectionToMenuButton(savedCollection);
-            refresh();
+            noteEditCtrl.addCollectionToMenuButton(savedCollection, false);
+            this.refresh();
             System.out.println("Collection created successfully");
         });
 
@@ -190,7 +198,12 @@ public class CollectionEditCtrl implements Initializable {
      */
     public void deleteCollection() {
         Collection selectedCollection = collectionListView.getSelectionModel().getSelectedItem();
-        if (selectedCollection != null) {
+        if (selectedCollection == null) {
+            dialogUtil.showDialog(resourceBundle, Alert.AlertType.WARNING, "popup.Collection.delete.noteSelected");
+            System.err.println("Delete attempt with no collection selected");
+            return;
+        }
+        if(confirmationDelete(selectedCollection)){
             try {
                 server.deleteCollection(selectedCollection.getId());
                 config.removeCollection(selectedCollection);
@@ -199,13 +212,18 @@ public class CollectionEditCtrl implements Initializable {
                 noteEditCtrl.deleteCollectionToMenuButton(selectedCollection);
                 refresh();
                 System.out.println("Collection deleted successfully");
+                dialogUtil.showDialog(resourceBundle, Alert.AlertType.WARNING, "popup.Collection.delete.successfully");
             } catch (Exception e) {
                 System.err.println("Failed to delete collection");
                 e.printStackTrace();
             }
-        } else {
-            System.err.println("Delete attempt with no collection selected");
         }
+    }
+
+    private boolean confirmationDelete(Collection selectedCollection) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, resourceBundle.getString("popup.collection.confirmDelete"));
+        Optional<ButtonType> response = alert.showAndWait();
+        return response.isPresent() && response.get() == ButtonType.OK;
     }
 
     public void refresh() {
@@ -349,10 +367,12 @@ public class CollectionEditCtrl implements Initializable {
             dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
                     "popup.collections.noneSelected");
         } else {
+            noteEditCtrl.updateButtons(configManager.getDefaultCollection(), configManager.getDefaultCollection().getName());
             configManager.setDefaultCollection(selectedCollection);
             dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
                     "popup.collections.defaultChanged",
                     Map.of("%name%", selectedCollection.getName()));
+            noteEditCtrl.updateButtons(selectedCollection, selectedCollection.getName() +"(Default)");
         }
     }
 
