@@ -3,12 +3,14 @@ package client;
 import client.utils.ServerUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import commons.Collection;
+import org.jvnet.hk2.annotations.Service;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
 
 public class ConfigManager {
 	public static final Path CONFIG_FILE_PATH = Paths.get("config.json");

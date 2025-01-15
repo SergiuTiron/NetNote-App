@@ -68,19 +68,19 @@ public class CollectionEditCtrl implements Initializable {
 
         collectionListView.setEditable(true);
 
-        // Retrieve all collections from server and add them to listView
-        List<Collection> collections = server.getCollections();
-
-        Collection defaultCollection = configManager.getDefaultCollection();
-        if (!collections.contains(defaultCollection)) {
-            collections.addFirst(defaultCollection);
-        }
-        config.setDefaultCollection(defaultCollection);
-        saveConfig(config);
-
-        collections.addAll(config.getCollections().stream().filter(x -> !collections.contains(x)).toList()); // add all config collections
-
-        collectionListView.setItems(FXCollections.observableList(collections));
+//        // Retrieve all collections from server and add them to listView
+//        List<Collection> collections = server.getCollections();
+//
+//        Collection defaultCollection = configManager.getDefaultCollection();
+//        if (!collections.contains(defaultCollection)) {
+//            collections.addFirst(defaultCollection);
+//        }
+//        config.setDefaultCollection(defaultCollection);
+//        saveConfig(config);
+//
+//        collections.addAll(config.getCollections().stream().filter(x -> !collections.contains(x)).toList()); // add all config collections
+//
+//        collectionListView.setItems(FXCollections.observableList(collections));
 
         collectionListView.setCellFactory(_ -> new TextFieldListCell<>(new StringConverter<>() {
             @Override
@@ -201,6 +201,7 @@ public class CollectionEditCtrl implements Initializable {
             Collection savedCollection = server.addCollection(collection);
 
             config.addCollection(savedCollection); // add collection to config
+            config.setDefaultCollection(configManager.getDefaultCollection()); // make sure the default collection is not replaced
             saveConfig(config);
 
             // Add collection to listView

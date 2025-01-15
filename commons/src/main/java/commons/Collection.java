@@ -14,9 +14,8 @@ public class Collection {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "generator")
     @SequenceGenerator(name = "generator", sequenceName = "my_sequence1", allocationSize = 1)
     private long id;
-
+    private String server;
     private String name;
-    private boolean isDefault;
 
     //one-to-many relation between collection and notes
     @JsonIgnore
@@ -30,6 +29,11 @@ public class Collection {
     public Collection(String name) {
         this.name = name;
         this.notes = new ArrayList<>();
+    }
+
+    public Collection(String name, String server) {
+        this.name = name;
+        this.server = server;
     }
 
     public long getId() {
@@ -47,14 +51,6 @@ public class Collection {
     public void addNote(Note note) {
         notes.add(note);
         note.setCollection(this);
-    }
-
-    public boolean isDefault() {
-        return isDefault;
-    }
-
-    public void setDefault(boolean aDefault) {
-        isDefault = aDefault;
     }
 
     @Override
@@ -85,11 +81,12 @@ public class Collection {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Collection that = (Collection) o;
-        return id == that.id && Objects.equals(name, that.name) && Objects.equals(notes, that.notes);
+        return id == that.id && Objects.equals(server, that.server) &&
+                Objects.equals(name, that.name) && Objects.equals(notes, that.notes);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, notes);
+        return Objects.hash(id, server, name, notes);
     }
 }
