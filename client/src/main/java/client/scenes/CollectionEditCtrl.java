@@ -13,8 +13,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
-import javafx.scene.image.Image;
-import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
 import java.io.IOException;
@@ -94,15 +92,8 @@ public class CollectionEditCtrl implements Initializable {
                 Collection selectedCollection = collectionListView.getSelectionModel().getSelectedItem();
                 if (selectedCollection != null) {
                     if (newName.isBlank()) {
-                        System.err.println("Collection name must not be empty.");
-                        Alert alert = new Alert(Alert.AlertType.WARNING);
-                        alert.setTitle("Collection name warning");
-                        alert.setHeaderText("Collection name cannot be empty");
-                        alert.setContentText("Please try to choose a proper collection title.");
-                        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-                        alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
-                        alert.getDialogPane();
-                        alert.showAndWait();
+                        dialogUtil.showDialog(resourceBundle, Alert.AlertType.WARNING,
+                                "popup.collections.emptyName");
                         return selectedCollection;
                     }
 
@@ -111,14 +102,8 @@ public class CollectionEditCtrl implements Initializable {
                             .anyMatch(collection -> collection.getName().equals(newName)
                                     && !collection.equals(selectedCollection))) {
                         System.err.println("Collection name must be unique.");
-                        Alert alert = new Alert(Alert.AlertType.WARNING);
-                        alert.setTitle("Collection name warning");
-                        alert.setHeaderText("There is already a title with the given name");
-                        alert.setContentText("Please try to choose a unique collection title.");
-                        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-                        alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
-                        alert.getDialogPane();
-                        alert.showAndWait();
+                        dialogUtil.showDialog(resourceBundle, Alert.AlertType.WARNING,
+                                "popup.collections.duplicateName");
                         return selectedCollection;
                     }
 
@@ -137,7 +122,7 @@ public class CollectionEditCtrl implements Initializable {
         collectionListView.getSelectionModel().selectedItemProperty()
                 .addListener((_, _, current) -> handleSelectedCollection(current));
         // Listener for the title change
-        titleField.textProperty().addListener((_, _, text) -> statusListnerMethod(text));
+        titleField.textProperty().addListener((_, _, text) -> statusListenerMethod(text));
         // Change title on double click
         collectionListView.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
@@ -159,42 +144,26 @@ public class CollectionEditCtrl implements Initializable {
     public void createCollection() {
         // Create a TextInputDialog for entering the collection name
         TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("New Collection");
-        dialog.setHeaderText("Enter the name of the new collection:");
-        dialog.setContentText("Collection name:");
+        dialog.setTitle(resourceBundle.getString("popup.collections.new.title"));
+        dialog.setHeaderText(resourceBundle.getString("popup.collections.new.header"));
+        dialog.setContentText(resourceBundle.getString("popup.collections.new.input"));
 
         // Show the dialog and wait for a response
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(collectionName -> {
             if (collectionName.isBlank()) {
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("Collection name warning");
-                alert.setHeaderText("Collection name cannot be empty");
-                alert.setContentText("Please try to choose a proper collection title.");
-                Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-                alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
-                alert.getDialogPane();
-                alert.showAndWait();
+                dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.WARNING,
+                        "popup.collections.emptyName");
                 return;
-                //throw new IllegalArgumentException("Collection name cannot be blank.");
-
             }
 
             List<Collection> existingCollections = server.getCollections();
             if (existingCollections
                     .stream()
-                    .anyMatch(collection -> collection.getName()
-                            .equals(collectionName.strip()))) {
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("Collection name warning");
-                alert.setHeaderText("There is already a title with the given name");
-                alert.setContentText("Please try to choose a unique collection title.");
-                Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-                alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
-                alert.getDialogPane();
-                alert.showAndWait();
+                    .anyMatch(collection -> collection.getName().equals(collectionName.strip()))) {
+                dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.WARNING,
+                        "popup.collections.duplicateName");
                 return;
-                //throw new IllegalArgumentException("Collection name cannot be duplicated.");
             }
             // Add collection to server
             Collection collection = new Collection(collectionName);
@@ -248,26 +217,27 @@ public class CollectionEditCtrl implements Initializable {
 
     // UI FIELDS UPDATES
 
-    private void statusListnerMethod(String text) {
+    private void statusListenerMethod(String text) {
         collectionNameField.setText(text); // TODO: Figure out if this should get updated with the note title
+
         if (server.getCollections()
                 .stream()
                 .anyMatch(collection -> collection.getName().equals(text))) {
-            serverStatus.setText("Collection already exists");
+            serverStatus.setText(this.resourceBundle.getString("labels.collections.status.alreadyExists"));
             return;
 
         }
         if (text.isBlank()) {
-            serverStatus.setText("Blank Collection Title");
+            serverStatus.setText(this.resourceBundle.getString("labels.collections.status.blankTitle"));
             return;
         }
         if (server.getCollections()
                 .stream()
                 .noneMatch(collection -> collection.getName().equals(text))) {
-            serverStatus.setText("Collection can be created");
+            serverStatus.setText(this.resourceBundle.getString("labels.collections.status.canBeCreated"));
             return;
         }
-        serverStatus.setText("Collection exists");
+        serverStatus.setText(this.resourceBundle.getString("labels.collections.status.exists"));
     }
 
     /**
@@ -280,56 +250,52 @@ public class CollectionEditCtrl implements Initializable {
     public void handleSelectedCollection(Collection selectedCollection) {
         if (selectedCollection == null) {
             //show a basic prompt if no collection selected
-            titleField.setText("Select a collection to edit");
-            serverField.setText("Select a collection to edit");
-            collectionNameField.setText("Select a collection to edit");
+            titleField.setEditable(false);
+            serverField.setEditable(false);
+            collectionNameField.setEditable(false);
+
+            String initialText = this.resourceBundle.getString("labels.collections.initialText");
+            titleField.setText(initialText);
+            serverField.setText(initialText);
+            collectionNameField.setText(initialText);
             return;
         }
+
         //update the current collection
         currentCollection = selectedCollection;
         System.out.println("Collection " + selectedCollection.getName() + " selected");
 
         //update the fields accordingly
+        titleField.setEditable(true);
+        serverField.setEditable(true);
+        collectionNameField.setEditable(true);
+
         titleField.setText(selectedCollection.getName());
         serverField.setText(server.getServerPath());
         collectionNameField.setText(selectedCollection.getName());
-        serverStatus.setText("Collection exists");
+        serverStatus.setText(this.resourceBundle.getString("labels.collections.status.exists"));
     }
 
     public void changeCollectionTitle() {
         if (currentCollection == null) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("No collection selected");
-            alert.setContentText("Please select a collection first.");
-            alert.showAndWait();
+            dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
+                    "popup.collections.noneSelected");
             handleSelectedCollection(null);
             return;
         }
         String newTitle = titleField.getText();
         if (newTitle.isBlank()) {
             System.err.println("Collection name must not be empty.");
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Collection name warning");
-            alert.setHeaderText("Collection name cannot be empty");
-            alert.setContentText("Please try to choose a proper collection title.");
-            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-            alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
-            alert.getDialogPane();
-            alert.showAndWait();
+            dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.WARNING,
+                    "popup.collections.emptyName");
             return;
         }
         if (server.getCollections()
                 .stream()
                 .anyMatch(collection -> collection.getName().equals(newTitle))) {
             System.err.println("Collection name must be unique.");
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Collection name warning");
-            alert.setHeaderText("There is already a title with the given name");
-            alert.setContentText("Please try to choose a unique collection title.");
-            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-            alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
-            alert.getDialogPane();
-            alert.showAndWait();
+            dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.WARNING,
+                    "popup.collections.duplicateName");
             return;
         }
 
@@ -345,10 +311,8 @@ public class CollectionEditCtrl implements Initializable {
 
     public void changeCollectionServer() {
         if (currentCollection == null) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("No collection selected");
-            alert.setContentText("Please select a collection first.");
-            alert.showAndWait();
+            dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
+                    "popup.collections.noneSelected");
             handleSelectedCollection(null);
         }
         String serverPath = serverField.getText();
@@ -357,10 +321,8 @@ public class CollectionEditCtrl implements Initializable {
 
     public void changeCollectionName() {
         if (currentCollection == null) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("No collection selected");
-            alert.setContentText("Please select a collection first.");
-            alert.showAndWait();
+            dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
+                    "popup.collections.noneSelected");
             handleSelectedCollection(null);
         }
         //TODO: FIGURE OUT THE DIFFERENCE BETWEEN THIS AND THE TITLE FIELD
@@ -384,24 +346,13 @@ public class CollectionEditCtrl implements Initializable {
     public void setCollectionAsDefault() {
         Collection selectedCollection = collectionListView.getSelectionModel().getSelectedItem();
         if (selectedCollection == null) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Default Collection Warning");
-            alert.setHeaderText("No collection selected");
-            alert.setContentText("Please select a collection first.");
-            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-            alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
-            alert.getDialogPane();
-            alert.showAndWait();
+            dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
+                    "popup.collections.noneSelected");
         } else {
             configManager.setDefaultCollection(selectedCollection);
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Default Collection Information");
-            alert.setHeaderText("Default Collection Selected");
-            alert.setContentText("Your new default collection is " + selectedCollection.getName() + ".");
-            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-            alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
-            alert.getDialogPane();
-            alert.showAndWait();
+            dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
+                    "popup.collections.defaultChanged",
+                    Map.of("%name%", selectedCollection.getName()));
         }
     }
 

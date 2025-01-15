@@ -22,41 +22,44 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 
+import java.util.ResourceBundle;
+
 public class MainCtrl {
 
     private Stage primaryStage;
-
     private Scene collectionEdit;
 
+    private Image appIcon;
 
-    public void initialize(Stage primaryStage,
-                           Pair<CollectionEditCtrl, Parent> collectionEdit) {
+    public void initialize(Stage primaryStage) {
         this.primaryStage = primaryStage;
-        this.collectionEdit = new Scene(collectionEdit.getValue());
-        // The icon is taken from a google search TODO:Create our own icon
-        Image image = new Image("appIcon/NoteIcon.jpg");
-        primaryStage.getIcons().add(image);
-        primaryStage.setTitle("NetNote");
 
+        // The icon is taken from a google search TODO:Create our own icon
+        this.appIcon = new Image("appIcon/NoteIcon.jpg");
+        primaryStage.getIcons().add(appIcon);
+        primaryStage.setTitle("NetNote");
         primaryStage.show();
     }
 
-    public void showOverview(Pair<NoteEditCtrl, Parent> noteEdit) {
+    public void loadScenes(Pair<NoteEditCtrl, Parent> noteEdit,
+                           Pair<CollectionEditCtrl, Parent> collectionEdit) {
         NoteEditCtrl noteEditCtrl = noteEdit.getKey();
         Scene overview = new Scene(noteEdit.getValue());
 
         primaryStage.setScene(overview);
         noteEditCtrl.refresh();
+
+        this.collectionEdit = new Scene(collectionEdit.getValue());
     }
 
-    public void showCollectionEdit() {
-        Stage addCollectionStage = new Stage();
-        Image image = new Image("appIcon/NoteIcon.jpg");
-        addCollectionStage.getIcons().add(image);
-        addCollectionStage.setTitle("CollectionEdit");
-        addCollectionStage.setScene(collectionEdit);
-        addCollectionStage.initModality(Modality.APPLICATION_MODAL);
-        addCollectionStage.showAndWait();
+    public void showCollectionEdit(ResourceBundle resourceBundle) {
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+        popupStage.initOwner(this.primaryStage);
+        popupStage.getIcons().add(this.appIcon);
+        popupStage.setTitle(resourceBundle.getString("window.editCollections"));
+        popupStage.setScene(this.collectionEdit);
+        popupStage.show();
     }
 
 }

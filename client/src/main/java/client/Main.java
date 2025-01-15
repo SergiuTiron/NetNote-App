@@ -40,7 +40,6 @@ public class Main extends Application {
     private static final Locale DEFAULT_LOCALE = Locale.ENGLISH;
 
     private NoteEditCtrl noteEditCtrl;
-    private CollectionEditCtrl collectionEditCtrl;
     private MainCtrl mainCtrl;
 
     private Locale locale = DEFAULT_LOCALE;
@@ -54,16 +53,14 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-
         ServerUtils serverUtils = INJECTOR.getInstance(ServerUtils.class);
         if (!serverUtils.isServerAvailable()) {
             System.err.println("Server needs to be started before the client, but it does not seem to be available. Shutting down.");
             return;
         }
-        Pair<CollectionEditCtrl, Parent> collectionEditView = FXML.load(this.locale, "client", "scenes", "CollectionEditView.fxml");
-        this.mainCtrl = INJECTOR.getInstance(MainCtrl.class);
 
-        mainCtrl.initialize(primaryStage,collectionEditView);
+        this.mainCtrl = INJECTOR.getInstance(MainCtrl.class);
+        mainCtrl.initialize(primaryStage);
         this.loadScenes();
 
         primaryStage.setOnCloseRequest(_ -> {
@@ -78,10 +75,13 @@ public class Main extends Application {
 
     public void loadScenes() {
         Pair<NoteEditCtrl, Parent> editView = FXML.load(this.locale, "client", "scenes", "NoteEditView.fxml");
+        Pair<CollectionEditCtrl, Parent> collectionView = FXML.load(this.locale, "client", "scenes", "CollectionEditView.fxml");
+
         this.noteEditCtrl = editView.getKey();
         noteEditCtrl.setLanguage(this.locale);
         noteEditCtrl.selectedLanguage.addListener(this.localeChangeListener);
-        mainCtrl.showOverview(editView);
+
+        mainCtrl.loadScenes(editView, collectionView);
     }
 
     private final ChangeListener<Locale> localeChangeListener = (_, _, _) -> this.handleLocaleChange();
@@ -92,6 +92,8 @@ public class Main extends Application {
         noteEditCtrl.selectedLanguage.removeListener(this.localeChangeListener);
 
         this.locale = noteEditCtrl.selectedLanguage.get();
+        Locale.setDefault(this.locale); // Default locale is used to translate e.g. dialogs by JavaFX
+
         System.out.println("Reloading scenes with new locale: " + locale);
         this.loadScenes();
         noteEditCtrl.setCurrentNote(currentNote); // Reselect the note we had open before reloading the scenes
