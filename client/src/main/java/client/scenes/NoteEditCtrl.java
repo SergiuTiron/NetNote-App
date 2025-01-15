@@ -37,21 +37,21 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class NoteEditCtrl implements Initializable {
-
+    // Utils fields
     private final ServerUtils server;
     private final KeyStrokeUtil keyStroke;
     private final MarkdownUtil markdown;
     private final LocaleUtil localeUtil;
     private final DialogUtil dialogUtil;
-
+    // Controller fields
     private final MainCtrl mainCtrl;
-
+    // Internationalization fields
     private ResourceBundle resourceBundle;
     public final ObjectProperty<Locale> selectedLanguage = new SimpleObjectProperty<>();
-
+    // Config fields
     private final Config config;
     private final ConfigManager configManager;
-
+    // Flag fields
     private boolean deleteFlag;
     private Collection currentCollection;
     private Note currentNote;
@@ -97,33 +97,33 @@ public class NoteEditCtrl implements Initializable {
         this.deleteFlag = false;
     }
 
+    public Note getCurrentNote() {
+        return currentNote;
+    }
+
+    public void setCurrentNote(Note note) {
+        noteListView.getSelectionModel().select(note);
+    }
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        // Load resourceBundle
         this.resourceBundle = resourceBundle;
-
-        // Load collections from the server
-        List<Collection> collections = server.getCollections();
-        // Add the collections as menuItems
-        for (Collection collection : collections) {
-            MenuItem collectionItem = new MenuItem(collection.getName());
-            collectionItem.setOnAction(_ -> this.handleSpecificCollectionSelected(collection));
-            collectionBox.getItems().add(collectionItem);
-        }
-        for (Collection collection : config.getCollections()) {
-            if (!collections.contains(collection)) {
-                collections.add(collection);
-                addCollectionToMenuButton(collection);
-            }
-        }
         // Set the "All" option as default selection
         collectionBox.setText("All");
-
-        for (Collection collection : collections) {
-            MenuItem collectionChangeItem = new MenuItem(collection.getName());
-            collectionChangeItem.setOnAction(_ -> this.moveNoteToCollection(currentNote, collectionChangeItem));
-            currentCollectionDrop.getItems().add(collectionChangeItem);
+        // Set for client start
+        titleField.setEditable(false);
+        noteListView.setEditable(true);
+        // Load collections from the server + config, add the collections as menuItems
+        List<Collection> collections = server.getCollections();
+        for (Collection collection : config.getCollections()) {
+            if (!collections.contains(collection)) //TODO: FIGURE OUT HOW TO FILTER THE INTIAL COLLECTION
+                collections.add(collection);
         }
-
+        for (Collection collection : collections) {
+            addCollectionToMenuButton(collection);
+        }
+        // Set Language Box with languages and flags
         liveLanguageBox.setItems(FXCollections.observableList(localeUtil.getAvailableLocales()));
         liveLanguageBox.setCellFactory(_ -> new ListCell<>() {
             private final ImageView flagView = new ImageView();
@@ -159,7 +159,7 @@ public class NoteEditCtrl implements Initializable {
             }
             this.setLanguage(newValue);
         });
-
+        // Note title addition
         noteListView.setCellFactory(_ -> new TextFieldListCell<>(new StringConverter<>() {
             @Override
             public String toString(Note note) {
@@ -199,13 +199,9 @@ public class NoteEditCtrl implements Initializable {
                 return selectedNote;
             }
         }));
-
-        titleField.setEditable(false);
-
+        // Listner for search bar
         searchField.textProperty().addListener((_, _, _) -> this.filterNotes());
-
-        noteListView.setEditable(true);
-        //double-click triggers note editing
+        // Double-click triggers note title editing
         noteListView.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
                 int selectedNoteIndex = noteListView.getSelectionModel().getSelectedIndex();
@@ -213,7 +209,7 @@ public class NoteEditCtrl implements Initializable {
                     noteListView.edit(selectedNoteIndex);
             }
         });
-
+        // Listner for note saving logic
         noteListView.getSelectionModel().selectedItemProperty()
                 .addListener((_, old, current) -> {
                     if (deleteFlag) {
@@ -231,10 +227,10 @@ public class NoteEditCtrl implements Initializable {
                     this.saveChanges(old);
                     this.handleNoteSelect(current);
                 });
-
+        // Listner for Markdown
         editingArea.textProperty().addListener((_, _, newText) ->
                 markdown.renderMarkdownInWebView(newText, markdownPreview));
-
+        // Used for autosave on keystrokes
         editingArea.setOnKeyTyped(_ -> {
             keyStroke.increaseCounter();
             if (keyStroke.getCounter() == keyStroke.getTrigger() && !editingArea.getText().isEmpty()) {
@@ -243,97 +239,14 @@ public class NoteEditCtrl implements Initializable {
             }
         });
         editingArea.textProperty().addListener((_, _, newText) -> renderMarkdown(newText));
-        // Until the user has selected a note to edit, display an informative message
-        //  & do not allow the user to type.
+        // Until the user has selected a note to edit, display an informative message & do not allow the user to type.
         this.handleNoteSelect(null);
-        keyShortcuts();
+        this.keyShortcuts();
 
     }
 
-    /**
-     * Handler for "All" option
-     */
-    public void handleAllCollectionsSelected() {
-        System.out.println("All button pressed");
-        collectionBox.setText("All");
+    // MARKDOWN RENDER LOGIC
 
-        List<Note> notes = server.getNotes();
-        currentCollection = configManager.getDefaultCollection();
-
-        // Clear the current list
-        noteListView.getItems().clear();
-
-        // Add the notes to the ListView
-        noteListView.getItems().addAll(notes);
-    }
-
-    /**
-     * Handler for "Edit collections"
-     */
-    public void handleEditCollections() {
-        System.out.println("Edit button pressed");
-        mainCtrl.showCollectionEdit();
-    }
-
-    /**
-     * A method to add a button for a new collection to the collectionBox (MenuButton)
-     *
-     * @param collection - collection to add
-     */
-    public void addCollectionToMenuButton(Collection collection) {
-        System.out.println("Collection button added"); //for debugging purposes
-        MenuItem newCollectionItem = new MenuItem(collection.getName());
-        MenuItem newCollectionChangeItem = new MenuItem(collection.getName());
-
-        newCollectionItem.setOnAction(_ -> this.handleSpecificCollectionSelected(collection));
-        newCollectionChangeItem.setOnAction(_ -> this.moveNoteToCollection(currentNote, newCollectionChangeItem));
-
-        // Add the new MenuItem to the MenuButton
-        collectionBox.getItems().add(newCollectionItem);
-        currentCollectionDrop.getItems().add(newCollectionChangeItem);
-    }
-
-    /**
-     * A method to delete a button for a deleted collection from the collectionBox (MenuButton)
-     *
-     * @param selectedCollection - collection to find the button that needs to be deleted
-     */
-    public void deleteCollectionToMenuButton(Collection selectedCollection) {
-        System.out.println("Collection button deleted");
-        MenuItem collectionsButton = collectionBox.getItems()
-                .stream()
-                .filter(x -> x.getText().equals(selectedCollection.getName()))
-                .findFirst()
-                .get();
-        MenuItem collectionChangeButton = currentCollectionDrop.getItems()
-                .stream()
-                .filter(x -> x.getText().equals(selectedCollection.getName()))
-                .findFirst()
-                .get();
-        collectionBox.getItems().remove(collectionsButton);
-        currentCollectionDrop.getItems().remove(collectionChangeButton);
-    }
-
-    /**
-     * Displaying a given list of notes (from a collection) in the listview
-     *
-     * @param selectedItem - collection
-     */
-    private void handleSpecificCollectionSelected(Collection selectedItem) {
-        System.out.println("Collection handled"); //for debugging purposes
-        List<Note> notes = server.getNotesByCollection(selectedItem.getId());
-        currentCollection = selectedItem;
-        currentNote = null;
-        collectionBox.setText(selectedItem.getName()); //set the name of the collection to show in the MenuButton
-        clearFields();
-        // Clear the current list
-        noteListView.getItems().clear();
-
-        // Add the notes to the ListView
-        noteListView.getItems().addAll(notes);
-    }
-
-    // Method to render markdown
     private void renderMarkdown(String markdownContent) {
         URL cssFileUrl = MarkdownUtil.class.getResource("/css/markdown-style.css");
         if (cssFileUrl != null) {
@@ -343,20 +256,99 @@ public class NoteEditCtrl implements Initializable {
         }
     }
 
-    private void saveLabelTransition() {
-        FadeTransition fadeIn = new FadeTransition(Duration.millis(250), saveLabel);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
-        fadeIn.setOnFinished(e -> {
-            // Hold the label visible for 1 seconds
-            FadeTransition fadeOut = new FadeTransition(Duration.millis(250), saveLabel);
-            fadeOut.setFromValue(1);
-            fadeOut.setToValue(0);
-            fadeOut.setDelay(Duration.seconds(1)); // Wait 1 second before fading out
-            fadeOut.play();
-        });
-        fadeIn.play();
+    // NOTE FILTERING
+
+    /**
+     * called when the user clicks the "Search" button
+     * This method displays all the notes in the current collection that contain the given keyword.
+     */
+    public void filterNotes() {
+        String query = searchField.getText();
+        if (query == null || query.isEmpty()) {
+            if (currentCollection != null) {
+                handleSpecificCollectionSelected(currentCollection);
+            } else {
+                handleAllCollectionsSelected();
+            }
+            return;
+        }
+        List<Note> filteredNotes;
+        if (currentCollection == null) {
+            filteredNotes = server.searchKeyword(query, null);
+        } else {
+            filteredNotes = server.searchKeyword(query, currentCollection.getId());
+        }
+        noteListView.setItems(FXCollections.observableList(filteredNotes));
     }
+
+    // NOTE HANDLING
+
+    // Called whenever the user clicks the "New Note" button.
+    public void createNewNote() {
+        Note note = server.newEmptyNote();
+        titleField.setText(note.getTitle());
+        Collection defaultCollection = configManager.getDefaultCollection();
+        if (currentCollection == null) {
+            note.setCollection(defaultCollection);
+            server.linkNoteToCollection(defaultCollection.getId(), note);
+            currentCollectionDrop.setText(defaultCollection.getName());
+        } else {
+            note.setCollection(currentCollection);
+            server.linkNoteToCollection(currentCollection.getId(), note);
+        }
+        noteListView.getItems().add(note);
+        // Updates the location of the editing area on the note currently created
+        noteListView.getSelectionModel().select(note);
+        editingArea.setEditable(true);
+    }
+
+    // Called whenever the user clicks on one of the notes in the sidebar.
+    private void handleNoteSelect(Note note) {
+        if (note == null) {
+            // If no note is selected, disable editing and show a default message
+            editingArea.setEditable(false);
+            editingArea.setText(resourceBundle.getString("initialText"));
+            return;
+        }
+        // If a note is selected, enable editing and display its content
+        currentNote = note;
+        editingArea.setEditable(true);
+        editingArea.setText(note.getContent());
+        currentCollectionDrop.setText(note.getCollection().getName());
+    }
+
+    /**
+     * Called whenever the user clicks the "Delete" button.
+     */
+    public void deleteButton() throws IOException {
+        Note selectedNote = noteListView.getSelectionModel().getSelectedItem();
+        if (selectedNote == null) {
+            editingArea.setText("Select a note to delete.");
+            return;
+        }
+        boolean deleteConfirmed = confirmationDelete(selectedNote);
+        if (!deleteConfirmed) {
+            return;
+        }
+        try {
+            deleteFlag = true;
+            server.deleteNoteFromServer(selectedNote.getId());
+            noteListView.getItems().remove(selectedNote);
+            clearFields();
+            refresh();
+        } catch (IOException e) {
+            editingArea.setText("Failed to delete note. Please try again.");
+            e.printStackTrace();
+        }
+    }
+
+    private boolean confirmationDelete(Note selectedNote) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, resourceBundle.getString("popup.confirmDelete"));
+        Optional<ButtonType> response = alert.showAndWait();
+        return response.isPresent() && response.get() == ButtonType.OK;
+    }
+
+    // NOTE SAVING
 
     public void changeNoteSavingSettings(ActionEvent event) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -388,21 +380,21 @@ public class NoteEditCtrl implements Initializable {
                 alert.close();
             }
         });
-
     }
 
-    private void keyShortcuts() {
-        noteListView.sceneProperty().addListener((_, _, newScene) -> {
-            if (newScene != null) {
-                newScene.setOnKeyPressed(event -> {
-                    Map<KeyCombination, Runnable> keyActions = keyCodeCombinations();
-                    keyActions.entrySet().stream()
-                            .filter(entry -> entry.getKey().match(event))
-                            .findFirst()
-                            .ifPresent(entry -> entry.getValue().run());
-                });
-            }
+    private void saveLabelTransition() {
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(250), saveLabel);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+        fadeIn.setOnFinished(e -> {
+            // Hold the label visible for 1 seconds
+            FadeTransition fadeOut = new FadeTransition(Duration.millis(250), saveLabel);
+            fadeOut.setFromValue(1);
+            fadeOut.setToValue(0);
+            fadeOut.setDelay(Duration.seconds(1)); // Wait 1 second before fading out
+            fadeOut.play();
         });
+        fadeIn.play();
     }
 
     /**
@@ -550,56 +542,12 @@ public class NoteEditCtrl implements Initializable {
         editingArea.requestFocus();
     }
 
-    // Called whenever the user clicks on one of the notes in the sidebar.
-    private void handleNoteSelect(Note note) {
-        if (note == null) {
-            // If no note is selected, disable editing and show a default message
-            editingArea.setEditable(false);
-            editingArea.setText(resourceBundle.getString("initialText"));
-            return;
-        }
-        // If a note is selected, enable editing and display its content
-        currentNote = note;
-        editingArea.setEditable(true);
-        editingArea.setText(note.getContent());
-        currentCollectionDrop.setText(note.getCollection().getName());
-    }
-
-    // Called whenever the user clicks the "New Note" button.
-    public void createNewNote() {
-        Note note = server.newEmptyNote();
-        titleField.setText(note.getTitle());
-        Collection defaultCollection = configManager.getDefaultCollection();
-        if (currentCollection == null) {
-            note.setCollection(defaultCollection);
-            server.linkNoteToCollection(defaultCollection.getId(), note);
-            currentCollectionDrop.setText(defaultCollection.getName());
-        } else {
-            note.setCollection(currentCollection);
-            server.linkNoteToCollection(currentCollection.getId(), note);
-        }
-        noteListView.getItems().add(note);
-        // Updates the location of the editing area on the note currently created
-        noteListView.getSelectionModel().select(note);
-        editingArea.setEditable(true);
-    }
-
-    // Called whenever the user clicks the "Refresh" button.
-    public void refresh() {
-        List<Note> notes;
-        if (currentCollection == null && collectionBox.getText().equals("All")) {
-            notes = server.getNotes();
-        } else {
-            notes = server.getNotesByCollection(currentCollection.getId());
-        }
-        noteListView.setItems(FXCollections.observableList(notes));
-    }
 
     public void autoSave() {
         Note note = noteListView.getSelectionModel().getSelectedItem();
         note.setContent(editingArea.getText());
         server.addNote(note);
-        saveLabelTransition();
+        this.saveLabelTransition();
         System.out.println("Changes saved");// This line is just for debugging purpose
     }
 
@@ -640,74 +588,112 @@ public class NoteEditCtrl implements Initializable {
         }
     }
 
+    // COLLECTION RELATED
+
     /**
-     *     called when the user clicks the "Search" button
-     *     This method displays all the notes in the current collection that contain the given keyword.
+     * A method to add the buttons for changing a collection and moving a note of a specific collection
+     *
+     * @param collection - collection to add
      */
-    public void filterNotes() {
-        String query = searchField.getText();
-        if(query == null || query.isEmpty()){
-            if(currentCollection != null){
-                handleSpecificCollectionSelected(currentCollection);
-            }
-            else{
-                handleAllCollectionsSelected();
-            }
-            return;
-        }
-        List<Note> filteredNotes;
-        if (currentCollection == null) {
-            filteredNotes = server.searchKeyword(query, null);
-        } else {
-            filteredNotes = server.searchKeyword(query, currentCollection.getId());
-        }
-        noteListView.setItems(FXCollections.observableList(filteredNotes));
+    public void addCollectionToMenuButton(Collection collection) {
+        System.out.println("Collection button added");
+        MenuItem newCollectionItem = new MenuItem(collection.getName());
+        MenuItem newCollectionChangeItem = new MenuItem(collection.getName());
+        //Handle the added buttons
+        newCollectionItem.setOnAction(_ -> this.handleSpecificCollectionSelected(collection));
+        newCollectionChangeItem.setOnAction(_ -> this.moveNoteToCollection(currentNote, newCollectionChangeItem));
+        // Add the new MenuItem to the MenuButton
+        collectionBox.getItems().add(newCollectionItem);
+        currentCollectionDrop.getItems().add(newCollectionChangeItem);
     }
 
     /**
-     * Called whenever the user clicks the "Delete" button.
+     * A method to delete the buttons for changing a collection and moving a note of a specific collection
+     *
+     * @param selectedCollection - collection to find the button that needs to be deleted
      */
-    public void deleteButton() throws IOException {
-        Note selectedNote = noteListView.getSelectionModel().getSelectedItem();
-        if (selectedNote == null) {
-            editingArea.setText("Select a note to delete.");
-            return;
-        }
-        boolean deleteConfirmed = confirmationDelete(selectedNote);
-        if (!deleteConfirmed) {
-            return;
-        }
-        try {
-            deleteFlag = true;
-            server.deleteNoteFromServer(selectedNote.getId());
-            noteListView.getItems().remove(selectedNote);
-            clearFields();
-            refresh();
-        } catch (IOException e) {
-            editingArea.setText("Failed to delete note. Please try again.");
-            e.printStackTrace();
-        }
+    public void deleteCollectionToMenuButton(Collection selectedCollection) {
+        System.out.println("Collection button deleted");
+        collectionBox.getItems().remove(collectionBox.getItems()
+                .stream()
+                .filter(x -> x.getText().equals(selectedCollection.getName()))
+                .findFirst()
+                .get());
+        currentCollectionDrop.getItems().remove(currentCollectionDrop.getItems()
+                .stream()
+                .filter(x -> x.getText().equals(selectedCollection.getName()))
+                .findFirst()
+                .get());
     }
 
-    private boolean confirmationDelete(Note selectedNote) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, resourceBundle.getString("popup.confirmDelete"));
-        Optional<ButtonType> response = alert.showAndWait();
-        return response.isPresent() && response.get() == ButtonType.OK;
+    /**
+     * A method to update the buttons for changing a collection and moving a note
+     *
+     * @param modifiedCollection - collection that was modified
+     * @param newTitle           - String with the Title that the buttons are updated
+     */
+    public void updateButtons(Collection modifiedCollection, String newTitle) {
+        System.out.println("Collection button updated");
+        collectionBox.getItems().stream()
+                .filter(mI -> mI.getText().equals(modifiedCollection.getName()))
+                .findFirst().get()
+                .setText(newTitle);
+        currentCollectionDrop.getItems().stream()
+                .filter(mI -> mI.getText().equals(modifiedCollection.getName()))
+                .findFirst().get()
+                .setText(newTitle);
     }
 
-    private void clearFields() {
-        noteListView.getSelectionModel().clearSelection();
-        editingArea.setEditable(false);
-        editingArea.setText("Select a note to start editing");
-        titleField.setText("Select a note to start editing");
-        currentCollectionDrop.setText("ChangeCollection");
+    /**
+     * Handler for "All" option
+     */
+    public void handleAllCollectionsSelected() {
+        System.out.println("All button pressed");
+        collectionBox.setText("All");
+
+        List<Note> notes = server.getNotes();
+        currentCollection = configManager.getDefaultCollection();
+
+        // Clear the current list
+        noteListView.getItems().clear();
+
+        // Add the notes to the ListView
+        noteListView.getItems().addAll(notes);
     }
 
-    public void setLanguage(Locale locale) {
-        this.selectedLanguage.setValue(locale);
-        liveLanguageBox.setValue(locale);
+    /**
+     * Handler for "Edit collections"
+     */
+    public void handleEditCollections() {
+        System.out.println("Edit button pressed");
+        mainCtrl.showCollectionEdit();
     }
 
+    /**
+     * Displaying a given list of notes (from a collection) in the listview
+     *
+     * @param selectedItem - collection
+     */
+    private void handleSpecificCollectionSelected(Collection selectedItem) {
+        System.out.println("Collection handled"); //for debugging purposes
+        List<Note> notes = server.getNotesByCollection(selectedItem.getId());
+        currentCollection = selectedItem;
+        currentNote = null;
+        collectionBox.setText(selectedItem.getName()); //set the name of the collection to show in the MenuButton
+        clearFields();
+        // Clear the current list
+        noteListView.getItems().clear();
+
+        // Add the notes to the ListView
+        noteListView.getItems().addAll(notes);
+    }
+
+    /**
+     * Method to move the selected Note into a new Collection
+     *
+     * @param currentNote          - note to be moved
+     * @param collectionChangeItem - the MenuItem corresponding to the new Collection
+     */
     public void moveNoteToCollection(Note currentNote, MenuItem collectionChangeItem) {
         System.out.println("Collection trying to be moved");
         if (currentNote == null) {
@@ -735,6 +721,13 @@ public class NoteEditCtrl implements Initializable {
             dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.ERROR, "popup.moveNote.error");
             ex.printStackTrace();
         }
+    }
+
+    // LANGUAGE RELATED
+
+    public void setLanguage(Locale locale) {
+        this.selectedLanguage.setValue(locale);
+        liveLanguageBox.setValue(locale);
     }
 
     @FXML
@@ -771,12 +764,44 @@ public class NoteEditCtrl implements Initializable {
         };
     }
 
-    public Note getCurrentNote() {
-        return currentNote;
+    // REFRESH CLEAR FIELDS
+
+    /**
+     * Called whenever the user clicks the "Refresh" button.
+     */
+    public void refresh() {
+        List<Note> notes;
+        if (currentCollection == null || collectionBox.getText().equals("All")) {
+            notes = server.getNotes();
+        } else {
+            notes = server.getNotesByCollection(currentCollection.getId());
+        }
+        noteListView.setItems(FXCollections.observableList(notes));
     }
 
-    public void setCurrentNote(Note note) {
-        noteListView.getSelectionModel().select(note);
+    private void clearFields() {
+        noteListView.getSelectionModel().clearSelection();
+        editingArea.setEditable(false);
+        editingArea.setText("Select a note to start editing");
+        titleField.setText("Select a note to start editing");
+        currentCollectionDrop.setText("ChangeCollection");
+    }
+
+
+    // KEYBINDINGS
+
+    private void keyShortcuts() {
+        noteListView.sceneProperty().addListener((_, _, newScene) -> {
+            if (newScene != null) {
+                newScene.setOnKeyPressed(event -> {
+                    Map<KeyCombination, Runnable> keyActions = keyCodeCombinations();
+                    keyActions.entrySet().stream()
+                            .filter(entry -> entry.getKey().match(event))
+                            .findFirst()
+                            .ifPresent(entry -> entry.getValue().run());
+                });
+            }
+        });
     }
 
 }
