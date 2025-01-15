@@ -29,7 +29,6 @@ public class Config {
 
 	@JsonProperty("defaultCollection")
 	public void setDefaultCollection(Collection defaultCollection) {
-		defaultCollection.setDefault(true);
 		this.defaultCollection = defaultCollection;
 	}
 
