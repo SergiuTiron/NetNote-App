@@ -324,7 +324,7 @@ public class NoteEditCtrl implements Initializable {
         }
 
         selectedNote.setTitle(newTitle);
-        server.addNote(selectedNote);
+        server.updateNote(selectedNote);
         editingArea.requestFocus();
 
         System.out.println("Note title changed to " + newTitle);
