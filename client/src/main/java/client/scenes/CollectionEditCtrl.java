@@ -392,7 +392,7 @@ public class CollectionEditCtrl implements Initializable {
             alert.getDialogPane();
             alert.showAndWait();
         } else {
-            config.setDefaultCollection(selectedCollection);
+            configManager.setDefaultCollection(selectedCollection);
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Default Collection Information");
             alert.setHeaderText("Default Collection Selected");
