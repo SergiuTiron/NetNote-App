@@ -463,9 +463,15 @@ public class NoteEditCtrl implements Initializable {
 
         if (currentCollection == null) {
             System.out.println("No current collection set, defaulting to the first available collection");
-            MenuItem firstCollectionItem = collectionItems.get(0);
-            currentCollection = findCollectionByName(firstCollectionItem.getText());
-            handleSpecificCollectionSelected(currentCollection);
+            for (MenuItem item : collectionItems) {
+                Collection collection = findCollectionByName(item.getText());
+                if (collection != null) {
+                    currentCollection = collection;
+                    handleSpecificCollectionSelected(currentCollection);
+                    return;
+                }
+            }
+            System.out.println("No valid collections found.");
             return;
         }
 
@@ -478,11 +484,22 @@ public class NoteEditCtrl implements Initializable {
         }
 
         int nextIndex = (currentIndex + 1) % collectionItems.size();
-        MenuItem nextCollectionItem = collectionItems.get(nextIndex);
-
-        currentCollection = findCollectionByName(nextCollectionItem.getText());
-        handleSpecificCollectionSelected(currentCollection);
+        while (true) {
+            MenuItem nextCollectionItem = collectionItems.get(nextIndex);
+            Collection nextCollection = findCollectionByName(nextCollectionItem.getText());
+            if (nextCollection != null && !nextCollection.getName().equals(currentCollection.getName())) {
+                currentCollection = nextCollection;
+                handleSpecificCollectionSelected(currentCollection);
+                return;
+            }
+            nextIndex = (nextIndex + 1) % collectionItems.size();
+            if (nextIndex == currentIndex) {
+                System.out.println("No other valid collections found.");
+                return;
+            }
+        }
     }
+
 
     /**
      * Finds a collection by its name in the server's collection list.
