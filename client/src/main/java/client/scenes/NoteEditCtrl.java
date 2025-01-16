@@ -656,24 +656,6 @@ public class NoteEditCtrl implements Initializable {
         currentCollectionDrop.getItems().add(newCollectionChangeItem);
     }
 
-    /**
-     * A method to delete the buttons for changing a collection and moving a note of a specific collection
-     *
-     * @param selectedCollection - collection to find the button that needs to be deleted
-     */
-    public void deleteCollectionToMenuButton(Collection selectedCollection) {
-        System.out.println("Collection button deleted");
-        collectionBox.getItems().remove(collectionBox.getItems()
-                .stream()
-                .filter(x -> x.getText().equals(selectedCollection.getName()))
-                .findFirst()
-                .get());
-        currentCollectionDrop.getItems().remove(currentCollectionDrop.getItems()
-                .stream()
-                .filter(x -> x.getText().equals(selectedCollection.getName()))
-                .findFirst()
-                .get());
-    }
 
     /**
      * A method to update the buttons for changing a collection and moving a note
@@ -784,6 +766,11 @@ public class NoteEditCtrl implements Initializable {
             dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
                     "popup.moveNote.success", Map.of("%collection%", newCollection.getName()));
             currentCollectionDrop.setText(collectionChangeItem);
+            if(collectionBox.getText().equals(resourceBundle.getString("collections.all"))) {
+                return;
+            }
+            this.refresh();
+            currentCollectionDrop.setVisible(false);
         } catch (Exception ex) {
             dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.ERROR, "popup.moveNote.error");
             ex.printStackTrace();
@@ -848,6 +835,7 @@ public class NoteEditCtrl implements Initializable {
             notes = server.getNotesByCollection(currentCollection.getId());
         }
         noteListView.setItems(FXCollections.observableList(notes));
+
     }
 
     private void clearFields() {
@@ -876,4 +864,20 @@ public class NoteEditCtrl implements Initializable {
         });
     }
 
+    public void deleteAllButtons() {
+        for(MenuItem item : currentCollectionDrop.getItems().stream().toList()){
+            if(item.getText().equals(resourceBundle.getString("collections.defaultCollection"))) {
+                continue;
+            }
+            currentCollectionDrop.getItems().remove(item);
+        }
+        for(MenuItem item : collectionBox.getItems().stream().toList()){
+            if(item.getText().equals(resourceBundle.getString("collections.all")) ||
+                item.getText().equals(resourceBundle.getString("collections.edit")) ||
+                item.getText().equals(resourceBundle.getString("collections.defaultCollection"))) {
+                continue;
+            }
+            collectionBox.getItems().remove(item);
+        }
+    }
 }

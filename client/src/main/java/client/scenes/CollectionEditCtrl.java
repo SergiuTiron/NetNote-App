@@ -111,8 +111,7 @@ public class CollectionEditCtrl implements Initializable {
                     }
 
                     config.setCollectionName(selectedCollection, newName.strip());
-                    saveConfig(config);
-                    noteEditCtrl.updateButtons(selectedCollection, newName.strip());
+                    //saveConfig(config);
                     selectedCollection.setName(newName.strip());
                     server.addCollection(selectedCollection);
                     System.out.println("Collection title changed");
@@ -177,7 +176,7 @@ public class CollectionEditCtrl implements Initializable {
 
             config.addCollection(savedCollection); // add collection to config
             config.setDefaultCollection(configManager.getDefaultCollection()); // make sure the default collection is not replaced
-            saveConfig(config);
+            //saveConfig(config);
 
             // Add collection to listView
             dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
@@ -185,7 +184,6 @@ public class CollectionEditCtrl implements Initializable {
             collectionListView.getItems().add(savedCollection);
             collectionListView.getSelectionModel().select(savedCollection);
             // Add collection to MenuButton
-            noteEditCtrl.addCollectionToMenuButton(savedCollection, false);
             this.refresh();
             System.out.println("Collection created successfully");
         });
@@ -203,14 +201,13 @@ public class CollectionEditCtrl implements Initializable {
             System.err.println("Delete attempt with no collection selected");
             return;
         }
-        if(confirmationDelete(selectedCollection)){
+        if (confirmationDelete(selectedCollection)) {
             try {
                 server.deleteCollection(selectedCollection.getId());
                 config.removeCollection(selectedCollection);
-                saveConfig(config);
+                //saveConfig(config);
                 collectionListView.getItems().remove(selectedCollection);
-                noteEditCtrl.deleteCollectionToMenuButton(selectedCollection);
-                refresh();
+                this.refresh();
                 System.out.println("Collection deleted successfully");
                 dialogUtil.showDialog(resourceBundle, Alert.AlertType.WARNING, "popup.Collection.delete.successfully");
             } catch (Exception e) {
@@ -227,9 +224,15 @@ public class CollectionEditCtrl implements Initializable {
     }
 
     public void refresh() {
+        noteEditCtrl.deleteAllButtons();
         List<Collection> collections = server.getCollections();
         System.out.println(collections.toString());
+        for (Collection collection : collections) {
+            noteEditCtrl.addCollectionToMenuButton(collection, configManager.getDefaultCollection().equals(collection));
+
+        }
         collectionListView.setItems(FXCollections.observableList(collections));
+
         System.out.println("Collections refreshed");
     }
 
@@ -318,13 +321,13 @@ public class CollectionEditCtrl implements Initializable {
         }
 
         Collection modifiedCollection = currentCollection;
-        noteEditCtrl.updateButtons(modifiedCollection, newTitle.strip());
+        config.setCollectionName(currentCollection, newTitle.strip());
+        //saveConfig(config);
         modifiedCollection.setName(newTitle.strip());
-
         server.addCollection(modifiedCollection);
 
         System.out.println("Collection title changed to " + newTitle);
-        refresh();
+        this.refresh();
     }
 
     public void changeCollectionServer() {
@@ -372,7 +375,7 @@ public class CollectionEditCtrl implements Initializable {
             dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
                     "popup.collections.defaultChanged",
                     Map.of("%name%", selectedCollection.getName()));
-            noteEditCtrl.updateButtons(selectedCollection, selectedCollection.getName() +"(Default)");
+            noteEditCtrl.updateButtons(selectedCollection, selectedCollection.getName() + "(Default)");
         }
     }
 
