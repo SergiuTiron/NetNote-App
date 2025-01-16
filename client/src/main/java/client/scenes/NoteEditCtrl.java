@@ -181,7 +181,7 @@ public class NoteEditCtrl implements Initializable {
                             "popup.emptyTitle");
                     return selectedNote;
                 }
-                Optional<Note> duplicatedTitle = server.getNotes()
+                Optional<Note> duplicatedTitle = server.getNotesByCollection(selectedNote.getCollection().getId())
                         .stream()
                         .filter(note -> note.getTitle().equals(newTitle.strip()))
                         .findAny();
@@ -314,13 +314,13 @@ public class NoteEditCtrl implements Initializable {
                     "popup.emptyTitle");
             return;
         }
-        if (server.getNotes()
-                .stream()
-                .anyMatch(note -> note.getTitle().equals(newTitle))) {
-            System.err.println("Note title must be unique.");
-            dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.WARNING,
-                    "popup.duplicateTitle");
-            return;
+        if (server.getNotesByCollection(selectedNote.getCollection().getId())
+                    .stream()
+                    .anyMatch(note -> note.getTitle().equals(newTitle))) {
+                System.err.println("Note title must be unique.");
+                dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.WARNING,
+                        "popup.duplicateTitle");
+                return;
         }
 
         selectedNote.setTitle(newTitle);
@@ -760,6 +760,11 @@ public class NoteEditCtrl implements Initializable {
                         "popup.moveNote.sameCollection");
                 return;
             }
+            List<String> noteTitles = server.getNotesByCollection(newCollection.getId()).stream().map(x -> (String) x.getTitle()).toList();
+            if(noteTitles.contains(currentNote.getTitle())) {
+                dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.WARNING, "popup.moveNote.sameTitleInCollection");
+                return;
+            }
             currentNote.setCollection(newCollection);
             server.updateNote(currentNote);
 
@@ -770,6 +775,7 @@ public class NoteEditCtrl implements Initializable {
                 return;
             }
             this.refresh();
+            this.clearFields();
             currentCollectionDrop.setVisible(false);
         } catch (Exception ex) {
             dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.ERROR, "popup.moveNote.error");
