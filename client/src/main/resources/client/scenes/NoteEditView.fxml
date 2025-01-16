@@ -18,96 +18,96 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.web.WebView?>
 
+
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.NoteEditCtrl">
     <children>
-      <HBox alignment="CENTER" layoutY="25.0" prefHeight="40.0" prefWidth="900.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
-         <children>
-            <AnchorPane prefHeight="40.0" prefWidth="1167.0" HBox.hgrow="ALWAYS">
-               <children>
-                  <TextField fx:id="searchField" layoutX="5.0" layoutY="5.0" prefHeight="30.0" prefWidth="542.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="6.0" AnchorPane.rightAnchor="353.0" />
-                  <Button layoutX="555.0" layoutY="7.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#filterNotes" prefHeight="26.0" prefWidth="95.0" text="%buttons.search" textAlignment="CENTER" AnchorPane.bottomAnchor="17.0" AnchorPane.rightAnchor="249.79999999999995" AnchorPane.topAnchor="7.0" />
-                   <MenuButton fx:id="collectionBox" layoutX="786.0" layoutY="8.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="100.0" text="Collections" AnchorPane.bottomAnchor="16.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="8.0">
-                       <items>
-                           <MenuItem fx:id="allButton" mnemonicParsing="false" onAction="#handleAllCollectionsSelected" text="%collections.all" />
-                           <MenuItem fx:id="editCollectionButton" mnemonicParsing="false" onAction="#handleEditCollections" text="%collections.edit" />
-                       </items>
-                   </MenuButton>
-                  <ComboBox fx:id="liveLanguageBox" layoutX="669.0" layoutY="8.0" prefHeight="26.0" prefWidth="100.0" promptText="%buttons.language" AnchorPane.rightAnchor="131.0">
-                  </ComboBox>
-               </children>
-            </AnchorPane>
-         </children>
-      </HBox>
-      <VBox layoutY="27.0" prefHeight="485.0" prefWidth="900.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="90.0">
-         <children>
-              <SplitPane dividerPositions="0.2, 0.65" VBox.vgrow="ALWAYS">
-                  <items>
-                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="361.0" prefWidth="142.0">
-                     <children>
-                              <ListView fx:id="noteListView" prefHeight="348.0" prefWidth="148.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                     </children>
-                      </AnchorPane>
-                  <AnchorPane prefHeight="362.0" prefWidth="222.0">
-                     <children>
-                        <ScrollPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                        <VBox prefHeight="531.0" prefWidth="398.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                           <children>
-                              <AnchorPane prefHeight="45.0" prefWidth="399.0">
-                                 <children>
-                                    <TextField fx:id="titleField" prefHeight="47.0" prefWidth="399.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                       <font>
-                                          <Font size="18.0" />
-                                       </font>
-                                    </TextField>
-                                    <MenuButton fx:id="currentCollectionDrop" layoutX="266.0" layoutY="8.0" mnemonicParsing="false" prefHeight="20.0" prefWidth="150.0" text="ChangeCollection" AnchorPane.bottomAnchor="3.0" AnchorPane.rightAnchor="19.0" />
-                                 </children>
-                              </AnchorPane>
-                              <TextArea fx:id="editingArea" prefHeight="456.0" prefWidth="399.0" VBox.vgrow="ALWAYS" />
-                           </children>
-                        </VBox>
-                     </children>
-                  </AnchorPane>
-                      <AnchorPane prefHeight="356.0" prefWidth="136.0">
-                          <children>
-                        <WebView fx:id="markdownPreview" prefHeight="348.0" prefWidth="206.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                        <Label fx:id="saveLabel" alignment="CENTER" layoutX="211.0" layoutY="459.0" opacity="0.0" prefHeight="20.0" prefWidth="100.0" text="%notice.changesSaved" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="0.0" />
-                          </children>
-                      </AnchorPane>
-                  </items>
-              </SplitPane>
-         </children>
-      </VBox>
-      <HBox layoutX="-6.0" layoutY="566.0" prefHeight="40.0" prefWidth="900.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-         <children>
-            <AnchorPane prefHeight="40.0" prefWidth="1024.0" HBox.hgrow="ALWAYS">
-               <children>
-                  <Button layoutX="800.0" layoutY="7.5" maxHeight="25.0" maxWidth="130.0" minHeight="25.0" minWidth="90.0" mnemonicParsing="false" onAction="#saveChanges" prefHeight="25.0" prefWidth="130.0" text="%buttons.saveChanges" AnchorPane.bottomAnchor="7.5" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="7.0" />
-                  <Button layoutX="95.0" layoutY="7.5" mnemonicParsing="false" onAction="#deleteButton" prefHeight="25.0" prefWidth="75.0" text="%buttons.delete" AnchorPane.bottomAnchor="7.5" AnchorPane.leftAnchor="115.0" AnchorPane.topAnchor="7.5" />
-                  <Button layoutX="10.0" layoutY="7.5" maxHeight="25.0" maxWidth="95.0" minHeight="25.0" minWidth="75.0" mnemonicParsing="false" onAction="#createNewNote" prefHeight="25.0" prefWidth="95.0" text="%buttons.addNote" AnchorPane.bottomAnchor="7.5" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="7.5" />
-                  <Button layoutX="715.0" layoutY="7.5" maxHeight="25.0" maxWidth="95.0" minHeight="25.0" minWidth="75.0" mnemonicParsing="false" onAction="#refresh" prefHeight="25.0" prefWidth="95.0" text="%buttons.refresh" AnchorPane.bottomAnchor="7.5" AnchorPane.rightAnchor="150.0" AnchorPane.topAnchor="7.5" />
-               </children>
-            </AnchorPane>
-         </children>
-      </HBox>
-      <MenuBar layoutY="1.0" prefHeight="25.0" prefWidth="900.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-        <menus>
-          <Menu mnemonicParsing="false" text="%menu.settings">
-            <items>
-              <MenuItem mnemonicParsing="false" onAction="#changeNoteSavingSettings" text="%menu.settings.autosave" />
-                  <MenuItem mnemonicParsing="false" onAction="#onSelectLanguage" text="%menu.settings.selectLanguage" />
-            </items>
-          </Menu>
-          <Menu mnemonicParsing="false" text="%menu.edit">
-            <items>
-              <MenuItem mnemonicParsing="false" text="%menu.edit.deleteNote" />
-            </items>
-          </Menu>
-          <Menu mnemonicParsing="false" text="%menu.help">
-            <items>
-              <MenuItem mnemonicParsing="false" text="%menu.help.about" />
-            </items>
-          </Menu>
-        </menus>
-      </MenuBar>
+        <HBox alignment="CENTER" layoutY="25.0" prefHeight="40.0" prefWidth="900.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
+            <children>
+                <AnchorPane prefHeight="40.0" prefWidth="1167.0" HBox.hgrow="ALWAYS">
+                    <children>
+                        <TextField fx:id="searchField" layoutX="5.0" layoutY="5.0" prefHeight="30.0" prefWidth="660.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="8.0" AnchorPane.rightAnchor="235.0" />
+                        <MenuButton fx:id="collectionBox" layoutX="786.0" layoutY="8.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="100.0"  text="%buttons.collections" AnchorPane.bottomAnchor="16.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="8.0">
+                            <items>
+                                <MenuItem fx:id="allButton" mnemonicParsing="false" onAction="#handleAllCollectionsSelected" style="-fx-font-weight: bold" text="%collections.all" />
+                                <MenuItem mnemonicParsing="false" onAction="#handleDefaultCollection" style="-fx-font-weight: bold" text="%collections.defaultCollection" />
+                                <MenuItem fx:id="editCollectionButton" mnemonicParsing="false" onAction="#handleEditCollections" style="-fx-font-weight: bold" text="%collections.edit" />
+                            </items>
+                        </MenuButton>
+                        <ComboBox fx:id="liveLanguageBox" layoutX="669.0" layoutY="8.0" prefHeight="26.0" prefWidth="100.0" promptText="%buttons.language" AnchorPane.rightAnchor="124.0">
+                        </ComboBox>
+                    </children>
+                </AnchorPane>
+            </children>
+        </HBox>
+        <VBox layoutY="27.0" prefHeight="485.0" prefWidth="900.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="90.0">
+            <children>
+                <SplitPane dividerPositions="0.2, 0.65" VBox.vgrow="ALWAYS">
+                    <items>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="361.0" prefWidth="142.0">
+                            <children>
+                                <ListView fx:id="noteListView" prefHeight="348.0" prefWidth="148.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                            </children>
+                        </AnchorPane>
+                        <AnchorPane prefHeight="362.0" prefWidth="222.0">
+                            <children>
+                                <ScrollPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                <VBox prefHeight="531.0" prefWidth="398.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                    <children>
+                                        <AnchorPane prefHeight="45.0" prefWidth="399.0">
+                                            <children>
+                                                <TextField fx:id="titleField" onAction="#changeNoteTitle" prefHeight="47.0" prefWidth="399.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                    <font>
+                                                        <Font size="18.0" />
+                                                    </font>
+                                                </TextField>
+
+                                                <MenuButton fx:id="currentCollectionDrop" layoutX="266.0" layoutY="8.0" mnemonicParsing="false" prefHeight="20.0" prefWidth="150.0" text="%collections.changeCollection" AnchorPane.bottomAnchor="3.0" AnchorPane.rightAnchor="19.0" >                                       <items>
+                                                    <MenuItem mnemonicParsing="false" onAction="#changeToDefaultCollection" style="-fx-font-weight: bold" text="%collections.defaultCollection" />
+                                                </items>
+                                                </MenuButton>
+                                            </children>
+                                        </AnchorPane>
+                                        <TextArea fx:id="editingArea" prefHeight="456.0" prefWidth="399.0" VBox.vgrow="ALWAYS" />
+                                    </children>
+                                </VBox>
+                            </children>
+                        </AnchorPane>
+                        <AnchorPane prefHeight="356.0" prefWidth="136.0">
+                            <children>
+                                <WebView fx:id="markdownPreview" prefHeight="348.0" prefWidth="206.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                <Label fx:id="saveLabel" alignment="CENTER" layoutX="211.0" layoutY="459.0" opacity="0.0" prefHeight="20.0" prefWidth="100.0" text="%notice.changesSaved" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="0.0" />
+                            </children>
+                        </AnchorPane>
+                    </items>
+                </SplitPane>
+            </children>
+        </VBox>
+        <HBox layoutX="-6.0" layoutY="566.0" prefHeight="40.0" prefWidth="900.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+            <children>
+                <AnchorPane prefHeight="40.0" prefWidth="1024.0" HBox.hgrow="ALWAYS">
+                    <children>
+                        <Button layoutX="800.0" layoutY="7.5" maxHeight="25.0" maxWidth="130.0" minHeight="25.0" minWidth="90.0" mnemonicParsing="false" onAction="#saveChanges" prefHeight="25.0" prefWidth="130.0" text="%buttons.saveChanges" AnchorPane.bottomAnchor="7.5" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="7.0" />
+                        <Button layoutX="95.0" layoutY="7.5" mnemonicParsing="false" onAction="#deleteButton" prefHeight="25.0" prefWidth="75.0" text="%buttons.delete" AnchorPane.bottomAnchor="7.5" AnchorPane.leftAnchor="115.0" AnchorPane.topAnchor="7.5" />
+                        <Button layoutX="10.0" layoutY="7.5" maxHeight="25.0" maxWidth="95.0" minHeight="25.0" minWidth="75.0" mnemonicParsing="false" onAction="#createNewNote" prefHeight="25.0" prefWidth="95.0" text="%buttons.addNote" AnchorPane.bottomAnchor="7.5" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="7.5" />
+                        <Button layoutX="715.0" layoutY="7.5" maxHeight="25.0" maxWidth="95.0" minHeight="25.0" minWidth="75.0" mnemonicParsing="false" onAction="#refresh" prefHeight="25.0" prefWidth="95.0" text="%buttons.refresh" AnchorPane.bottomAnchor="7.5" AnchorPane.rightAnchor="150.0" AnchorPane.topAnchor="7.5" />
+                    </children>
+                </AnchorPane>
+            </children>
+        </HBox>
+        <MenuBar layoutY="1.0" prefHeight="25.0" prefWidth="900.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <menus>
+                <Menu mnemonicParsing="false" text="%menu.settings">
+                    <items>
+                        <MenuItem mnemonicParsing="false" onAction="#changeNoteSavingSettings" text="%menu.settings.autosave" />
+                        <MenuItem mnemonicParsing="false" onAction="#onSelectLanguage" text="%menu.settings.selectLanguage" />
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="%menu.edit">
+                    <items>
+                        <MenuItem mnemonicParsing="false" onAction="#deleteButton" text="%menu.edit.deleteNote" />
+                    </items>
+                </Menu>
+            </menus>
+        </MenuBar>
     </children>
 </AnchorPane>

@@ -31,6 +31,7 @@ public class DialogUtil {
 
         Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
         alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+
         return alert.showAndWait();
     }
 
