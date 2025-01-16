@@ -1,22 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
-<?import javafx.scene.web.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.web.WebView?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.NoteEditCtrl">
-    <children>
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.NoteEditCtrl">    <children>
       <HBox alignment="CENTER" layoutY="25.0" prefHeight="40.0" prefWidth="900.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0">
          <children>
             <AnchorPane prefHeight="40.0" prefWidth="1167.0" HBox.hgrow="ALWAYS">
                <children>
-                  <TextField fx:id="searchField" layoutX="5.0" layoutY="5.0" prefHeight="30.0" prefWidth="542.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="353.0" />
-                  <Button layoutX="562.0" layoutY="5.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#filterNotes" prefHeight="30.0" prefWidth="95.0" text="%buttons.search" textAlignment="CENTER" AnchorPane.bottomAnchor="4.599999999999994" AnchorPane.rightAnchor="242.79999999999995" AnchorPane.topAnchor="5.0" />
-                   <MenuButton fx:id="collectionBox" layoutX="796.0" layoutY="7.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="100.0" text="Collections" AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="7.0">
+                  <TextField fx:id="searchField" layoutX="5.0" layoutY="5.0" prefHeight="30.0" prefWidth="660.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="235.0" />
+                   <MenuButton fx:id="collectionBox" layoutX="796.0" layoutY="7.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="100.0" text="%buttons.collections" AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="7.0">
                        <items>
-                           <MenuItem fx:id="allButton" mnemonicParsing="false" onAction="#handleAllCollectionsSelected" text="%collections.all" />
-                           <MenuItem fx:id="editCollectionButton" mnemonicParsing="false" onAction="#handleEditCollections" text="%collections.edit" />
+                           <MenuItem fx:id="allButton" mnemonicParsing="false" onAction="#handleAllCollectionsSelected" style="-fx-font-weight: bold" text="%collections.all" />
+                        <MenuItem mnemonicParsing="false" onAction="#handleDefaultCollection" style="-fx-font-weight: bold" text="%collections.defaultCollection" />
+                           <MenuItem fx:id="editCollectionButton" mnemonicParsing="false" onAction="#handleEditCollections" style="-fx-font-weight: bold" text="%collections.edit" />
                        </items>
                    </MenuButton>
                   <ComboBox fx:id="liveLanguageBox" layoutX="676.0" layoutY="7.0" prefHeight="25.0" prefWidth="100.0" promptText="%buttons.language" AnchorPane.rightAnchor="124.0">
@@ -41,12 +53,15 @@
                            <children>
                               <AnchorPane prefHeight="45.0" prefWidth="399.0">
                                  <children>
-                                    <TextField fx:id="titleField" prefHeight="47.0" prefWidth="399.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                    <TextField fx:id="titleField" onAction="#changeNoteTitle" prefHeight="47.0" prefWidth="399.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                        <font>
                                           <Font size="18.0" />
                                        </font>
                                     </TextField>
-                                    <MenuButton fx:id="currentCollectionDrop" layoutX="266.0" layoutY="8.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="127.0" text="ChangeCollection" AnchorPane.rightAnchor="19.0" />
+                                    <MenuButton fx:id="currentCollectionDrop" layoutX="266.0" layoutY="8.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="127.0" text="%collections.changeCollection" AnchorPane.rightAnchor="19.0">
+                                       <items>
+                                          <MenuItem mnemonicParsing="false" onAction="#changeToDefaultCollection" style="-fx-font-weight: bold" text="%collections.defaultCollection" />
+                                       </items></MenuButton>
                                  </children>
                               </AnchorPane>
                               <TextArea fx:id="editingArea" prefHeight="456.0" prefWidth="399.0" VBox.vgrow="ALWAYS" />
@@ -86,12 +101,7 @@
           </Menu>
           <Menu mnemonicParsing="false" text="%menu.edit">
             <items>
-              <MenuItem mnemonicParsing="false" text="%menu.edit.deleteNote" />
-            </items>
-          </Menu>
-          <Menu mnemonicParsing="false" text="%menu.help">
-            <items>
-              <MenuItem mnemonicParsing="false" text="%menu.help.about" />
+              <MenuItem mnemonicParsing="false" onAction="#deleteButton" text="%menu.edit.deleteNote" />
             </items>
           </Menu>
         </menus>

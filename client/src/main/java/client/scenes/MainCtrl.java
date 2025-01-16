@@ -15,6 +15,7 @@
  */
 package client.scenes;
 
+import jakarta.inject.Inject;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -25,6 +26,9 @@ import javafx.util.Pair;
 import java.util.ResourceBundle;
 
 public class MainCtrl {
+
+    @Inject
+    private CollectionEditCtrl collectionEditCtrl; //this is for refreshing collection when we open the editCollections Scene
 
     private Stage primaryStage;
     private Scene collectionEdit;
@@ -60,6 +64,7 @@ public class MainCtrl {
         popupStage.setTitle(resourceBundle.getString("window.editCollections"));
         popupStage.setScene(this.collectionEdit);
         popupStage.show();
+        collectionEditCtrl.refresh();
     }
 
 }
