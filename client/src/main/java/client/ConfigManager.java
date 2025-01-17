@@ -49,12 +49,12 @@ public class ConfigManager {
 
 		// If the file exists, read it using Jackson
 		Config config = objectMapper.readValue(configFile, Config.class);
-		System.out.println("Loaded collections: " + config.getCollections().size());
+		//System.out.println("Loaded collections: " + config.getCollections().size());
 		if (config.getCollections().isEmpty()) {
 			System.out.println("No collections found in config.");
 		} else {
 			for (Collection collection : config.getCollections()) {
-				System.out.println("Collection: " + collection.getName());
+				//System.out.println("Collection: " + collection.getName());
 			}
 		}
 

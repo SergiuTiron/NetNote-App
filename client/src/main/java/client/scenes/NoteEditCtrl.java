@@ -634,7 +634,7 @@ public class NoteEditCtrl implements Initializable {
      * @param collection - collection to add
      */
     public void addCollectionToMenuButton(Collection collection,boolean defaultCollection) {
-        System.out.println("Collection button added");
+        //System.out.println("Collection button added");
         MenuItem newCollectionItem;
         MenuItem newCollectionChangeItem;
         if(defaultCollection) {

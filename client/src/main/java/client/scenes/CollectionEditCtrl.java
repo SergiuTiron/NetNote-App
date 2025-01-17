@@ -7,6 +7,9 @@ import client.utils.ServerUtils;
 import commons.Collection;
 import commons.Note;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.core.Response;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -16,6 +19,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import javafx.util.StringConverter;
 
 import java.io.IOException;
@@ -111,7 +115,7 @@ public class CollectionEditCtrl implements Initializable {
                     }
 
                     config.setCollectionName(selectedCollection, newName.strip());
-                    //saveConfig(config);
+                    saveConfig(config);
                     selectedCollection.setName(newName.strip());
                     server.addCollection(selectedCollection);
                     System.out.println("Collection title changed");
@@ -125,6 +129,14 @@ public class CollectionEditCtrl implements Initializable {
                 .addListener((_, _, current) -> handleSelectedCollection(current));
         // Listener for the title change
         titleField.textProperty().addListener((_, _, text) -> statusListenerMethod(text));
+        // Listener for the server change
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(3), event -> {
+            if (serverField.isFocused()) {
+                changeCollectionServer();
+            }
+        }));
+        timeline.setCycleCount(Timeline.INDEFINITE); // Run indefinitely
+        timeline.play();
         // Change title on double click
         collectionListView.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
@@ -176,7 +188,7 @@ public class CollectionEditCtrl implements Initializable {
 
             config.addCollection(savedCollection); // add collection to config
             config.setDefaultCollection(configManager.getDefaultCollection()); // make sure the default collection is not replaced
-            //saveConfig(config);
+            saveConfig(config);
 
             // Add collection to listView
             dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
@@ -205,7 +217,7 @@ public class CollectionEditCtrl implements Initializable {
             try {
                 server.deleteCollection(selectedCollection.getId());
                 config.removeCollection(selectedCollection);
-                //saveConfig(config);
+                saveConfig(config);
                 collectionListView.getItems().remove(selectedCollection);
                 this.refresh();
                 System.out.println("Collection deleted successfully");
@@ -322,7 +334,7 @@ public class CollectionEditCtrl implements Initializable {
 
         Collection modifiedCollection = currentCollection;
         config.setCollectionName(currentCollection, newTitle.strip());
-        //saveConfig(config);
+        saveConfig(config);
         modifiedCollection.setName(newTitle.strip());
         server.addCollection(modifiedCollection);
 
@@ -332,11 +344,20 @@ public class CollectionEditCtrl implements Initializable {
 
     public void changeCollectionServer() {
         if (currentCollection == null) {
-            dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
-                    "popup.collections.noneSelected");
-            handleSelectedCollection(null);
+            return;
         }
         String serverPath = serverField.getText();
+        System.out.println(serverPath);
+        if(server.makeRequest(serverPath, currentCollection) == 200) {
+            if(currentCollection.getServer().equals(serverPath)) {
+                this.statusListenerMethod(currentCollection.getName());
+            } else {
+                //
+            }
+            return;
+        } else {
+            serverStatus.setText(this.resourceBundle.getString("labels.collections.status.cannotConnect"));
+        };
         //TODO: CHECK IF THE SERVER PATH IS VALID ?
     }
 

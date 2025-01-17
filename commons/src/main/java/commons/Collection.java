@@ -89,4 +89,5 @@ public class Collection {
     public int hashCode() {
         return Objects.hash(id, server, name, notes);
     }
+
 }

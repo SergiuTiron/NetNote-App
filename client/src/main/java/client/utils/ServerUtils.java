@@ -27,6 +27,7 @@ import java.util.List;
 
 import commons.Collection;
 import commons.Note;
+import jakarta.ws.rs.core.Response;
 import org.glassfish.jersey.client.ClientConfig;
 
 import jakarta.ws.rs.ProcessingException;
@@ -150,6 +151,18 @@ public class ServerUtils {
                 .put(Entity.entity(collection, APPLICATION_JSON), Collection.class);
     }
 
+    public int makeRequest(String serverPath,Collection collection) {
+        try {
+            Response response = ClientBuilder.newClient(new ClientConfig())
+                    .target(serverPath)
+                    .path("api/collections")
+                    .request(APPLICATION_JSON)
+                    .post(Entity.entity(collection, APPLICATION_JSON));
+            return response.getStatus();
+        }catch(Exception e){
+                return 1000;
+        }
+    }
 
     /**
      * Deletes a collection from the backend
@@ -201,7 +214,6 @@ public class ServerUtils {
                 .request(APPLICATION_JSON)
                 .get(new GenericType<>() {});
     }
-
 
     public Collection getCollectionByName(String name) {
         return ClientBuilder.newClient(new ClientConfig())
