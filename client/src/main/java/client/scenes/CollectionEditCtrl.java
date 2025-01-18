@@ -349,15 +349,10 @@ public class CollectionEditCtrl implements Initializable {
         String serverPath = serverField.getText();
         System.out.println(serverPath);
         if(server.makeRequest(serverPath, currentCollection) == 200) {
-            if(currentCollection.getServer().equals(serverPath)) {
-                this.statusListenerMethod(currentCollection.getName());
-            } else {
-                //
-            }
-            return;
+            this.statusListenerMethod(currentCollection.getName());
         } else {
             serverStatus.setText(this.resourceBundle.getString("labels.collections.status.cannotConnect"));
-        };
+        }
         //TODO: CHECK IF THE SERVER PATH IS VALID ?
     }
 

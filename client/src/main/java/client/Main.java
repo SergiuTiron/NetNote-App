@@ -17,6 +17,7 @@ package client;
 
 import static com.google.inject.Guice.createInjector;
 
+import atlantafx.base.theme.PrimerDark;
 import client.scenes.CollectionEditCtrl;
 import client.scenes.NoteEditCtrl;
 import com.google.inject.Injector;
@@ -31,6 +32,7 @@ import javafx.stage.Stage;
 import javafx.util.Pair;
 
 import java.util.Locale;
+import java.util.Objects;
 
 public class Main extends Application {
 
@@ -59,6 +61,8 @@ public class Main extends Application {
             return;
         }
 
+        Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
+
         this.mainCtrl = INJECTOR.getInstance(MainCtrl.class);
         mainCtrl.initialize(primaryStage);
         this.loadScenes();
@@ -76,6 +80,9 @@ public class Main extends Application {
     public void loadScenes() {
         Pair<NoteEditCtrl, Parent> editView = FXML.load(this.locale, "client", "scenes", "NoteEditView.fxml");
         Pair<CollectionEditCtrl, Parent> collectionView = FXML.load(this.locale, "client", "scenes", "CollectionEditView.fxml");
+
+        editView.getValue().getStylesheets().add(Objects.requireNonNull(getClass().getResource("/css/custom-overrides-noteedit.css")).toExternalForm());
+        collectionView.getValue().getStylesheets().add(Objects.requireNonNull(getClass().getResource("/css/custom-overrides-collectionedit.css")).toExternalForm());
 
         this.noteEditCtrl = editView.getKey();
         noteEditCtrl.setLanguage(this.locale);
