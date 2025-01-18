@@ -38,7 +38,7 @@ public class MainCtrl {
     public void initialize(Stage primaryStage) {
         this.primaryStage = primaryStage;
 
-        // The icon is taken from a google search TODO:Create our own icon
+        // The icon is taken from a Google search
         this.appIcon = new Image("appIcon/NoteIcon.jpg");
         primaryStage.getIcons().add(appIcon);
         primaryStage.setTitle("NetNote");

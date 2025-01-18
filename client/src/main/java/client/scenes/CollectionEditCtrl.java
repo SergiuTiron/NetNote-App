@@ -43,9 +43,6 @@ public class CollectionEditCtrl implements Initializable {
     private ListView<Collection> collectionListView;
 
     @FXML
-    private TextField collectionNameField;
-
-    @FXML
     private TextField serverField;
 
     @FXML
@@ -219,7 +216,7 @@ public class CollectionEditCtrl implements Initializable {
                 collectionListView.getItems().remove(selectedCollection);
                 this.refresh();
                 System.out.println("Collection deleted successfully");
-                dialogUtil.showDialog(resourceBundle, Alert.AlertType.WARNING, "popup.Collection.delete.successfully");
+                dialogUtil.showDialog(resourceBundle, Alert.AlertType.INFORMATION, "popup.Collection.delete.successfully");
             } catch (Exception e) {
                 System.err.println("Failed to delete collection");
                 e.printStackTrace();
@@ -228,8 +225,7 @@ public class CollectionEditCtrl implements Initializable {
     }
 
     private boolean confirmationDelete(Collection selectedCollection) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, resourceBundle.getString("popup.collection.confirmDelete"));
-        Optional<ButtonType> response = alert.showAndWait();
+        Optional<ButtonType> response = dialogUtil.showDialog(resourceBundle, Alert.AlertType.CONFIRMATION, "popup.collection.confirmDelete");
         return response.isPresent() && response.get() == ButtonType.OK;
     }
 
@@ -249,7 +245,6 @@ public class CollectionEditCtrl implements Initializable {
     // UI FIELDS UPDATES
 
     private void statusListenerMethod(String text) {
-        collectionNameField.setText(text); // TODO: Figure out if this should get updated with the note title
 
         if (server.getCollections()
                 .stream()
@@ -283,12 +278,10 @@ public class CollectionEditCtrl implements Initializable {
             //show a basic prompt if no collection selected
             titleField.setEditable(false);
             serverField.setEditable(false);
-            collectionNameField.setEditable(false);
 
             String initialText = this.resourceBundle.getString("labels.collections.initialText");
             titleField.setText(initialText);
             serverField.setText(initialText);
-            collectionNameField.setText(initialText);
             return;
         }
 
@@ -299,11 +292,9 @@ public class CollectionEditCtrl implements Initializable {
         //update the fields accordingly
         titleField.setEditable(true);
         serverField.setEditable(true);
-        collectionNameField.setEditable(true);
 
         titleField.setText(selectedCollection.getName());
         serverField.setText(server.getServerPath());
-        collectionNameField.setText(selectedCollection.getName());
         serverStatus.setText(this.resourceBundle.getString("labels.collections.status.exists"));
     }
 
@@ -352,15 +343,6 @@ public class CollectionEditCtrl implements Initializable {
             serverStatus.setText(this.resourceBundle.getString("labels.collections.status.cannotConnect"));
         }
         //TODO: CHECK IF THE SERVER PATH IS VALID ?
-    }
-
-    public void changeCollectionName() {
-        if (currentCollection == null) {
-            dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
-                    "popup.collections.noneSelected");
-            handleSelectedCollection(null);
-        }
-        //TODO: FIGURE OUT THE DIFFERENCE BETWEEN THIS AND THE TITLE FIELD
     }
 
     // LANGUAGE
