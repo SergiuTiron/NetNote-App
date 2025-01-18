@@ -803,7 +803,7 @@ public class NoteEditCtrl implements Initializable {
 
     @FXML
     private void onSelectLanguage(ActionEvent event) {
-        List<Locale> availableLocales = Arrays.asList(Locale.getAvailableLocales());
+        List<Locale> availableLocales = Arrays.asList(localeUtil.getAvailableLocales().toArray(new Locale[0]));
         List<String> languages = availableLocales.stream()
                 .map(Locale::getDisplayName)
                 .collect(Collectors.toList());
@@ -834,7 +834,6 @@ public class NoteEditCtrl implements Initializable {
             default -> Locale.ENGLISH;
         };
     }
-
     // REFRESH CLEAR FIELDS
 
     /**
