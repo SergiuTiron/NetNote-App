@@ -813,20 +813,31 @@ public class NoteEditCtrl implements Initializable {
     }
 
     // LANGUAGE RELATED
-
+    /**
+     * Sets the application language to the specified Locale.
+     *
+     * @param locale The Locale object representing the language to set.
+     */
     public void setLanguage(Locale locale) {
         this.selectedLanguage.setValue(locale);
         liveLanguageBox.setValue(locale);
     }
 
+    /**
+     * Handles the language selection event.
+     * Opens a dialog for the user to choose a language, then sets and saves the selected language.
+     *
+     * @param event The ActionEvent that triggered this method.
+     */
     @FXML
     private void onSelectLanguage(ActionEvent event) {
         List<Locale> availableLocales = Arrays.asList(localeUtil.getAvailableLocales().toArray(new Locale[0]));
         List<String> languages = availableLocales.stream()
-                .map(Locale::getDisplayName)
+                .map(localeUtil::mapLocaleToLanguage)
                 .collect(Collectors.toList());
 
-        ChoiceDialog<String> dialog = new ChoiceDialog<>("English", languages);
+        String currentLanguage = localeUtil.mapLocaleToLanguage(configManager.loadLanguage());
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(currentLanguage, languages);
         dialog.setTitle("Select Language");
         dialog.setHeaderText("Choose Your Preferred Language");
         dialog.setContentText("Language:");
@@ -835,23 +846,12 @@ public class NoteEditCtrl implements Initializable {
 
         result.ifPresent(selectedLanguage -> {
             System.out.println("Saved Language: " + selectedLanguage);
-            // TODO: Save the selected language in the database
-            // savePreferredLanguage(selectedLanguage);
-
-            Locale newLocale = mapLanguageToLocale(selectedLanguage);
+            Locale newLocale = localeUtil.mapLanguageToLocale(selectedLanguage);
+            configManager.saveLanguage(newLocale);
             this.setLanguage(newLocale);
         });
     }
-
-    private Locale mapLanguageToLocale(String language) {
-        return switch (language) {
-            case "Dutch" -> new Locale("nl");
-            case "Romanian" -> new Locale("ro");
-            case "Bulgarian" -> new Locale("bg");
-            case "Italian" -> new Locale("it");
-            default -> Locale.ENGLISH;
-        };
-    }
+    
     // REFRESH CLEAR FIELDS
 
     /**

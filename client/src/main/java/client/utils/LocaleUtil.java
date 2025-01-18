@@ -44,4 +44,39 @@ public class LocaleUtil {
         }
     }
 
+    /**
+     * Maps a language string to its corresponding Locale object.
+     *
+     * @param language A string representing the language (e.g., "Dutch", "nl", "English").
+     * @return The Locale object corresponding to the given language string.
+     *         Returns Locale.ENGLISH if the language is not recognized.
+     */
+    public Locale mapLanguageToLocale(String language) {
+        return switch (language) {
+            case "Dutch", "nl" -> new Locale("nl");
+            case "Romanian", "ro" -> new Locale("ro");
+            case "Bulgarian", "bg" -> new Locale("bg");
+            case "Italian", "it" -> new Locale("it");
+            case "English", "en" -> Locale.ENGLISH;
+            default -> Locale.ENGLISH;
+        };
+    }
+
+    /**
+     * Maps a Locale object to its corresponding language string.
+     *
+     * @param locale The Locale object to be mapped.
+     * @return A string representing the language of the given Locale (e.g., "Dutch", "English").
+     *         Returns "English" if the Locale is not recognized.
+     */
+    public String mapLocaleToLanguage(Locale locale) {
+        return switch (locale.getLanguage()) {
+            case "nl" -> "Dutch";
+            case "ro" -> "Romanian";
+            case "bg" -> "Bulgarian";
+            case "it" -> "Italian";
+            default -> "English";
+        };
+    }
+
 }

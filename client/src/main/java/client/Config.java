@@ -9,10 +9,12 @@ import java.util.List;
 public class Config {
 	private Collection defaultCollection;
 	private final List<Collection> collections;
+	private String language;
 
 	public Config() {
 		this.defaultCollection = null;
 		this.collections = new ArrayList<>();
+		this.language = "English";  // Default language
 	}
 
 	public Collection getCollection(Collection collection) {
@@ -59,5 +61,13 @@ public class Config {
 		} else {
 			throw new IllegalArgumentException("Collection not found");
 		}
+	}
+
+	public String getLanguage() {
+		return language;
+	}
+
+	public void setLanguage(String language) {
+		this.language = language;
 	}
 }

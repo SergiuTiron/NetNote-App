@@ -1,6 +1,7 @@
 package client;
 
 import client.utils.ServerUtils;
+import client.utils.LocaleUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import commons.Collection;
 import org.jvnet.hk2.annotations.Service;
@@ -10,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Locale;
 
 
 public class ConfigManager {
@@ -17,11 +19,12 @@ public class ConfigManager {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final ServerUtils server;
 	private Config config;
-
+	private LocaleUtil localeUtil;
 
 	public ConfigManager() {
 		server = new ServerUtils();
 		config = new Config();
+		localeUtil = new LocaleUtil();
 	}
 
 	/**Save the Config object to a JSON file
@@ -119,6 +122,46 @@ public class ConfigManager {
 			System.out.println("Default collection updated to: " + newDefault.getName());
 		} catch (IOException e) {
 			System.err.println("Failed saving config in setDefaultCollection()");
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Loads the language setting from the configuration.
+	 *
+	 * @return The Locale object representing the loaded language. If loading fails or LocaleUtil
+	 *         is not initialized, it returns the default Locale or Locale.ENGLISH.
+	 */
+	public Locale loadLanguage() {
+		try {
+			this.config = loadConfig();
+			String languageCode = this.config.getLanguage();
+			if (this.localeUtil == null) {
+				System.err.println("LocaleUtil is not initialized");
+				return Locale.getDefault();
+			}
+			return this.localeUtil.mapLanguageToLocale(languageCode);
+		} catch (IOException e) {
+			System.err.println("Failed loading language in loadLanguage()");
+			e.printStackTrace();
+			return Locale.ENGLISH;
+		}
+	}
+
+	/**
+	 * Saves the given language setting to the configuration.
+	 *
+	 * @param locale The Locale object representing the language to be saved.
+	 */
+	public void saveLanguage(Locale locale) {
+		try {
+			this.config = loadConfig();
+			String language = localeUtil.mapLocaleToLanguage(locale);
+			this.config.setLanguage(language);
+			saveConfig(this.config);
+			System.out.println("Language saved: " + language);
+		} catch (IOException e) {
+			System.err.println("Failed saving language in saveLanguage()");
 			e.printStackTrace();
 		}
 	}
