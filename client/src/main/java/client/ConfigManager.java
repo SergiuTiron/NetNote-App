@@ -17,7 +17,7 @@ import java.util.Locale;
 public class ConfigManager {
 	public static final Path CONFIG_FILE_PATH = Paths.get("config.json");
 	private final ObjectMapper objectMapper = new ObjectMapper();
-	private final ServerUtils server;
+	private ServerUtils server;
 	private Config config;
 	private LocaleUtil localeUtil;
 
@@ -166,4 +166,19 @@ public class ConfigManager {
 		}
 	}
 
+	/**
+	 * Setter included for testing
+	 * @param server - server to mock test
+	 */
+	public void setServer(ServerUtils server) {
+		this.server = server;
+	}
+
+	/**
+	 * Setter included for testing
+	 * @param config - confit to mock test
+	 */
+	public void setConfig(Config config) {
+		this.config = config;
+	}
 }
