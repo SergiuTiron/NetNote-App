@@ -63,6 +63,10 @@ public class Main extends Application {
 
         Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
 
+        this.configManager = INJECTOR.getInstance(ConfigManager.class);
+        this.locale = configManager.loadLanguage();
+        Locale.setDefault(this.locale);
+
         this.mainCtrl = INJECTOR.getInstance(MainCtrl.class);
         mainCtrl.initialize(primaryStage);
         this.loadScenes();
