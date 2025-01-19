@@ -11,6 +11,7 @@ import commons.Collection;
 import commons.Note;
 import jakarta.inject.Inject;
 import javafx.animation.FadeTransition;
+import javafx.animation.RotateTransition;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -20,12 +21,18 @@ import javafx.fxml.Initializable;
 
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Arc;
+import javafx.scene.shape.ArcType;
 import javafx.scene.web.WebView;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 
@@ -81,6 +88,11 @@ public class NoteEditCtrl implements Initializable {
     @FXML
     private MenuButton currentCollectionDrop;
 
+    @FXML
+    private StackPane refreshPane; // Add a placeholder in your FXML to hold the animation
+
+    private RotateTransition refreshAnimation;
+
     @Inject
     public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke, MarkdownUtil markdown, LocaleUtil localeUtil,
                         DialogUtil dialogUtil, MainCtrl mainCtrl, Config config, ConfigManager configManager) {
@@ -105,6 +117,7 @@ public class NoteEditCtrl implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        createRefresh();
         // Load resourceBundle
         this.resourceBundle = resourceBundle;
         // Set the "All" option as default selection
@@ -116,7 +129,7 @@ public class NoteEditCtrl implements Initializable {
         List<Collection> configCollections = config.getCollections();
         List<Collection> serverCollections = server.getCollections();
         Collection defaultCollection = configManager.getDefaultCollection();
-        for(Collection collection : serverCollections) {
+        for (Collection collection : serverCollections) {
             addCollectionToMenuButton(collection, collection.equals(defaultCollection));
         }
         for (Collection collection : configCollections) {
@@ -181,7 +194,7 @@ public class NoteEditCtrl implements Initializable {
                             "popup.emptyTitle");
                     return selectedNote;
                 }
-                Optional<Note> duplicatedTitle = server.getNotes()
+                Optional<Note> duplicatedTitle = server.getNotesByCollection(selectedNote.getCollection().getId())
                         .stream()
                         .filter(note -> note.getTitle().equals(newTitle.strip()))
                         .findAny();
@@ -190,12 +203,12 @@ public class NoteEditCtrl implements Initializable {
                     selectedNote.setTitle(newTitle.strip());
                     titleField.setText(newTitle.strip());
                     server.updateNote(selectedNote);
+                    handleNoteSelect(selectedNote);
                 } else {
                     System.out.println("Title already exists");
                     dialogUtil.showDialog(resourceBundle, Alert.AlertType.WARNING,
                             "popup.duplicateTitle");
                 }
-
                 return selectedNote;
             }
         }));
@@ -268,7 +281,7 @@ public class NoteEditCtrl implements Initializable {
         if (query == null || query.isEmpty()) {
             if (currentSelection.equals(resourceBundle.getString("collections.all"))) {
                 handleAllCollectionsSelected();
-            } else if(currentSelection.equals(resourceBundle.getString("collections.defaultCollection"))) {
+            } else if (currentSelection.equals(resourceBundle.getString("collections.defaultCollection"))) {
                 handleDefaultCollection();
             } else {
                 handleSpecificCollectionSelected(server.getCollectionByName(currentSelection));
@@ -314,7 +327,7 @@ public class NoteEditCtrl implements Initializable {
                     "popup.emptyTitle");
             return;
         }
-        if (server.getNotes()
+        if (server.getNotesByCollection(selectedNote.getCollection().getId())
                 .stream()
                 .anyMatch(note -> note.getTitle().equals(newTitle))) {
             System.err.println("Note title must be unique.");
@@ -380,8 +393,7 @@ public class NoteEditCtrl implements Initializable {
     }
 
     private boolean confirmationDelete(Note selectedNote) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, resourceBundle.getString("popup.confirmDelete"));
-        Optional<ButtonType> response = alert.showAndWait();
+        Optional<ButtonType> response = dialogUtil.showDialog(resourceBundle, Alert.AlertType.CONFIRMATION, "popup.note.confirmDelete");
         return response.isPresent() && response.get() == ButtonType.OK;
     }
 
@@ -394,7 +406,7 @@ public class NoteEditCtrl implements Initializable {
         alert.setHeaderText(resourceBundle.getString("popup.autosave.text")
                 .replace("%num%", String.valueOf(keyStroke.getTrigger())));
         alert.getDialogPane().getScene().getWindow().setWidth(400);
-        alert.getDialogPane().getScene().getWindow().setHeight(200);
+        alert.getDialogPane().getScene().getWindow().setHeight(250);
 
         TextField textField = new TextField();
         textField.setPromptText(resourceBundle.getString("popup.autosave.prompt"));
@@ -405,11 +417,22 @@ public class NoteEditCtrl implements Initializable {
 
         // Set the custom content to the Alert
         alert.getDialogPane().setContent(content);
+        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+        alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
 
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK && !textField.getText().isEmpty()) {
                 try {
-                    keyStroke.setTriggerCount(Integer.parseInt(textField.getText()));
+                    int numberOfKeys = Integer.parseInt(textField.getText());
+                    if(numberOfKeys < 10) {
+                        dialogUtil.showDialog(resourceBundle, Alert.AlertType.WARNING, "popup.autosave.less");
+                        return;
+                    }
+                    else if(numberOfKeys > 10000) {
+                        dialogUtil.showDialog(resourceBundle, Alert.AlertType.WARNING, "popup.autosave.more");
+                        return;
+                    }
+                    keyStroke.setTriggerCount(numberOfKeys);
                 } catch (NumberFormatException e) {
                     dialogUtil.showDialog(resourceBundle, Alert.AlertType.ERROR, "popup.autosave.invalid");
                 }
@@ -549,10 +572,10 @@ public class NoteEditCtrl implements Initializable {
      * If the current note is the last one, the selection remains unchanged.
      * Automatically scrolls to make the selected note visible.
      */
-     private void nextNote() {
+    private void nextNote() {
 
         int currentIndex = noteListView.getSelectionModel().getSelectedIndex();
-        if( currentIndex < noteListView.getItems().size() - 1 ) {
+        if (currentIndex < noteListView.getItems().size() - 1) {
             noteListView.getSelectionModel().select(currentIndex + 1);
             noteListView.scrollTo(currentIndex + 1);
         }
@@ -618,6 +641,8 @@ public class NoteEditCtrl implements Initializable {
                     cancelButton, retryButton);
             alert.setContentText(resourceBundle.getString("popup.savingFailed.text")
                     .replace("%id%", String.valueOf(note.getId())));
+            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+            alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
             Optional<ButtonType> response = alert.showAndWait();
             if (response.isPresent() && response.get() == retryButton) {
                 // Start the process again
@@ -633,11 +658,11 @@ public class NoteEditCtrl implements Initializable {
      *
      * @param collection - collection to add
      */
-    public void addCollectionToMenuButton(Collection collection,boolean defaultCollection) {
-        System.out.println("Collection button added");
+    public void addCollectionToMenuButton(Collection collection, boolean defaultCollection) {
+        //System.out.println("Collection button added");
         MenuItem newCollectionItem;
         MenuItem newCollectionChangeItem;
-        if(defaultCollection) {
+        if (defaultCollection) {
             newCollectionItem = new MenuItem(collection.getName() + "(Default)");
             newCollectionChangeItem = new MenuItem(collection.getName() + "(Default)");
         } else {
@@ -656,24 +681,6 @@ public class NoteEditCtrl implements Initializable {
         currentCollectionDrop.getItems().add(newCollectionChangeItem);
     }
 
-    /**
-     * A method to delete the buttons for changing a collection and moving a note of a specific collection
-     *
-     * @param selectedCollection - collection to find the button that needs to be deleted
-     */
-    public void deleteCollectionToMenuButton(Collection selectedCollection) {
-        System.out.println("Collection button deleted");
-        collectionBox.getItems().remove(collectionBox.getItems()
-                .stream()
-                .filter(x -> x.getText().equals(selectedCollection.getName()))
-                .findFirst()
-                .get());
-        currentCollectionDrop.getItems().remove(currentCollectionDrop.getItems()
-                .stream()
-                .filter(x -> x.getText().equals(selectedCollection.getName()))
-                .findFirst()
-                .get());
-    }
 
     /**
      * A method to update the buttons for changing a collection and moving a note
@@ -688,7 +695,7 @@ public class NoteEditCtrl implements Initializable {
                 .findFirst().get()
                 .setText(newTitle);
         currentCollectionDrop.getItems().stream()
-                .filter(mI -> mI.getText().equals(modifiedCollection.getName())|| mI.getText().equals(modifiedCollection.getName() + "(Default)"))
+                .filter(mI -> mI.getText().equals(modifiedCollection.getName()) || mI.getText().equals(modifiedCollection.getName() + "(Default)"))
                 .findFirst().get()
                 .setText(newTitle);
     }
@@ -778,12 +785,23 @@ public class NoteEditCtrl implements Initializable {
                         "popup.moveNote.sameCollection");
                 return;
             }
+            List<String> noteTitles = server.getNotesByCollection(newCollection.getId()).stream().map(x -> (String) x.getTitle()).toList();
+            if (noteTitles.contains(currentNote.getTitle())) {
+                dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.WARNING, "popup.moveNote.sameTitleInCollection");
+                return;
+            }
             currentNote.setCollection(newCollection);
             server.updateNote(currentNote);
 
             dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
                     "popup.moveNote.success", Map.of("%collection%", newCollection.getName()));
             currentCollectionDrop.setText(collectionChangeItem);
+            if (collectionBox.getText().equals(resourceBundle.getString("collections.all"))) {
+                return;
+            }
+            this.refresh();
+            this.clearFields();
+            currentCollectionDrop.setVisible(false);
         } catch (Exception ex) {
             dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.ERROR, "popup.moveNote.error");
             ex.printStackTrace();
@@ -791,7 +809,7 @@ public class NoteEditCtrl implements Initializable {
     }
 
     public void changeToDefaultCollection() {
-        moveNoteToCollection(noteListView.getSelectionModel().getSelectedItem(),configManager.getDefaultCollection().getName());
+        moveNoteToCollection(noteListView.getSelectionModel().getSelectedItem(), configManager.getDefaultCollection().getName());
     }
 
     // LANGUAGE RELATED
@@ -841,12 +859,47 @@ public class NoteEditCtrl implements Initializable {
      */
     public void refresh() {
         List<Note> notes;
-        if (currentCollection == null || collectionBox.getText().equals("All")) {
+        if (currentCollection == null || collectionBox.getText().equals(resourceBundle.getString("collections.all"))) {
             notes = server.getNotes();
         } else {
             notes = server.getNotesByCollection(currentCollection.getId());
         }
         noteListView.setItems(FXCollections.observableList(notes));
+        refreshAnimation.play();
+        refreshPane.setVisible(true);
+        new Thread(() -> {
+            try {
+                Thread.sleep(700);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                javafx.application.Platform.runLater(() -> {
+                    refreshPane.setVisible(false);
+                    refreshAnimation.stop();
+                });
+            }
+        }).start();
+    }
+
+    private void createRefresh() {
+        Arc refreshArc = new Arc();
+        refreshArc.setRadiusX(10);
+        refreshArc.setRadiusY(10);
+        refreshArc.setStartAngle(45);
+        refreshArc.setLength(250);
+        refreshArc.setType(ArcType.OPEN);
+        refreshArc.setStroke(Color.WHITE);
+        refreshArc.setStrokeWidth(3);
+        refreshArc.setFill(null);
+
+        // Add the refresh circle to the StackPane
+        refreshPane.getChildren().add(refreshArc);
+
+        // Set up the animation
+        refreshAnimation = new RotateTransition(Duration.seconds(1.5), refreshArc);
+        refreshAnimation.setByAngle(360);
+        refreshAnimation.setCycleCount(RotateTransition.INDEFINITE);
+        refreshAnimation.setInterpolator(javafx.animation.Interpolator.LINEAR);
     }
 
     private void clearFields() {
@@ -875,4 +928,20 @@ public class NoteEditCtrl implements Initializable {
         });
     }
 
+    public void deleteAllButtons() {
+        for (MenuItem item : currentCollectionDrop.getItems().stream().toList()) {
+            if (item.getText().equals(resourceBundle.getString("collections.defaultCollection"))) {
+                continue;
+            }
+            currentCollectionDrop.getItems().remove(item);
+        }
+        for (MenuItem item : collectionBox.getItems().stream().toList()) {
+            if (item.getText().equals(resourceBundle.getString("collections.all")) ||
+                    item.getText().equals(resourceBundle.getString("collections.edit")) ||
+                    item.getText().equals(resourceBundle.getString("collections.defaultCollection"))) {
+                continue;
+            }
+            collectionBox.getItems().remove(item);
+        }
+    }
 }

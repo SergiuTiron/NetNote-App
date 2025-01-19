@@ -12,12 +12,14 @@
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.web.WebView?>
-
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.NoteEditCtrl">
     <children>
@@ -25,16 +27,17 @@
             <children>
                 <AnchorPane prefHeight="40.0" prefWidth="1167.0" HBox.hgrow="ALWAYS">
                     <children>
-                        <TextField fx:id="searchField" layoutX="5.0" layoutY="5.0" prefHeight="30.0" prefWidth="660.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="8.0" AnchorPane.rightAnchor="235.0" />
-                        <MenuButton fx:id="collectionBox" layoutX="786.0" layoutY="8.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="100.0"  text="%buttons.collections" AnchorPane.bottomAnchor="16.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="8.0">
+                        <TextField fx:id="searchField" layoutX="14.0" layoutY="10.0" prefHeight="20.0" prefWidth="615.0" AnchorPane.bottomAnchor="9.5" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="9.5" />
+                        <MenuButton fx:id="collectionBox" layoutX="786.0" layoutY="11.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="100.0" text="%buttons.collections" AnchorPane.bottomAnchor="12.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="12.0">
                             <items>
                                 <MenuItem fx:id="allButton" mnemonicParsing="false" onAction="#handleAllCollectionsSelected" style="-fx-font-weight: bold" text="%collections.all" />
                                 <MenuItem mnemonicParsing="false" onAction="#handleDefaultCollection" style="-fx-font-weight: bold" text="%collections.defaultCollection" />
                                 <MenuItem fx:id="editCollectionButton" mnemonicParsing="false" onAction="#handleEditCollections" style="-fx-font-weight: bold" text="%collections.edit" />
                             </items>
                         </MenuButton>
-                        <ComboBox fx:id="liveLanguageBox" layoutX="669.0" layoutY="8.0" prefHeight="26.0" prefWidth="100.0" promptText="%buttons.language" AnchorPane.rightAnchor="124.0">
+                        <ComboBox fx:id="liveLanguageBox" layoutX="690.0" layoutY="12.0" prefHeight="25.0" prefWidth="100.0" promptText="%buttons.language" AnchorPane.bottomAnchor="12.0" AnchorPane.rightAnchor="120.0" AnchorPane.topAnchor="12.0">
                         </ComboBox>
+                        <StackPane fx:id="refreshPane" layoutX="631.0" layoutY="12.0" prefHeight="35.0" prefWidth="35.0" AnchorPane.bottomAnchor="9.5" AnchorPane.rightAnchor="230.0" AnchorPane.topAnchor="9.5" />
                     </children>
                 </AnchorPane>
             </children>
@@ -61,9 +64,10 @@
                                                     </font>
                                                 </TextField>
 
-                                                <MenuButton fx:id="currentCollectionDrop" layoutX="266.0" layoutY="8.0" mnemonicParsing="false" prefHeight="20.0" prefWidth="150.0" text="%collections.changeCollection" AnchorPane.bottomAnchor="3.0" AnchorPane.rightAnchor="19.0" >                                       <items>
-                                                    <MenuItem mnemonicParsing="false" onAction="#changeToDefaultCollection" style="-fx-font-weight: bold" text="%collections.defaultCollection" />
-                                                </items>
+                                                <MenuButton fx:id="currentCollectionDrop" layoutX="234.0" layoutY="7.0" mnemonicParsing="false" prefHeight="20.0" prefWidth="150.0" text="%collections.changeCollection" AnchorPane.bottomAnchor="7.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="7.0">
+                                                    <items>
+                                                        <MenuItem mnemonicParsing="false" onAction="#changeToDefaultCollection" style="-fx-font-weight: bold" text="%collections.defaultCollection" />
+                                                    </items>
                                                 </MenuButton>
                                             </children>
                                         </AnchorPane>
@@ -86,10 +90,34 @@
             <children>
                 <AnchorPane prefHeight="40.0" prefWidth="1024.0" HBox.hgrow="ALWAYS">
                     <children>
-                        <Button layoutX="800.0" layoutY="7.5" maxHeight="25.0" maxWidth="130.0" minHeight="25.0" minWidth="90.0" mnemonicParsing="false" onAction="#saveChanges" prefHeight="25.0" prefWidth="130.0" text="%buttons.saveChanges" AnchorPane.bottomAnchor="7.5" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="7.0" />
-                        <Button layoutX="95.0" layoutY="7.5" mnemonicParsing="false" onAction="#deleteButton" prefHeight="25.0" prefWidth="75.0" text="%buttons.delete" AnchorPane.bottomAnchor="7.5" AnchorPane.leftAnchor="115.0" AnchorPane.topAnchor="7.5" />
-                        <Button layoutX="10.0" layoutY="7.5" maxHeight="25.0" maxWidth="95.0" minHeight="25.0" minWidth="75.0" mnemonicParsing="false" onAction="#createNewNote" prefHeight="25.0" prefWidth="95.0" text="%buttons.addNote" AnchorPane.bottomAnchor="7.5" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="7.5" />
-                        <Button layoutX="715.0" layoutY="7.5" maxHeight="25.0" maxWidth="95.0" minHeight="25.0" minWidth="75.0" mnemonicParsing="false" onAction="#refresh" prefHeight="25.0" prefWidth="95.0" text="%buttons.refresh" AnchorPane.bottomAnchor="7.5" AnchorPane.rightAnchor="150.0" AnchorPane.topAnchor="7.5" />
+                        <Button layoutX="800.0" layoutY="7.5" maxHeight="26.0" maxWidth="140.0" minHeight="25.0" minWidth="90.0" mnemonicParsing="false" onAction="#saveChanges" prefHeight="25.0" prefWidth="140.0" text="%buttons.saveChanges" AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="8.0">
+                            <graphic>
+                                <ImageView fitHeight="16.0" fitWidth="16.0">
+                                    <Image url="@/appIcon/save_icon.png" />
+                                </ImageView>
+                            </graphic>
+                        </Button>
+                        <Button layoutX="121.0" layoutY="8.0" mnemonicParsing="false" onAction="#deleteButton" prefHeight="25.0" prefWidth="100.0" text="%buttons.delete" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="140.0" AnchorPane.topAnchor="8.0">
+                            <graphic>
+                                <ImageView fitHeight="16.0" fitWidth="16.0">
+                                    <Image url="@/appIcon/delete_icon.png" />
+                                </ImageView>
+                            </graphic>
+                        </Button>
+                        <Button layoutX="10.0" layoutY="8.0" maxHeight="25.0" maxWidth="120.0" minHeight="25.0" minWidth="75.0" mnemonicParsing="false" onAction="#createNewNote" prefHeight="25.0" prefWidth="120.0" text="%buttons.addNote" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="8.0">
+                            <graphic>
+                                <ImageView fitHeight="16.0" fitWidth="16.0">
+                                    <Image url="@/appIcon/add_icon.png" />
+                                </ImageView>
+                            </graphic>
+                        </Button>
+                        <Button layoutX="630.0" layoutY="8.0" maxHeight="25.0" maxWidth="110.0" minHeight="25.0" minWidth="75.0" mnemonicParsing="false" onAction="#refresh" prefHeight="25.0" prefWidth="110.0" text="%buttons.refresh" AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="160.0" AnchorPane.topAnchor="8.0">
+                            <graphic>
+                                <ImageView fitHeight="16.0" fitWidth="16.0">
+                                    <Image url="@/appIcon/refresh_icon.png" />
+                                </ImageView>
+                            </graphic>
+                        </Button>
                     </children>
                 </AnchorPane>
             </children>

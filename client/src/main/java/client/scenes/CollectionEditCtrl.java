@@ -5,8 +5,9 @@ import client.ConfigManager;
 import client.utils.DialogUtil;
 import client.utils.ServerUtils;
 import commons.Collection;
-import commons.Note;
 import jakarta.inject.Inject;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -16,6 +17,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import javafx.util.StringConverter;
 
 import java.io.IOException;
@@ -39,9 +41,6 @@ public class CollectionEditCtrl implements Initializable {
 
     @FXML
     private ListView<Collection> collectionListView;
-
-    @FXML
-    private TextField collectionNameField;
 
     @FXML
     private TextField serverField;
@@ -112,7 +111,6 @@ public class CollectionEditCtrl implements Initializable {
 
                     config.setCollectionName(selectedCollection, newName.strip());
                     saveConfig(config);
-                    noteEditCtrl.updateButtons(selectedCollection, newName.strip());
                     selectedCollection.setName(newName.strip());
                     server.addCollection(selectedCollection);
                     System.out.println("Collection title changed");
@@ -126,6 +124,14 @@ public class CollectionEditCtrl implements Initializable {
                 .addListener((_, _, current) -> handleSelectedCollection(current));
         // Listener for the title change
         titleField.textProperty().addListener((_, _, text) -> statusListenerMethod(text));
+        // Listener for the server change
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(3), event -> {
+            if (serverField.isFocused()) {
+                changeCollectionServer();
+            }
+        }));
+        timeline.setCycleCount(Timeline.INDEFINITE); // Run indefinitely
+        timeline.play();
         // Change title on double click
         collectionListView.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
@@ -185,7 +191,6 @@ public class CollectionEditCtrl implements Initializable {
             collectionListView.getItems().add(savedCollection);
             collectionListView.getSelectionModel().select(savedCollection);
             // Add collection to MenuButton
-            noteEditCtrl.addCollectionToMenuButton(savedCollection, false);
             this.refresh();
             System.out.println("Collection created successfully");
         });
@@ -203,16 +208,15 @@ public class CollectionEditCtrl implements Initializable {
             System.err.println("Delete attempt with no collection selected");
             return;
         }
-        if(confirmationDelete(selectedCollection)){
+        if (confirmationDelete(selectedCollection)) {
             try {
                 server.deleteCollection(selectedCollection.getId());
                 config.removeCollection(selectedCollection);
                 saveConfig(config);
                 collectionListView.getItems().remove(selectedCollection);
-                noteEditCtrl.deleteCollectionToMenuButton(selectedCollection);
-                refresh();
+                this.refresh();
                 System.out.println("Collection deleted successfully");
-                dialogUtil.showDialog(resourceBundle, Alert.AlertType.WARNING, "popup.Collection.delete.successfully");
+                dialogUtil.showDialog(resourceBundle, Alert.AlertType.INFORMATION, "popup.Collection.delete.successfully");
             } catch (Exception e) {
                 System.err.println("Failed to delete collection");
                 e.printStackTrace();
@@ -221,22 +225,26 @@ public class CollectionEditCtrl implements Initializable {
     }
 
     private boolean confirmationDelete(Collection selectedCollection) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, resourceBundle.getString("popup.collection.confirmDelete"));
-        Optional<ButtonType> response = alert.showAndWait();
+        Optional<ButtonType> response = dialogUtil.showDialog(resourceBundle, Alert.AlertType.CONFIRMATION, "popup.collection.confirmDelete");
         return response.isPresent() && response.get() == ButtonType.OK;
     }
 
     public void refresh() {
+        noteEditCtrl.deleteAllButtons();
         List<Collection> collections = server.getCollections();
         System.out.println(collections.toString());
+        for (Collection collection : collections) {
+            noteEditCtrl.addCollectionToMenuButton(collection, configManager.getDefaultCollection().equals(collection));
+
+        }
         collectionListView.setItems(FXCollections.observableList(collections));
+
         System.out.println("Collections refreshed");
     }
 
     // UI FIELDS UPDATES
 
     private void statusListenerMethod(String text) {
-        collectionNameField.setText(text); // TODO: Figure out if this should get updated with the note title
 
         if (server.getCollections()
                 .stream()
@@ -270,12 +278,10 @@ public class CollectionEditCtrl implements Initializable {
             //show a basic prompt if no collection selected
             titleField.setEditable(false);
             serverField.setEditable(false);
-            collectionNameField.setEditable(false);
 
             String initialText = this.resourceBundle.getString("labels.collections.initialText");
             titleField.setText(initialText);
             serverField.setText(initialText);
-            collectionNameField.setText(initialText);
             return;
         }
 
@@ -286,11 +292,9 @@ public class CollectionEditCtrl implements Initializable {
         //update the fields accordingly
         titleField.setEditable(true);
         serverField.setEditable(true);
-        collectionNameField.setEditable(true);
 
         titleField.setText(selectedCollection.getName());
         serverField.setText(server.getServerPath());
-        collectionNameField.setText(selectedCollection.getName());
         serverStatus.setText(this.resourceBundle.getString("labels.collections.status.exists"));
     }
 
@@ -318,32 +322,27 @@ public class CollectionEditCtrl implements Initializable {
         }
 
         Collection modifiedCollection = currentCollection;
-        noteEditCtrl.updateButtons(modifiedCollection, newTitle.strip());
+        config.setCollectionName(currentCollection, newTitle.strip());
+        saveConfig(config);
         modifiedCollection.setName(newTitle.strip());
-
         server.addCollection(modifiedCollection);
 
         System.out.println("Collection title changed to " + newTitle);
-        refresh();
+        this.refresh();
     }
 
     public void changeCollectionServer() {
         if (currentCollection == null) {
-            dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
-                    "popup.collections.noneSelected");
-            handleSelectedCollection(null);
+            return;
         }
         String serverPath = serverField.getText();
-        //TODO: CHECK IF THE SERVER PATH IS VALID ?
-    }
-
-    public void changeCollectionName() {
-        if (currentCollection == null) {
-            dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
-                    "popup.collections.noneSelected");
-            handleSelectedCollection(null);
+        System.out.println(serverPath);
+        if(server.makeRequest(serverPath, currentCollection) == 200) {
+            this.statusListenerMethod(currentCollection.getName());
+        } else {
+            serverStatus.setText(this.resourceBundle.getString("labels.collections.status.cannotConnect"));
         }
-        //TODO: FIGURE OUT THE DIFFERENCE BETWEEN THIS AND THE TITLE FIELD
+        //TODO: CHECK IF THE SERVER PATH IS VALID ?
     }
 
     // LANGUAGE
@@ -372,7 +371,7 @@ public class CollectionEditCtrl implements Initializable {
             dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
                     "popup.collections.defaultChanged",
                     Map.of("%name%", selectedCollection.getName()));
-            noteEditCtrl.updateButtons(selectedCollection, selectedCollection.getName() +"(Default)");
+            noteEditCtrl.updateButtons(selectedCollection, selectedCollection.getName() + "(Default)");
         }
     }
 
