@@ -934,7 +934,7 @@ public class NoteEditCtrl implements Initializable {
         editingArea.setText(resourceBundle.getString("initialText"));
         titleField.setText(resourceBundle.getString("initialText"));
         currentCollectionDrop.setVisible(false);
-
+        filesPane.getChildren().clear();
     }
 
 
@@ -972,6 +972,10 @@ public class NoteEditCtrl implements Initializable {
     }
 
     public void addFile() {
+        if (currentNote == null) {
+            return;
+        }
+
         File file = mainCtrl.promptFileOpen();
         if (file == null) {
             // User cancelled file dialog
