@@ -2,6 +2,7 @@ package client.scenes;
 
 import client.Config;
 import client.ConfigManager;
+import client.elements.FileElement;
 import client.utils.DialogUtil;
 import client.utils.KeyStrokeUtil;
 import client.utils.LocaleUtil;
@@ -377,54 +378,13 @@ public class NoteEditCtrl implements Initializable {
 
     private void refreshFilesPane(Note note) {
         filesPane.getChildren().clear();
-        if (note == null || note.getFiles().isEmpty())
+        if (note == null)
             return;
 
-        Image deleteImage = new Image("appIcon/delete_icon.png");
-
         for (FileEntity file : note.getFiles()) {
-            Hyperlink label = new Hyperlink(file.getName());
-            label.setAlignment(Pos.CENTER);
-            label.setOnAction(_ -> {
-                label.setVisited(false);
-                System.out.println("Downloading file " + file.getName() + " (" + file.getId() + ") from note");
-
-                File saveAt = mainCtrl.promptFileSave(file.getName());
-                if (saveAt == null) {
-                    // User cancelled operation
-                    return;
-                }
-
-                try (FileOutputStream out = new FileOutputStream(saveAt);
-                     ByteArrayInputStream in = new ByteArrayInputStream(file.getData())) {
-                    in.transferTo(out);
-                } catch (IOException ex) {
-                    System.err.println("Failed to save note file to disk");
-                    ex.printStackTrace();
-                }
-
-                // TODO: feedback
-            });
-            label.setPadding(new Insets(0, 5, 0, 0));
-
-            ImageView deleteIcon = new ImageView(deleteImage);
-            deleteIcon.setPreserveRatio(true);
-            deleteIcon.setFitHeight(10);
-
-            Button deleteButton = new Button();
-            deleteButton.setAlignment(Pos.CENTER);
-            deleteButton.setMaxHeight(10);
-            deleteButton.setGraphic(deleteIcon);
-            deleteButton.setOnAction(_ -> {
-                // TODO: feedback
-                server.deleteFile(file);
-            });
-
-            BorderPane pane = new BorderPane();
-            pane.setCenter(label);
-            pane.setRight(deleteButton);
-            FlowPane.setMargin(pane, new Insets(0, 10, 0, 0));
-            filesPane.getChildren().add(pane);
+            FileElement element = new FileElement(mainCtrl, server, dialogUtil, file);
+            FlowPane.setMargin(element, new Insets(0, 10, 0, 0));
+            filesPane.getChildren().add(element);
         }
     }
 
