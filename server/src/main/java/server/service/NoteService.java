@@ -16,6 +16,9 @@ import java.util.Optional;
 @Service
 public class NoteService {
 
+    // When updating this constant, also take into account the "spring.servlet.multipart.max-file-size" setting
+    //  in the application.properties. Otherwise, the Spring server itself will still reject large payloads
+    //  with a 413 Content Too Large status code.
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
     private NoteRepository noteRepository;
