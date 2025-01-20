@@ -24,6 +24,7 @@ import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -382,7 +383,7 @@ public class NoteEditCtrl implements Initializable {
             return;
 
         for (FileEntity file : note.getFiles()) {
-            FileElement element = new FileElement(mainCtrl, server, dialogUtil, file);
+            FileElement element = new FileElement(mainCtrl, this, server, dialogUtil, resourceBundle, file);
             FlowPane.setMargin(element, new Insets(0, 10, 0, 0));
             filesPane.getChildren().add(element);
         }
@@ -980,8 +981,16 @@ public class NoteEditCtrl implements Initializable {
         System.out.println("Adding file: " + file.getPath());
         try {
             server.createFile(this.currentNote, file);
+
+            dialogUtil.showDialog(this.resourceBundle, AlertType.INFORMATION,
+                    "popup.files.added");
+            this.refresh();
         } catch (Exception ex) {
+            System.err.println("Failed to upload file to server");
             ex.printStackTrace();
+
+            dialogUtil.showDialog(this.resourceBundle, AlertType.ERROR,
+                    "popup.files.uploadFailed");
         }
     }
 

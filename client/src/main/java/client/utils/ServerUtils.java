@@ -273,10 +273,13 @@ public class ServerUtils {
         multipart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
         multipart.bodyPart(new FileDataBodyPart("file", file, MediaType.APPLICATION_OCTET_STREAM_TYPE));
 
-        ClientBuilder.newClient(new ClientConfig())
+        Response resp = ClientBuilder.newClient(new ClientConfig())
                 .target(SERVER).path("api/notes/" + note.getId() + "/files")
                 .request()
                 .post(Entity.entity(multipart, multipart.getMediaType()));
+        if (resp.getStatus() != 201) {
+            throw new RuntimeException("Server responded with unexpected status code: " + resp.getStatus());
+        }
     }
 
     public void deleteFile(FileEntity file) {
