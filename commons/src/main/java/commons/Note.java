@@ -2,6 +2,8 @@ package commons;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -20,12 +22,17 @@ public class Note {
     //TODO: change it back to false once the frontend logic is implemented
     private Collection  collection;
 
+    @OneToMany(mappedBy = "note", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FileEntity> files;
+
     public Note() {
+        this.files = new ArrayList<>();
     }
 
     public Note(String content) {
         this.content = content;
         this.title = "New Note";
+        this.files = new ArrayList<>();
     }
 
     public String getContent() {
@@ -60,6 +67,19 @@ public class Note {
         this.collection = collection;
     }
 
+    public List<FileEntity> getFiles() {
+        return files;
+    }
+
+    public void addFile(FileEntity file) {
+        files.add(file);
+    }
+
+    public void removeFile(FileEntity file) {
+        files.remove(file);
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -72,4 +92,5 @@ public class Note {
     public int hashCode() {
         return Objects.hash(id, title, content);
     }
+
 }
