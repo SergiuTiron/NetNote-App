@@ -69,9 +69,15 @@ public class MainCtrl {
         collectionEditCtrl.refresh();
     }
 
-    public File promptFile() {
+    public File promptFileOpen() {
         FileChooser fileChooser = new FileChooser();
         return fileChooser.showOpenDialog(this.primaryStage);
+    }
+
+    public File promptFileSave(String nameHint) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialFileName(nameHint);
+        return fileChooser.showSaveDialog(this.primaryStage);
     }
 
 }

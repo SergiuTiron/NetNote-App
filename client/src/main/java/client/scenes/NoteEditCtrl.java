@@ -20,6 +20,8 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.image.Image;
@@ -27,6 +29,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -38,7 +41,9 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
@@ -372,13 +377,54 @@ public class NoteEditCtrl implements Initializable {
 
     private void refreshFilesPane(Note note) {
         filesPane.getChildren().clear();
-        if (note == null)
+        if (note == null || note.getFiles().isEmpty())
             return;
 
-        for (FileEntity file : note.getFiles()) {
-            Label label = new Label(file.getName());
+        Image deleteImage = new Image("appIcon/delete_icon.png");
 
-            filesPane.getChildren().add(label);
+        for (FileEntity file : note.getFiles()) {
+            Hyperlink label = new Hyperlink(file.getName());
+            label.setAlignment(Pos.CENTER);
+            label.setOnAction(_ -> {
+                label.setVisited(false);
+                System.out.println("Downloading file " + file.getName() + " (" + file.getId() + ") from note");
+
+                File saveAt = mainCtrl.promptFileSave(file.getName());
+                if (saveAt == null) {
+                    // User cancelled operation
+                    return;
+                }
+
+                try (FileOutputStream out = new FileOutputStream(saveAt);
+                     ByteArrayInputStream in = new ByteArrayInputStream(file.getData())) {
+                    in.transferTo(out);
+                } catch (IOException ex) {
+                    System.err.println("Failed to save note file to disk");
+                    ex.printStackTrace();
+                }
+
+                // TODO: feedback
+            });
+            label.setPadding(new Insets(0, 5, 0, 0));
+
+            ImageView deleteIcon = new ImageView(deleteImage);
+            deleteIcon.setPreserveRatio(true);
+            deleteIcon.setFitHeight(10);
+
+            Button deleteButton = new Button();
+            deleteButton.setAlignment(Pos.CENTER);
+            deleteButton.setMaxHeight(10);
+            deleteButton.setGraphic(deleteIcon);
+            deleteButton.setOnAction(_ -> {
+                // TODO: feedback
+                server.deleteFile(file);
+            });
+
+            BorderPane pane = new BorderPane();
+            pane.setCenter(label);
+            pane.setRight(deleteButton);
+            FlowPane.setMargin(pane, new Insets(0, 10, 0, 0));
+            filesPane.getChildren().add(pane);
         }
     }
 
@@ -965,7 +1011,7 @@ public class NoteEditCtrl implements Initializable {
     }
 
     public void addFile() {
-        File file = mainCtrl.promptFile();
+        File file = mainCtrl.promptFileOpen();
         if (file == null) {
             // User cancelled file dialog
             return;

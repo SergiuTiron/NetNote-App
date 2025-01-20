@@ -279,4 +279,11 @@ public class ServerUtils {
                 .post(Entity.entity(multipart, multipart.getMediaType()));
     }
 
+    public void deleteFile(FileEntity file) {
+        Response resp = ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/notes/files/" + file.getId())
+                .request()
+                .delete();
+    }
+
 }
