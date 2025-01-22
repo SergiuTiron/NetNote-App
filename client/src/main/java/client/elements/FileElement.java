@@ -5,6 +5,7 @@ import client.scenes.NoteEditCtrl;
 import client.utils.DialogUtil;
 import client.utils.ServerUtils;
 import commons.FileEntity;
+import commons.Note;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
@@ -62,8 +63,25 @@ public class FileElement extends BorderPane {
         deleteButton.setGraphic(deleteIcon);
         deleteButton.setOnAction(_ -> this.promptDelete());
 
+        Image changeNameImage = new Image("appIcon/changeName.png");
+        ImageView changeNameIcon = new ImageView(changeNameImage);
+        changeNameIcon.setPreserveRatio(true);
+        changeNameIcon.setFitHeight(10);
+
+        Button changeName = new Button();
+        changeName.setAlignment(Pos.CENTER);
+        changeName.setMaxHeight(10);
+        changeName.setGraphic(changeNameIcon);
+        changeName.setOnAction(_ -> this.updateFileTitle());
         this.setCenter(label);
+        this.setRight(changeName);
         this.setRight(deleteButton);
+    }
+
+    private void updateFileTitle() {
+        Long id = file.getId();
+        Note currentNote = noteEditCtrl.getCurrentNote();
+        currentNote.getFiles().get(id.intValue()).setName("bbb");
     }
 
     private void promptDownload() {

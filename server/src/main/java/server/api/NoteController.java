@@ -162,7 +162,16 @@ public class NoteController {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(fileEntity.getData());
     }
-
-
-
-}
+/*
+    @PutMapping("/{id}/files/{fileId}")
+    public ResponseEntity<Note> updateFileNote(@PathVariable Long noteId,
+                                               @PathVariable Long fileId,
+                                               @RequestBody String updatedFileName) {
+        try{
+            Note savedNote = noteService.updateFile(noteId,fileId, updatedFileName);
+            return ResponseEntity.ok(savedNote);
+        }catch(RuntimeException e){
+            return ResponseEntity.notFound().build();
+        }
+        */
+    }

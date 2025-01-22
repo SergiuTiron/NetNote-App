@@ -93,4 +93,8 @@ public class Note {
         return Objects.hash(id, title, content);
     }
 
+    public void setFile(Long fileId, FileEntity file) {
+        int id = fileId.intValue();
+        this.files.set(id, file);
+    }
 }

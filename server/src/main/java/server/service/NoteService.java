@@ -43,16 +43,17 @@ public class NoteService {
         if (retrievedNote.isEmpty()) {
             throw new IllegalArgumentException("Note with ID " + id + " does not exist.");
         }
-        if(updatedNote == null)
+        if (updatedNote == null)
             throw new IllegalArgumentException("There is no update to note (updateNote is null).");
 
-	    Note noteToSave = retrievedNote.get();
-	    noteToSave.setTitle(updatedNote.getTitle());
-	    return noteRepository.save(updatedNote);
+        Note noteToSave = retrievedNote.get();
+        noteToSave.setTitle(updatedNote.getTitle());
+        return noteRepository.save(updatedNote);
     }
 
     /**
      * method that triggers the search of the keyword in the note repository
+     *
      * @param keyword
      * @param collectionId the id of the currently selected collection
      * @return the list of notes containing the keyword
@@ -68,6 +69,7 @@ public class NoteService {
 
     /**
      * method that saves a file to the file repository
+     *
      * @param file the file to save
      * @param note the corresponding note
      * @return the saved file
@@ -89,6 +91,7 @@ public class NoteService {
 
     /**
      * method to delete a file from repository by id
+     *
      * @param fileId
      * @return a boolean indicating whether the delete operation was successful or not
      */
@@ -102,9 +105,21 @@ public class NoteService {
         return true;
     }
 
+/*
+    public Note updateFile(Long noteId, Long fileId, String updatedFileName) {
+        Optional<Note> retrievedNote = noteRepository.findById(noteId);
+        if (retrievedNote.isEmpty()) {
+            throw new IllegalArgumentException("Note with ID " + noteId + " does not exist.");
+        }
+        if(updatedFileName == null)
+            throw new IllegalArgumentException("There is no update to note (updateFile is null).");
 
-
-
-
-
+        Note noteToSave = retrievedNote.get();
+        int id = fileId.intValue();
+        FileEntity noteFile = noteToSave.getFiles().get(id);
+        noteFile.setName(updatedFileName);
+        noteToSave.setFile(fileId, noteFile);
+        return noteRepository.save(noteToSave);
+    }
+    */
 }
