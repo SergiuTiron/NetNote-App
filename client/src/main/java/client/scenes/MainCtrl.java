@@ -19,10 +19,12 @@ import jakarta.inject.Inject;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 
+import java.io.File;
 import java.util.ResourceBundle;
 
 public class MainCtrl {
@@ -65,6 +67,17 @@ public class MainCtrl {
         popupStage.setScene(this.collectionEdit);
         popupStage.show();
         collectionEditCtrl.refresh();
+    }
+
+    public File promptFileOpen() {
+        FileChooser fileChooser = new FileChooser();
+        return fileChooser.showOpenDialog(this.primaryStage);
+    }
+
+    public File promptFileSave(String nameHint) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialFileName(nameHint);
+        return fileChooser.showSaveDialog(this.primaryStage);
     }
 
 }

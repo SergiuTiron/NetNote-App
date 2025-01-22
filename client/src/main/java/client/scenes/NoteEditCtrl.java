@@ -2,12 +2,14 @@ package client.scenes;
 
 import client.Config;
 import client.ConfigManager;
+import client.elements.FileElement;
 import client.utils.DialogUtil;
 import client.utils.KeyStrokeUtil;
 import client.utils.LocaleUtil;
 import client.utils.MarkdownUtil;
 import client.utils.ServerUtils;
 import commons.Collection;
+import commons.FileEntity;
 import commons.Note;
 import jakarta.inject.Inject;
 import javafx.animation.FadeTransition;
@@ -19,13 +21,18 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -36,6 +43,9 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
@@ -92,6 +102,9 @@ public class NoteEditCtrl implements Initializable {
     private StackPane refreshPane; // Add a placeholder in your FXML to hold the animation
 
     private RotateTransition refreshAnimation;
+
+    @FXML
+    private FlowPane filesPane;
 
     @Inject
     public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke, MarkdownUtil markdown, LocaleUtil localeUtil,
@@ -346,6 +359,7 @@ public class NoteEditCtrl implements Initializable {
 
     // Called whenever the user clicks on one of the notes in the sidebar.
     private void handleNoteSelect(Note note) {
+        this.refreshFilesPane(note);
         if (note == null) {
             // If no note is selected, disable editing and show a default message
             editingArea.setEditable(false);
@@ -361,6 +375,18 @@ public class NoteEditCtrl implements Initializable {
         titleField.setEditable(true);
         currentCollectionDrop.setVisible(true);
         currentCollectionDrop.setText(note.getCollection().getName());
+    }
+
+    private void refreshFilesPane(Note note) {
+        filesPane.getChildren().clear();
+        if (note == null)
+            return;
+
+        for (FileEntity file : note.getFiles()) {
+            FileElement element = new FileElement(mainCtrl, this, server, dialogUtil, resourceBundle, file);
+            FlowPane.setMargin(element, new Insets(0, 10, 0, 0));
+            filesPane.getChildren().add(element);
+        }
     }
 
     /**
@@ -908,7 +934,7 @@ public class NoteEditCtrl implements Initializable {
         editingArea.setText(resourceBundle.getString("initialText"));
         titleField.setText(resourceBundle.getString("initialText"));
         currentCollectionDrop.setVisible(false);
-
+        filesPane.getChildren().clear();
     }
 
 
@@ -944,4 +970,32 @@ public class NoteEditCtrl implements Initializable {
             collectionBox.getItems().remove(item);
         }
     }
+
+    public void addFile() {
+        if (currentNote == null) {
+            return;
+        }
+
+        File file = mainCtrl.promptFileOpen();
+        if (file == null) {
+            // User cancelled file dialog
+            return;
+        }
+
+        System.out.println("Adding file: " + file.getPath());
+        try {
+            server.createFile(this.currentNote, file);
+
+            dialogUtil.showDialog(this.resourceBundle, AlertType.INFORMATION,
+                    "popup.files.added");
+            this.refresh();
+        } catch (Exception ex) {
+            System.err.println("Failed to upload file to server");
+            ex.printStackTrace();
+
+            dialogUtil.showDialog(this.resourceBundle, AlertType.ERROR,
+                    "popup.files.uploadFailed");
+        }
+    }
+
 }

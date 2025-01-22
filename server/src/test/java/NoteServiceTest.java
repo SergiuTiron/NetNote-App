@@ -85,7 +85,7 @@ class NoteServiceTest {
 		verify(noteRepository, times(1)).findById(noteId);
 		verify(noteRepository, never()).save(any(Note.class)); // Ensure the note was never saved
 
-		assertEquals("Note with ID " + noteId + " does not exist", exception.getMessage());
+		assertEquals("Note with ID " + noteId + " does not exist.", exception.getMessage());
 	}
 
 	@Test
