@@ -139,15 +139,20 @@ public class NoteEditCtrl implements Initializable {
         titleField.setEditable(false);
         noteListView.setEditable(true);
         // Load collections from the server + config, add the collections as menuItems
+        deleteAllButtons();
         List<Collection> configCollections = config.getCollections();
-        List<Collection> serverCollections = server.getCollections();
         Collection defaultCollection = configManager.getDefaultCollection();
-        for (Collection collection : serverCollections) {
-            addCollectionToMenuButton(collection, collection.equals(defaultCollection));
+        if(!server.getCollections().contains(defaultCollection)) {
+            server.addCollection(defaultCollection);
         }
         for (Collection collection : configCollections) {
-            if (!serverCollections.contains(collection))
-                addCollectionToMenuButton(collection, collection.equals(defaultCollection));
+            if (!server.getCollections().contains(collection)) {
+                server.addCollection(collection);
+            }
+        }
+        List<Collection> serverCollections = server.getCollections();
+        for (Collection collection : serverCollections) {
+            addCollectionToMenuButton(collection, collection.equals(defaultCollection));
         }
         // Set Language Box with languages and flags
         liveLanguageBox.setItems(FXCollections.observableList(localeUtil.getAvailableLocales()));

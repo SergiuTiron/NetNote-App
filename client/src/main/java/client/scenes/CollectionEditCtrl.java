@@ -110,13 +110,10 @@ public class CollectionEditCtrl implements Initializable {
         // Listener for the title change
         titleField.textProperty().addListener((_, _, text) -> statusListenerMethod(text));
         // Listener for the server change
-        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(3), event -> {
-            if (serverField.isFocused()) {
-                changeCollectionServer();
-            }
-        }));
-        timeline.setCycleCount(Timeline.INDEFINITE); // Run indefinitely
-        timeline.play();
+        serverField.textProperty().addListener((_, _, text) -> {
+            if(serverField.isFocused())
+                serverListenerMethod(text);
+        });
         // Change title on double click
         collectionListView.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
@@ -229,6 +226,28 @@ public class CollectionEditCtrl implements Initializable {
 
     // UI FIELDS UPDATES
 
+    private void serverListenerMethod(String serverURL) {
+        String regex = "^(http://)(localhost(:\\d+)?|[\\w.-]+(\\.[a-z]{2,})+)(/.*)?$";
+        if (currentCollection == null) {
+            return;
+        }
+        System.out.println(serverURL);
+        if(!serverURL.matches(regex)) {
+            serverStatus.setText(this.resourceBundle.getString("labels.collections.status.invalidPath"));
+        } else {
+            serverCheckConnection(serverURL);
+        }
+    }
+
+    private void serverCheckConnection(String serverURL) {
+        System.out.println("Request made to: " + serverURL);
+        if(server.makeRequest(serverURL, currentCollection) == 200) {
+            this.statusListenerMethod(currentCollection.getName());
+        } else {
+            serverStatus.setText(this.resourceBundle.getString("labels.collections.status.cannotConnect"));
+        }
+    }
+
     private void statusListenerMethod(String text) {
 
         if (server.getCollections()
@@ -317,17 +336,17 @@ public class CollectionEditCtrl implements Initializable {
     }
 
     public void changeCollectionServer() {
-        if (currentCollection == null) {
+        if(serverStatus.getText().equals(resourceBundle.getString("labels.collections.status.cannotConnect"))){
+            dialogUtil.showDialog(resourceBundle, Alert.AlertType.ERROR,"popup.collections.serverUnavailable");
+            return;
+        } else if(serverStatus.getText().equals(resourceBundle.getString("labels.collections.status.invalidPath"))){
+            dialogUtil.showDialog(resourceBundle, Alert.AlertType.ERROR,"popup.collections.invalidPath");
+            return;
+        } else if(serverStatus.getText().equals(resourceBundle.getString("labels.collections.status.alreadyExists"))){
+            dialogUtil.showDialog(resourceBundle, Alert.AlertType.ERROR,"popup.collections.alreadyExistsServer");
             return;
         }
-        String serverPath = serverField.getText();
-        System.out.println(serverPath);
-        if(server.makeRequest(serverPath, currentCollection) == 200) {
-            this.statusListenerMethod(currentCollection.getName());
-        } else {
-            serverStatus.setText(this.resourceBundle.getString("labels.collections.status.cannotConnect"));
-        }
-        //TODO: CHECK IF THE SERVER PATH IS VALID ?
+        collectionListView.requestFocus();
     }
 
     // LANGUAGE
