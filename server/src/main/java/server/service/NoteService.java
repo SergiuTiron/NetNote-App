@@ -105,21 +105,13 @@ public class NoteService {
         return true;
     }
 
-/*
-    public Note updateFile(Long noteId, Long fileId, String updatedFileName) {
-        Optional<Note> retrievedNote = noteRepository.findById(noteId);
-        if (retrievedNote.isEmpty()) {
-            throw new IllegalArgumentException("Note with ID " + noteId + " does not exist.");
+    public FileEntity updateFileTitle(Long id, FileEntity updatedFile) {
+        Optional<FileEntity> optionalRetrievedFile = fileRepository.findById(id);
+        if (optionalRetrievedFile.isEmpty()) {
+            throw new IllegalArgumentException("Note with ID " + id + " does not exist.");
         }
-        if(updatedFileName == null)
-            throw new IllegalArgumentException("There is no update to note (updateFile is null).");
-
-        Note noteToSave = retrievedNote.get();
-        int id = fileId.intValue();
-        FileEntity noteFile = noteToSave.getFiles().get(id);
-        noteFile.setName(updatedFileName);
-        noteToSave.setFile(fileId, noteFile);
-        return noteRepository.save(noteToSave);
+        FileEntity retrievedFile = optionalRetrievedFile.get();
+        retrievedFile.setName(updatedFile.getName());
+        return fileRepository.save(retrievedFile);
     }
-    */
 }

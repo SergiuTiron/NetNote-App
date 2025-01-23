@@ -19,7 +19,6 @@ import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -38,7 +37,6 @@ import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.GenericType;
-import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 
@@ -287,6 +285,13 @@ public class ServerUtils {
                 .target(SERVER).path("api/notes/files/" + file.getId())
                 .request()
                 .delete();
+    }
+
+    public FileEntity updateFileName(FileEntity file) {
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/notes/files/" + file.getId())
+                .request(APPLICATION_JSON)
+                .put(Entity.entity(file, APPLICATION_JSON), FileEntity.class);
     }
 
 }
