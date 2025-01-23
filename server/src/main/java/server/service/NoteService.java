@@ -43,16 +43,17 @@ public class NoteService {
         if (retrievedNote.isEmpty()) {
             throw new IllegalArgumentException("Note with ID " + id + " does not exist.");
         }
-        if(updatedNote == null)
+        if (updatedNote == null)
             throw new IllegalArgumentException("There is no update to note (updateNote is null).");
 
-	    Note noteToSave = retrievedNote.get();
-	    noteToSave.setTitle(updatedNote.getTitle());
-	    return noteRepository.save(updatedNote);
+        Note noteToSave = retrievedNote.get();
+        noteToSave.setTitle(updatedNote.getTitle());
+        return noteRepository.save(updatedNote);
     }
 
     /**
      * method that triggers the search of the keyword in the note repository
+     *
      * @param keyword
      * @param collectionId the id of the currently selected collection
      * @return the list of notes containing the keyword
@@ -68,6 +69,7 @@ public class NoteService {
 
     /**
      * method that saves a file to the file repository
+     *
      * @param file the file to save
      * @param note the corresponding note
      * @return the saved file
@@ -89,6 +91,7 @@ public class NoteService {
 
     /**
      * method to delete a file from repository by id
+     *
      * @param fileId
      * @return a boolean indicating whether the delete operation was successful or not
      */
@@ -102,9 +105,13 @@ public class NoteService {
         return true;
     }
 
-
-
-
-
-
+    public FileEntity updateFileTitle(Long id, FileEntity updatedFile) {
+        Optional<FileEntity> optionalRetrievedFile = fileRepository.findById(id);
+        if (optionalRetrievedFile.isEmpty()) {
+            throw new IllegalArgumentException("Note with ID " + id + " does not exist.");
+        }
+        FileEntity retrievedFile = optionalRetrievedFile.get();
+        retrievedFile.setName(updatedFile.getName());
+        return fileRepository.save(retrievedFile);
+    }
 }

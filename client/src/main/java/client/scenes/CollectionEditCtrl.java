@@ -67,34 +67,6 @@ public class CollectionEditCtrl implements Initializable {
         this.resourceBundle = resourceBundle;
 
         collectionListView.setEditable(true);
-
-//        // Retrieve all collections from server and add them to listView
-//        List<Collection> collections = server.getCollections();
-//
-//        Collection defaultCollection = configManager.getDefaultCollection();
-//        if (!collections.contains(defaultCollection)) {
-//            collections.addFirst(defaultCollection);
-//        }
-//        config.setDefaultCollection(defaultCollection);
-//        saveConfig(config);
-//
-//        collections.addAll(config.getCollections().stream().filter(x -> !collections.contains(x)).toList()); // add all config collections
-//
-//        collectionListView.setItems(FXCollections.observableList(collections));
-//        noteEditCtrl.deleteAllButtons();
-//        List<Collection> configCollections = config.getCollections();
-//        List<Collection> serverCollections = server.getCollections();
-//        Collection defaultCollection = configManager.getDefaultCollection();
-//        for (Collection collection : serverCollections) {
-//            noteEditCtrl.addCollectionToMenuButton(collection, collection.equals(defaultCollection));
-//        }
-//        for (Collection collection : configCollections) {
-//            if (!serverCollections.contains(collection)){
-//                server.addCollection(collection);
-//                noteEditCtrl.addCollectionToMenuButton(collection, collection.equals(defaultCollection));
-//            }
-//
-//        }
         collectionListView.setCellFactory(_ -> new TextFieldListCell<>(new StringConverter<>() {
             @Override
             public String toString(Collection collection) {

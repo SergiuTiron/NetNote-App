@@ -7,14 +7,14 @@ import client.utils.ServerUtils;
 import commons.FileEntity;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Alert;
+import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Hyperlink;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -30,6 +30,7 @@ public class FileElement extends BorderPane {
     private final ServerUtils server;
     private final DialogUtil dialogUtil;
     private final ResourceBundle resourceBundle;
+    private final Hyperlink label;
 
     private final FileEntity file;
 
@@ -42,7 +43,7 @@ public class FileElement extends BorderPane {
         this.resourceBundle = resourceBundle;
         this.file = file;
 
-        Hyperlink label = new Hyperlink(file.getName());
+        label = new Hyperlink(file.getName());
         label.setAlignment(Pos.CENTER);
         label.setOnAction(_ -> {
             label.setVisited(false);
@@ -51,19 +52,73 @@ public class FileElement extends BorderPane {
         label.setPadding(new Insets(0, 5, 0, 0));
         label.setMaxWidth(200);
 
-        Image deleteImage = new Image("appIcon/delete_icon.png");
-        ImageView deleteIcon = new ImageView(deleteImage);
-        deleteIcon.setPreserveRatio(true);
-        deleteIcon.setFitHeight(10);
-
-        Button deleteButton = new Button();
-        deleteButton.setAlignment(Pos.CENTER);
-        deleteButton.setMaxHeight(10);
-        deleteButton.setGraphic(deleteIcon);
+        Button deleteButton = this.createButton("appIcon/delete_icon.png");
         deleteButton.setOnAction(_ -> this.promptDelete());
 
+        Button changeName = this.createButton("appIcon/changeName.png");
+        changeName.setOnAction(_ -> this.updateFileTitle());
+
+        HBox buttonBox = new HBox(10);
+        buttonBox.getChildren().addAll(changeName, deleteButton);
+        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+
         this.setCenter(label);
-        this.setRight(deleteButton);
+        this.setRight(buttonBox);
+    }
+
+    private Button createButton(String s) {
+        Image addedImage = new Image(s);
+        ImageView addedIcon = new ImageView(addedImage);
+        addedIcon.setPreserveRatio(true);
+        addedIcon.setFitHeight(10);
+
+        Button addedButton = new Button();
+        addedButton.setAlignment(Pos.CENTER);
+        addedButton.setMaxHeight(10);
+        addedButton.setGraphic(addedIcon);
+        return addedButton;
+    }
+
+    private void updateFileTitle() {
+        Alert alert = new Alert(AlertType.CONFIRMATION);
+
+        alert.setTitle(resourceBundle.getString("popup.filename.title"));
+        alert.setHeaderText(resourceBundle.getString("popup.filename.headerText"));
+        alert.getDialogPane().getScene().getWindow().setWidth(400);
+        alert.getDialogPane().getScene().getWindow().setHeight(250);
+
+        TextField textField = new TextField();
+        textField.setPromptText(resourceBundle.getString("popup.filename.promptText"));
+        VBox content = new VBox();
+        content.setSpacing(10);
+        content.getChildren().add(textField);
+
+        alert.getDialogPane().setContent(content);
+        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+        alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK && !textField.getText().isEmpty()) {
+                try {
+                    String fileName = file.getName();
+                    int lastDotIndex = fileName.lastIndexOf('.');
+                    if (lastDotIndex > 0) { // Ensure there's a dot and it's not the first character
+                         fileName = textField.getText() + fileName.substring(lastDotIndex);
+                    }
+                    file.setName(fileName);
+                    label.setText(fileName);
+
+                    System.out.println(file.getNote() + " " + file.getId() + " " + file.getName());
+
+                    server.updateFileName(file);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Error: " + e.getMessage());
+                }
+            } else if (response == ButtonType.CANCEL) {
+                alert.close();
+            }
+        });
     }
 
     private void promptDownload() {

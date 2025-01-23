@@ -163,6 +163,13 @@ public class NoteController {
                 .body(fileEntity.getData());
     }
 
-
-
-}
+    @PutMapping("/files/{id}")
+    public ResponseEntity<FileEntity> updateFileTitle(@PathVariable Long id, @RequestBody FileEntity updatedFile) {
+        try{
+            FileEntity savedFile = noteService.updateFileTitle(id, updatedFile);
+            return ResponseEntity.ok(savedFile);
+        }catch(RuntimeException e){
+            return ResponseEntity.notFound().build();
+        }
+    }
+    }
