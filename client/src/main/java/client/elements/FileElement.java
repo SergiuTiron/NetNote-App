@@ -52,10 +52,10 @@ public class FileElement extends BorderPane {
         label.setPadding(new Insets(0, 5, 0, 0));
         label.setMaxWidth(200);
 
-        Button deleteButton = createButton("appIcon/delete_icon.png");
+        Button deleteButton = this.createButton("appIcon/delete_icon.png");
         deleteButton.setOnAction(_ -> this.promptDelete());
 
-        Button changeName = createButton("appIcon/changeName.png");
+        Button changeName = this.createButton("appIcon/changeName.png");
         changeName.setOnAction(_ -> this.updateFileTitle());
 
         HBox buttonBox = new HBox(10);
@@ -66,7 +66,7 @@ public class FileElement extends BorderPane {
         this.setRight(buttonBox);
     }
 
-    private static Button createButton(String s) {
+    private Button createButton(String s) {
         Image addedImage = new Image(s);
         ImageView addedIcon = new ImageView(addedImage);
         addedIcon.setPreserveRatio(true);
@@ -82,19 +82,21 @@ public class FileElement extends BorderPane {
     private void updateFileTitle() {
         Alert alert = new Alert(AlertType.CONFIRMATION);
 
-        alert.setTitle("Filename change");
-        alert.setHeaderText("Please provide the new filename that you want.");
+        alert.setTitle(resourceBundle.getString("popup.filename.title"));
+        alert.setHeaderText(resourceBundle.getString("popup.filename.headerText"));
         alert.getDialogPane().getScene().getWindow().setWidth(400);
         alert.getDialogPane().getScene().getWindow().setHeight(250);
 
         TextField textField = new TextField();
-        textField.setPromptText("Filename");
+        textField.setPromptText(resourceBundle.getString("popup.filename.promptText"));
         VBox content = new VBox();
         content.setSpacing(10);
         content.getChildren().add(textField);
+
         alert.getDialogPane().setContent(content);
         Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
         alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK && !textField.getText().isEmpty()) {
                 try {
