@@ -17,7 +17,9 @@ package client.utils;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -26,7 +28,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import commons.Collection;
+import commons.FileEntity;
 import commons.Note;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.glassfish.jersey.client.ClientConfig;
 
@@ -34,6 +38,9 @@ import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.GenericType;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+import org.glassfish.jersey.media.multipart.MultiPart;
+import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 
 public class ServerUtils {
 
@@ -260,4 +267,26 @@ public class ServerUtils {
                 .request(APPLICATION_JSON)
                 .post(Entity.entity(null, APPLICATION_JSON), Collection.class);
     }
+
+    public void createFile(Note note, File file) {
+        MultiPart multipart = new MultiPart();
+        multipart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+        multipart.bodyPart(new FileDataBodyPart("file", file, MediaType.APPLICATION_OCTET_STREAM_TYPE));
+
+        Response resp = ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/notes/" + note.getId() + "/files")
+                .request()
+                .post(Entity.entity(multipart, multipart.getMediaType()));
+        if (resp.getStatus() != 201) {
+            throw new RuntimeException("Server responded with unexpected status code: " + resp.getStatus());
+        }
+    }
+
+    public void deleteFile(FileEntity file) {
+        Response resp = ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/notes/files/" + file.getId())
+                .request()
+                .delete();
+    }
+
 }
