@@ -190,6 +190,11 @@ public class CollectionEditCtrl implements Initializable {
             System.err.println("Delete attempt with no collection selected");
             return;
         }
+        Collection defaultCollection = configManager.getDefaultCollection();
+        if(defaultCollection.getId() == selectedCollection.getId()) {
+            dialogUtil.showDialog(resourceBundle, Alert.AlertType.WARNING, "popup.Collection.delete.defaultCollectionSelected");
+            return;
+        }
         if (confirmationDelete(selectedCollection)) {
             try {
                 server.deleteCollection(selectedCollection.getId());
@@ -318,7 +323,7 @@ public class CollectionEditCtrl implements Initializable {
         }
         if (server.getCollections()
                 .stream()
-                .anyMatch(collection -> collection.getName().equals(newTitle))) {
+                .anyMatch(collection -> (collection.getName().equals(newTitle) &&collection.getId()!=currentCollection.getId()))) {
             System.err.println("Collection name must be unique.");
             dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.WARNING,
                     "popup.collections.duplicateName");
