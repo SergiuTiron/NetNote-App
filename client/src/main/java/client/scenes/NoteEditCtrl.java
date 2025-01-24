@@ -142,6 +142,7 @@ public class NoteEditCtrl implements Initializable {
         if(!server.getCollections().contains(defaultCollection)) {
             server.addCollection(defaultCollection);
         }
+        configManager.addCollection(defaultCollection);
         for (Collection collection : configCollections) {
             if (!server.getCollections().contains(collection)) {
                 server.addCollection(collection);
