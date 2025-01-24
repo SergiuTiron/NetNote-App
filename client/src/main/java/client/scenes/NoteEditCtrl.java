@@ -187,6 +187,7 @@ public class NoteEditCtrl implements Initializable {
                 return;
             }
             this.setLanguage(newValue);
+            configManager.saveLanguage(newValue);
         });
         // Note title addition
         noteListView.setCellFactory(_ -> new TextFieldListCell<>(new StringConverter<>() {
@@ -864,35 +865,6 @@ public class NoteEditCtrl implements Initializable {
     public void setLanguage(Locale locale) {
         this.selectedLanguage.setValue(locale);
         liveLanguageBox.setValue(locale);
-    }
-
-    /**
-     * Handles the language selection event.
-     * Opens a dialog for the user to choose a language, then sets and saves the selected language.
-     *
-     * @param event The ActionEvent that triggered this method.
-     */
-    @FXML
-    private void onSelectLanguage(ActionEvent event) {
-        List<Locale> availableLocales = Arrays.asList(localeUtil.getAvailableLocales().toArray(new Locale[0]));
-        List<String> languages = availableLocales.stream()
-                .map(localeUtil::mapLocaleToLanguage)
-                .collect(Collectors.toList());
-
-        String currentLanguage = localeUtil.mapLocaleToLanguage(configManager.loadLanguage());
-        ChoiceDialog<String> dialog = new ChoiceDialog<>(currentLanguage, languages);
-        dialog.setTitle("Select Language");
-        dialog.setHeaderText("Choose Your Preferred Language");
-        dialog.setContentText("Language:");
-
-        Optional<String> result = dialog.showAndWait();
-
-        result.ifPresent(selectedLanguage -> {
-            System.out.println("Saved Language: " + selectedLanguage);
-            Locale newLocale = localeUtil.mapLanguageToLocale(selectedLanguage);
-            configManager.saveLanguage(newLocale);
-            this.setLanguage(newLocale);
-        });
     }
     
     // REFRESH CLEAR FIELDS
