@@ -1,13 +1,10 @@
 package client.scenes;
 
-import client.Config;
 import client.ConfigManager;
 import client.utils.DialogUtil;
 import client.utils.ServerUtils;
 import commons.Collection;
 import jakarta.inject.Inject;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -17,10 +14,8 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 import javafx.util.StringConverter;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 
@@ -31,7 +26,6 @@ public class CollectionEditCtrl implements Initializable {
     // Controller fields
     private final NoteEditCtrl noteEditCtrl;
     // Config fields
-    private final Config config;
     private final ConfigManager configManager;
     // Flag fields
     private Collection currentCollection;
@@ -51,12 +45,14 @@ public class CollectionEditCtrl implements Initializable {
     @FXML
     private Label serverStatus;
 
+    @FXML
+    private Label defaultLabel;
+
 
     @Inject
-    public CollectionEditCtrl(ServerUtils server, NoteEditCtrl noteEditCtrl, Config config, ConfigManager configManager, DialogUtil dialogUtil) {
+    public CollectionEditCtrl(ServerUtils server, NoteEditCtrl noteEditCtrl, ConfigManager configManager, DialogUtil dialogUtil) {
         this.server = server;
         this.noteEditCtrl = noteEditCtrl;
-        this.config = config;
         this.configManager = configManager;
         this.dialogUtil = dialogUtil;
         this.currentCollection = null;
@@ -93,11 +89,13 @@ public class CollectionEditCtrl implements Initializable {
                                 "popup.collections.duplicateName");
                         return selectedCollection;
                     }
-
                     configManager.changeCollectionName(selectedCollection, newName.strip());
                     selectedCollection.setName(newName.strip());
+                    if(selectedCollection.getId() == configManager.getDefaultCollection().getId()) {
+                        configManager.setDefaultCollection(selectedCollection);
+                    }
                     server.addCollection(selectedCollection);
-                    System.out.println("Collection title changed");
+                    //System.out.println("Collection title changed");
                     refresh();
                 }
                 return selectedCollection;
@@ -105,7 +103,14 @@ public class CollectionEditCtrl implements Initializable {
         }));
         // Listener for the ListView
         collectionListView.getSelectionModel().selectedItemProperty()
-                .addListener((_, _, current) -> handleSelectedCollection(current));
+                .addListener((_, _, current) -> {
+                    if(current != null && current.getId() == configManager.getDefaultCollection().getId()) {
+                        defaultLabel.setText("Yes");
+                    } else {
+                        defaultLabel.setText("No");
+                    }
+                    handleSelectedCollection(current);
+                });
         // Listener for the title change
         titleField.textProperty().addListener((_, _, text) -> statusListenerMethod(text));
         // Listener for the server change
@@ -198,6 +203,7 @@ public class CollectionEditCtrl implements Initializable {
                 configManager.removeCollection(selectedCollection);
                 collectionListView.getItems().remove(selectedCollection);
                 this.refresh();
+                noteEditCtrl.refresh();
                 System.out.println("Collection deleted successfully");
                 dialogUtil.showDialog(resourceBundle, Alert.AlertType.INFORMATION, "popup.Collection.delete.successfully");
             } catch (Exception e) {
@@ -216,12 +222,22 @@ public class CollectionEditCtrl implements Initializable {
         noteEditCtrl.deleteAllButtons();
         List<Collection> collections = server.getCollections();
         configManager.refreshCollections(collections);
-        System.out.println(collections.toString());
+        //System.out.println(collections.toString());
+
         for (Collection collection : collections) {
             noteEditCtrl.addCollectionToMenuButton(collection, configManager.getDefaultCollection().equals(collection));
-
         }
+
         collectionListView.setItems(FXCollections.observableList(collections));
+
+        MenuButton collectionLabel  = noteEditCtrl.getCollectionBox();
+        if(currentCollection != null) {
+            if(collectionLabel.getText().equals(resourceBundle.getString("collections.all")) ||
+                    collectionLabel.getText().equals(resourceBundle.getString("collections.defaultCollection"))) {
+                return;
+            }
+            noteEditCtrl.setCollectionLabelText(currentCollection.getName());
+        }
         System.out.println("Collections refreshed");
     }
 
@@ -232,7 +248,7 @@ public class CollectionEditCtrl implements Initializable {
         if (currentCollection == null) {
             return;
         }
-        System.out.println(serverURL);
+        //System.out.println(serverURL);
         if(!serverURL.matches(regex)) {
             serverStatus.setText(this.resourceBundle.getString("labels.collections.status.invalidPath"));
         } else {
@@ -287,6 +303,9 @@ public class CollectionEditCtrl implements Initializable {
             String initialText = this.resourceBundle.getString("labels.collections.initialText");
             titleField.setText(initialText);
             serverField.setText(initialText);
+            serverStatus.setText(initialText);
+            defaultLabel.setText(initialText);
+
             return;
         }
 
@@ -326,11 +345,12 @@ public class CollectionEditCtrl implements Initializable {
             return;
         }
 
-        Collection modifiedCollection = currentCollection;
-        config.setCollectionName(currentCollection, newTitle.strip());
-        saveConfig(config);
-        modifiedCollection.setName(newTitle.strip());
-        server.addCollection(modifiedCollection);
+        configManager.changeCollectionName(currentCollection, newTitle.strip());
+        currentCollection.setName(newTitle.strip());
+        if(currentCollection.getId() == configManager.getDefaultCollection().getId()) {
+            configManager.setDefaultCollection(currentCollection);
+        }
+        server.addCollection(currentCollection);
 
         System.out.println("Collection title changed to " + newTitle);
         this.refresh();
@@ -377,21 +397,6 @@ public class CollectionEditCtrl implements Initializable {
                     "popup.collections.defaultChanged",
                     Map.of("%name%", selectedCollection.getName()));
             noteEditCtrl.updateButtons(selectedCollection, selectedCollection.getName() + "(Default)");
-        }
-    }
-
-    // CONFIG
-
-    /**
-     * Method to save the config
-     *
-     * @param config - config to save
-     */
-    public void saveConfig(Config config) {
-        try {
-            configManager.saveConfig(config);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 }
