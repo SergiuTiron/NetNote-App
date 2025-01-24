@@ -58,6 +58,7 @@ public class NoteController {
 
     @PostMapping(path = { "", "/" })
     public ResponseEntity<Note> add(@RequestBody Note note) {
+        //System.out.println(note.getFiles().stream().map(FileEntity::getName).toList());
         Note saved = noteRepo.save(note);
         return ResponseEntity.ok(saved);
     }
@@ -107,6 +108,7 @@ public class NoteController {
 
         Note note = optionalNote.get();
         FileEntity fileEntity = noteService.saveFile(file, note);
+        //System.out.println(fileEntity.getNote() + fileEntity.getName() + fileEntity.getId());
         return ResponseEntity.status(201).body(fileEntity);
     }
 

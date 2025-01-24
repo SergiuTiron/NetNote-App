@@ -19,10 +19,10 @@ public class Note {
 
     @ManyToOne
     @JoinColumn(name = "collection_id", nullable = true)
-    //TODO: change it back to false once the frontend logic is implemented
     private Collection  collection;
 
-    @OneToMany(mappedBy = "note", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "note", cascade = CascadeType.PERSIST, orphanRemoval = true)
+    // DO NOT CHANGE THE CASCADE TYPE
     private List<FileEntity> files;
 
     public Note() {
