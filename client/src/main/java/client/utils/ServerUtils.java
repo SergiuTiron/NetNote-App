@@ -294,4 +294,12 @@ public class ServerUtils {
                 .put(Entity.entity(file, APPLICATION_JSON), FileEntity.class);
     }
 
+    public List<FileEntity> getFilesForNote(long noteId) {
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER)
+                .path("api/notes/" + noteId + "/files")
+                .request(APPLICATION_JSON)
+                .get(new GenericType<>() {});
+    }
+
 }
