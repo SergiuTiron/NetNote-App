@@ -10,7 +10,6 @@ import commons.Note;
 import jakarta.inject.Inject;
 import javafx.animation.FadeTransition;
 import javafx.animation.RotateTransition;
-import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -191,6 +190,7 @@ public class NoteEditCtrl implements Initializable {
                 return;
             }
             this.setLanguage(newValue);
+            configManager.saveLanguage(newValue);
         });
         // Note title addition
         noteListView.setCellFactory(_ -> new TextFieldListCell<>(new StringConverter<>() {
@@ -369,10 +369,6 @@ public class NoteEditCtrl implements Initializable {
         this.refreshFilesPane(note);
         if (note == null) {
 //            If no note is selected, disable editing and show a default message
-//            editingArea.setEditable(false);
-//            editingArea.setText(resourceBundle.getString("initialText"));
-//            titleField.setText(resourceBundle.getString("initialText"));
-//            currentCollectionDrop.setVisible(false);
             this.clearFields();
             return;
         }
@@ -745,35 +741,6 @@ public class NoteEditCtrl implements Initializable {
     public void setLanguage(Locale locale) {
         this.selectedLanguage.setValue(locale);
         liveLanguageBox.setValue(locale);
-    }
-
-    /**
-     * Handles the language selection event.
-     * Opens a dialog for the user to choose a language, then sets and saves the selected language.
-     *
-     * @param event The ActionEvent that triggered this method.
-     */
-    @FXML
-    private void onSelectLanguage(ActionEvent event) {
-        List<Locale> availableLocales = Arrays.asList(localeUtil.getAvailableLocales().toArray(new Locale[0]));
-        List<String> languages = availableLocales.stream()
-                .map(localeUtil::mapLocaleToLanguage)
-                .collect(Collectors.toList());
-
-        String currentLanguage = localeUtil.mapLocaleToLanguage(configManager.loadLanguage());
-        ChoiceDialog<String> dialog = new ChoiceDialog<>(currentLanguage, languages);
-        dialog.setTitle("Select Language");
-        dialog.setHeaderText("Choose Your Preferred Language");
-        dialog.setContentText("Language:");
-
-        Optional<String> result = dialog.showAndWait();
-
-        result.ifPresent(selectedLanguage -> {
-            System.out.println("Saved Language: " + selectedLanguage);
-            Locale newLocale = localeUtil.mapLanguageToLocale(selectedLanguage);
-            configManager.saveLanguage(newLocale);
-            this.setLanguage(newLocale);
-        });
     }
     
     // REFRESH CLEAR FIELDS

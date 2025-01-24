@@ -32,8 +32,28 @@ public class NoteService {
 
     public void deleteNoteById(Long id) {
         if (!noteRepository.existsById(id)) {
-            throw new IllegalArgumentException("Note with ID" + id + " does not exist");
+            throw new IllegalArgumentException("Note with ID " + id + " does not exist");
         }
+        // Retrieve associated files
+        List<FileEntity> associatedFiles = fileRepository.findByNoteId(id);
+
+        // Delete associated files
+        for (FileEntity file : associatedFiles) {
+            try {
+                // Delete file from storage
+                String filePath = "path/to/your/storage/" + file.getNote().getId() + "/" + file.getName();
+                File fileToDelete = new File(filePath);
+                if (fileToDelete.exists()) {
+                    if (!fileToDelete.delete()) {
+                        System.err.println("Failed to delete file: " + filePath);
+                    }
+                }
+                fileRepository.delete(file);
+            } catch (Exception e) {
+                System.err.println("Error deleting file " + file.getName() + ": " + e.getMessage());
+            }
+        }
+        System.out.println("Note with ID " + id + " and its associated files have been deleted.");
         noteRepository.deleteById(id);
     }
 
