@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -158,10 +159,16 @@ public class FileElement extends BorderPane {
     }
 
     private void delete() {
-        server.deleteFile(file);
-        noteEditCtrl.refresh();
-        dialogUtil.showDialog(this.resourceBundle, AlertType.CONFIRMATION,
-                "popup.files.deleted");
+        try {
+            server.deleteFile(file);
+            noteEditCtrl.refresh();
+            dialogUtil.showDialog(this.resourceBundle, AlertType.CONFIRMATION,
+                    "popup.files.deleted");
+        } catch (Exception e) {
+            System.err.println("Error deleting file: " + e.getMessage());
+            dialogUtil.showDialog(this.resourceBundle, AlertType.ERROR,
+                    "popup.files.deleteFailed");
+        }
     }
 
 }
