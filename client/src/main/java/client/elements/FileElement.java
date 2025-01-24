@@ -5,6 +5,7 @@ import client.scenes.NoteEditCtrl;
 import client.utils.DialogUtil;
 import client.utils.ServerUtils;
 import commons.FileEntity;
+import commons.Note;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -56,11 +57,14 @@ public class FileElement extends BorderPane {
         Button deleteButton = this.createButton("appIcon/delete_icon.png");
         deleteButton.setOnAction(_ -> this.promptDelete());
 
-        Button changeName = this.createButton("appIcon/changeName.png");
+        Button changeName = this.createButton("appIcon/changeName_icon.png");
         changeName.setOnAction(_ -> this.updateFileTitle());
 
+        Button renderFile = this.createButton("appIcon/render_icon.png");
+        renderFile.setOnAction(_ -> { noteEditCtrl.renderFile(file,noteEditCtrl.getCurrentNote());});
+
         HBox buttonBox = new HBox(10);
-        buttonBox.getChildren().addAll(changeName, deleteButton);
+        buttonBox.getChildren().addAll(renderFile, changeName, deleteButton);
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
 
         this.setCenter(label);
@@ -81,6 +85,7 @@ public class FileElement extends BorderPane {
     }
 
     private void updateFileTitle() {
+        Note currentNote = noteEditCtrl.getCurrentNote();
         Alert alert = new Alert(AlertType.CONFIRMATION);
 
         alert.setTitle(resourceBundle.getString("popup.filename.title"));
@@ -106,12 +111,14 @@ public class FileElement extends BorderPane {
                     if (lastDotIndex > 0) { // Ensure there's a dot and it's not the first character
                          fileName = textField.getText() + fileName.substring(lastDotIndex);
                     }
+                    String oldName = file.getName();
                     file.setName(fileName);
                     label.setText(fileName);
 
-                    System.out.println(file.getNote() + " " + file.getId() + " " + file.getName());
+                    //System.out.println(file.getNote() + " " + file.getId() + " " + file.getName());
 
                     server.updateFileName(file);
+                    noteEditCtrl.replaceRender(file,currentNote, oldName);
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Error: " + e.getMessage());
@@ -159,16 +166,12 @@ public class FileElement extends BorderPane {
     }
 
     private void delete() {
-        try {
-            server.deleteFile(file);
-            noteEditCtrl.refresh();
-            dialogUtil.showDialog(this.resourceBundle, AlertType.CONFIRMATION,
-                    "popup.files.deleted");
-        } catch (Exception e) {
-            System.err.println("Error deleting file: " + e.getMessage());
-            dialogUtil.showDialog(this.resourceBundle, AlertType.ERROR,
-                    "popup.files.deleteFailed");
-        }
+        server.deleteFile(file);
+        Note currentNote = noteEditCtrl.getCurrentNote();
+        noteEditCtrl.unRenderFile(file,currentNote);
+        noteEditCtrl.refresh();
+        dialogUtil.showDialog(this.resourceBundle, AlertType.CONFIRMATION,
+                "popup.files.deleted");
     }
 
 }

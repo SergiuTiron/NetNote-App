@@ -22,7 +22,7 @@ public class FileEntity {
 
     @ManyToOne
     @JsonBackReference
-    @JoinColumn(name = "note_id", nullable = false)
+    @JoinColumn(name = "note_id", nullable = true)
     private Note note;
 
     public FileEntity() {}

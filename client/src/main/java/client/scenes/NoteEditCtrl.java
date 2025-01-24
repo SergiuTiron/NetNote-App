@@ -3,17 +3,14 @@ package client.scenes;
 import client.Config;
 import client.ConfigManager;
 import client.elements.FileElement;
-import client.utils.DialogUtil;
-import client.utils.KeyStrokeUtil;
-import client.utils.LocaleUtil;
-import client.utils.MarkdownUtil;
-import client.utils.ServerUtils;
+import client.utils.*;
 import commons.Collection;
 import commons.FileEntity;
 import commons.Note;
 import jakarta.inject.Inject;
 import javafx.animation.FadeTransition;
 import javafx.animation.RotateTransition;
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -22,7 +19,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.TextFieldListCell;
@@ -31,7 +27,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -43,11 +38,11 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -58,6 +53,7 @@ public class NoteEditCtrl implements Initializable {
     private final MarkdownUtil markdown;
     private final LocaleUtil localeUtil;
     private final DialogUtil dialogUtil;
+    private final HashUtil hashUtil;
     // Controller fields
     private final MainCtrl mainCtrl;
     // Internationalization fields
@@ -108,12 +104,13 @@ public class NoteEditCtrl implements Initializable {
 
     @Inject
     public NoteEditCtrl(ServerUtils server, KeyStrokeUtil keyStroke, MarkdownUtil markdown, LocaleUtil localeUtil,
-                        DialogUtil dialogUtil, MainCtrl mainCtrl, Config config, ConfigManager configManager) {
+                        DialogUtil dialogUtil, HashUtil hashUtil, MainCtrl mainCtrl, Config config, ConfigManager configManager) {
         this.server = server;
         this.keyStroke = keyStroke;
         this.markdown = markdown;
         this.localeUtil = localeUtil;
         this.dialogUtil = dialogUtil;
+        this.hashUtil = hashUtil;
         this.mainCtrl = mainCtrl;
         this.config = config;
         this.configManager = configManager;
@@ -145,6 +142,7 @@ public class NoteEditCtrl implements Initializable {
         if(!server.getCollections().contains(defaultCollection)) {
             server.addCollection(defaultCollection);
         }
+        configManager.addCollection(defaultCollection);
         for (Collection collection : configCollections) {
             if (!server.getCollections().contains(collection)) {
                 server.addCollection(collection);
@@ -382,12 +380,12 @@ public class NoteEditCtrl implements Initializable {
         currentCollectionDrop.setText(note.getCollection().getName());
     }
 
-    private void refreshFilesPane(Note note) {
+    public void refreshFilesPane(Note note) {
         filesPane.getChildren().clear();
         if (note == null)
             return;
 
-        for (FileEntity file : note.getFiles()) {
+        for (FileEntity file : server.getFilesForNote(note.getId())) {
             FileElement element = new FileElement(mainCtrl, this, server, dialogUtil, resourceBundle, file);
             FlowPane.setMargin(element, new Insets(0, 10, 0, 0));
             filesPane.getChildren().add(element);
@@ -417,9 +415,22 @@ public class NoteEditCtrl implements Initializable {
             currentCollectionDrop.setVisible(false);
             this.clearFields();
             this.refresh();
-        } catch (IOException e) {
-            editingArea.setText(resourceBundle.getString("deleteText.fail"));
+        } catch (Exception e) {
             e.printStackTrace();
+            ButtonType cancelButton = new ButtonType(resourceBundle.getString("popup.savingFailed.cancel"));
+            ButtonType retryButton = new ButtonType(resourceBundle.getString("popup.savingFailed.retry"));
+
+            Alert alert = new Alert(Alert.AlertType.ERROR, resourceBundle.getString("deleteText.fail"),
+                cancelButton, retryButton);
+            alert.setContentText(resourceBundle.getString("deleteText.fail")
+                .replace("%id%", String.valueOf(selectedNote.getId())));
+            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+            alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+            Optional<ButtonType> response = alert.showAndWait();
+            if (response.isPresent() && response.get() == retryButton) {
+                // Start the process again
+                this.deleteButton();
+            }
         }
     }
 
@@ -658,6 +669,7 @@ public class NoteEditCtrl implements Initializable {
             return;
         note.setContent(editingArea.getText());
         try {
+            //System.out.println(note.getFiles());
             server.addNote(note);
             this.saveLabelTransition();
             System.out.println("Changes were saved to note " + note.getId());
@@ -890,10 +902,14 @@ public class NoteEditCtrl implements Initializable {
      */
     public void refresh() {
         List<Note> notes;
-        if (currentCollection == null || collectionBox.getText().equals(resourceBundle.getString("collections.all"))) {
+        if (currentCollection == null) {
+            notes = server.getNotes(); // if no note selected then do not refresh the file pane
+        } else if(collectionBox.getText().equals(resourceBundle.getString("collections.all"))) {
             notes = server.getNotes();
+            this.refreshFilesPane(currentNote);
         } else {
             notes = server.getNotesByCollection(currentCollection.getId());
+            this.refreshFilesPane(currentNote);
         }
         noteListView.setItems(FXCollections.observableList(notes));
         refreshAnimation.play();
@@ -978,6 +994,7 @@ public class NoteEditCtrl implements Initializable {
 
     public void addFile() {
         if (currentNote == null) {
+            dialogUtil.showDialog(resourceBundle,AlertType.WARNING,"popup.files.noteNotSelected"); //popup for embedding a file with no note selected
             return;
         }
 
@@ -989,11 +1006,36 @@ public class NoteEditCtrl implements Initializable {
 
         System.out.println("Adding file: " + file.getPath());
         try {
+            Note note = this.currentNote;
+            String fileHash = hashUtil.computeFileHash(Files.readAllBytes(file.toPath()));
+            List<FileEntity> existingFiles = server.getFilesForNote(currentNote.getId());
+            boolean fileExists = existingFiles.stream()
+                        .anyMatch(f -> {
+                            try {
+                                return hashUtil.computeFileHash(f.getData()).equals(fileHash);
+                            } catch (NoSuchAlgorithmException | IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+            if(fileExists) {
+                dialogUtil.showDialog(resourceBundle,AlertType.ERROR,"popup.files.alreadyExists"); // check if the file was already added
+                return;
+            }
             server.createFile(this.currentNote, file);
+
+            // Fetch all files for the note to retrieve their metadata
+            List<FileEntity> files = server.getFilesForNote(currentNote.getId());
+            FileEntity uploadedFile = files.stream()
+                    .filter(f -> f.getName().equals(file.getName()))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Uploaded file not found on server"));
+            //System.out.println(" " + uploadedFile.getName() + " " + uploadedFile.getId());
+            note.getFiles().add(uploadedFile);
+
+            renderFile(uploadedFile, note);
 
             dialogUtil.showDialog(this.resourceBundle, AlertType.INFORMATION,
                     "popup.files.added");
-            this.refresh();
         } catch (Exception ex) {
             System.err.println("Failed to upload file to server");
             ex.printStackTrace();
@@ -1001,6 +1043,46 @@ public class NoteEditCtrl implements Initializable {
             dialogUtil.showDialog(this.resourceBundle, AlertType.ERROR,
                     "popup.files.uploadFailed");
         }
+
     }
 
+    public void renderFile(FileEntity uploadedFile,Note note) {
+        String serverPath = server.getServerPath() + "api/notes/" + currentNote.getId() + "/files/" + uploadedFile.getId();
+        String markdownLink = "![" + uploadedFile.getName() + "](" + serverPath + ")";
+        editingArea.appendText(markdownLink);
+
+        this.saveChanges(note);
+        this.refresh();
+        editingArea.setScrollTop(Double.MAX_VALUE);
+        noteListView.requestFocus();
+    }
+
+    public void unRenderFile(FileEntity deletedFile, Note note) {
+        String text = editingArea.getText();
+        String serverPath = server.getServerPath() + "api/notes/" + currentNote.getId() + "/files/" + deletedFile.getId();
+        String toRemove = "![" + deletedFile.getName() + "](" + serverPath + ")"; // The string you want to remove
+
+        // Remove all occurrences of 'toRemove' from the text in the TextArea
+        String updatedText = text.replace(toRemove, "");
+        editingArea.setText(updatedText);
+
+        note.getFiles().remove(deletedFile);
+        this.saveChanges(note);
+        this.refresh();
+        editingArea.setScrollTop(Double.MAX_VALUE);
+        noteListView.requestFocus();
+    }
+
+    public void replaceRender(FileEntity replacedFile, Note note, String oldName) {
+        String text = editingArea.getText();
+        String serverPath = server.getServerPath() + "api/notes/" + currentNote.getId() + "/files/" + replacedFile.getId();
+        String toReplace = "![" + replacedFile.getName() + "](" + serverPath + ")";
+        String toRemove = "![" + oldName + "](" + serverPath + ")";
+        String updatedText = text.replace(toRemove, toReplace);
+        editingArea.setText(updatedText);
+
+        this.saveChanges(note);
+        this.refresh();
+        editingArea.setScrollTop(Double.MAX_VALUE); //this is for making sure that when the user clicks the editing area it is sent to the end of the text
+    }
 }
