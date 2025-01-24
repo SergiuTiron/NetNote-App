@@ -69,4 +69,9 @@ public class Config {
 	public void setLanguage(String language) {
 		this.language = language;
 	}
+
+	public void setCollections(List<Collection> collections) {
+		this.collections.clear();
+		this.collections.addAll(collections);
+	}
 }

@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Locale;
 
 
@@ -229,6 +230,21 @@ public class ConfigManager {
 		}catch(IOException e){
 			System.err.println("Failed saving config in setConfig()");
 		}
+	}
+
+	public void refreshCollections(List<Collection> collections){
+		try{
+			config=loadConfig();
+		}catch (IOException e){
+			System.err.println("Failed re-loading config in setConfig()");
+		}
+		config.setCollections(collections);
+		try{
+			config = loadConfig();
+		}catch (IOException e){
+			System.err.println("Failed re-loading config in setConfig()");
+		}
+		System.out.println("Collections refreshed in config.");
 	}
 
 }

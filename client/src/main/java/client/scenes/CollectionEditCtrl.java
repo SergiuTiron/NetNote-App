@@ -215,6 +215,7 @@ public class CollectionEditCtrl implements Initializable {
     public void refresh() {
         noteEditCtrl.deleteAllButtons();
         List<Collection> collections = server.getCollections();
+        configManager.refreshCollections(collections);
         System.out.println(collections.toString());
         for (Collection collection : collections) {
             noteEditCtrl.addCollectionToMenuButton(collection, configManager.getDefaultCollection().equals(collection));
