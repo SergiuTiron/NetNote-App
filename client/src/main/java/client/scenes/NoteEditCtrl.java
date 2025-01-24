@@ -10,7 +10,6 @@ import commons.Note;
 import jakarta.inject.Inject;
 import javafx.animation.FadeTransition;
 import javafx.animation.RotateTransition;
-import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -123,6 +122,10 @@ public class NoteEditCtrl implements Initializable {
 
     public void setCurrentNote(Note note) {
         noteListView.getSelectionModel().select(note);
+    }
+
+    public MenuButton getCollectionBox() {
+        return collectionBox;
     }
 
     @Override
@@ -365,11 +368,8 @@ public class NoteEditCtrl implements Initializable {
     private void handleNoteSelect(Note note) {
         this.refreshFilesPane(note);
         if (note == null) {
-            // If no note is selected, disable editing and show a default message
-            editingArea.setEditable(false);
-            editingArea.setText(resourceBundle.getString("initialText"));
-            titleField.setText(resourceBundle.getString("initialText"));
-            currentCollectionDrop.setVisible(false);
+//            If no note is selected, disable editing and show a default message
+            this.clearFields();
             return;
         }
         // If a note is selected, enable editing and display its content
@@ -498,6 +498,355 @@ public class NoteEditCtrl implements Initializable {
             fadeOut.play();
         });
         fadeIn.play();
+    }
+
+    public void autoSave() {
+        Note note = noteListView.getSelectionModel().getSelectedItem();
+        note.setContent(editingArea.getText());
+        server.addNote(note);
+        this.saveLabelTransition();
+        System.out.println("Changes saved");// This line is just for debugging purpose
+    }
+
+    /**
+     * Called on exiting the app
+     */
+    public void saveChanges() {
+        this.saveChanges(noteListView.getSelectionModel().getSelectedItem());
+    }
+
+    /**
+     * Called when switching notes in ListView and when exiting the app
+     */
+    public void saveChanges(Note note) {
+        if (note == null)
+            return;
+        note.setContent(editingArea.getText());
+        try {
+            //System.out.println(note.getFiles());
+            server.addNote(note);
+            this.saveLabelTransition();
+            System.out.println("Changes were saved to note " + note.getId());
+        } catch (Exception ex) {
+            System.err.println("Saving changes to note " + note.getId() + " failed:");
+            ex.printStackTrace();
+
+            ButtonType cancelButton = new ButtonType(resourceBundle.getString("popup.savingFailed.cancel"));
+            ButtonType retryButton = new ButtonType(resourceBundle.getString("popup.savingFailed.retry"));
+
+            Alert alert = new Alert(Alert.AlertType.ERROR, resourceBundle.getString("popup.savingFailed.title"),
+                    cancelButton, retryButton);
+            alert.setContentText(resourceBundle.getString("popup.savingFailed.text")
+                    .replace("%id%", String.valueOf(note.getId())));
+            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+            alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+            Optional<ButtonType> response = alert.showAndWait();
+            if (response.isPresent() && response.get() == retryButton) {
+                // Start the process again
+                this.saveChanges(note);
+            }
+        }
+    }
+
+    // COLLECTION RELATED
+
+    /**
+     * A method to add the buttons for changing a collection and moving a note of a specific collection
+     *
+     * @param collection - collection to add
+     */
+    public void addCollectionToMenuButton(Collection collection, boolean defaultCollection) {
+        //System.out.println("Collection button added");
+        MenuItem newCollectionItem;
+        MenuItem newCollectionChangeItem;
+        if (defaultCollection) {
+            newCollectionItem = new MenuItem(collection.getName() + "(Default)");
+            newCollectionChangeItem = new MenuItem(collection.getName() + "(Default)");
+        } else {
+            newCollectionItem = new MenuItem(collection.getName());
+            newCollectionChangeItem = new MenuItem(collection.getName());
+        }
+
+        //Handle the added buttons
+        newCollectionItem.setOnAction(_ -> this.handleSpecificCollectionSelected(collection));
+        newCollectionChangeItem.setOnAction(_ -> this.moveNoteToCollection(currentNote, collection.getName()));
+        // Add the new MenuItem to the MenuButton
+        MenuItem editCollections = collectionBox.getItems().getLast();
+        collectionBox.getItems().removeLast();
+        collectionBox.getItems().add(newCollectionItem);
+        collectionBox.getItems().add(editCollections);
+        currentCollectionDrop.getItems().add(newCollectionChangeItem);
+    }
+
+
+    /**
+     * A method to update the buttons for changing a collection and moving a note
+     *
+     * @param modifiedCollection - collection that was modified
+     * @param newTitle           - String with the Title that the buttons are updated
+     */
+    public void updateButtons(Collection modifiedCollection, String newTitle) {
+        System.out.println("Collection button updated");
+        collectionBox.getItems().stream()
+                .filter(mI -> mI.getText().equals(modifiedCollection.getName()) || mI.getText().equals(modifiedCollection.getName() + "(Default)"))
+                .findFirst().get()
+                .setText(newTitle);
+        currentCollectionDrop.getItems().stream()
+                .filter(mI -> mI.getText().equals(modifiedCollection.getName()) || mI.getText().equals(modifiedCollection.getName() + "(Default)"))
+                .findFirst().get()
+                .setText(newTitle);
+    }
+
+    public void deleteAllButtons() {
+        for (MenuItem item : currentCollectionDrop.getItems().stream().toList()) {
+            if (item.getText().equals(resourceBundle.getString("collections.defaultCollection"))) {
+                continue;
+            }
+            currentCollectionDrop.getItems().remove(item);
+        }
+        for (MenuItem item : collectionBox.getItems().stream().toList()) {
+            if (item.getText().equals(resourceBundle.getString("collections.all")) ||
+                    item.getText().equals(resourceBundle.getString("collections.edit")) ||
+                    item.getText().equals(resourceBundle.getString("collections.defaultCollection"))) {
+                continue;
+            }
+            collectionBox.getItems().remove(item);
+        }
+    }
+
+    /**
+     * Handler for "All" option
+     */
+    public void handleAllCollectionsSelected() {
+        System.out.println("All button pressed");
+
+        collectionBox.setText(resourceBundle.getString("collections.all"));
+        currentCollection = null;
+
+        List<Note> notes = server.getNotes();
+        currentCollection = configManager.getDefaultCollection();
+
+        // Clear the current list
+        noteListView.getItems().clear();
+
+        // Add the notes to the ListView
+        noteListView.getItems().addAll(notes);
+
+        this.clearFields();
+    }
+
+    public void handleDefaultCollection() {
+        System.out.println("Default collection handled"); //for debugging purposes
+        Collection defaultCollection = configManager.getDefaultCollection();
+        currentCollection = defaultCollection;
+        currentNote = null;
+        collectionBox.setText("Default Collection");
+
+        // Clear the current list
+        noteListView.getItems().clear();
+
+        // Add the notes to the ListView
+        noteListView.getItems().addAll(server.getNotesByCollection(server.getCollectionByName(defaultCollection.getName()).getId()));
+
+        this.clearFields();
+        currentCollectionDrop.setVisible(false);
+    }
+
+    /**
+     * Handler for "Edit collections"
+     */
+    public void handleEditCollections() {
+        System.out.println("Edit button pressed");
+        mainCtrl.showCollectionEdit(this.resourceBundle);
+    }
+
+    /**
+     * Displaying a given list of notes (from a collection) in the listview
+     *
+     * @param selectedItem - collection
+     */
+    private void handleSpecificCollectionSelected(Collection selectedItem) {
+        System.out.println("Collection handled"); //for debugging purposes
+        List<Note> notes = server.getNotesByCollection(selectedItem.getId());
+        currentCollection = selectedItem;
+        currentNote = null;
+        collectionBox.setText(selectedItem.getName()); //set the name of the collection to show in the MenuButton
+
+        // Clear the current list
+        noteListView.getItems().clear();
+
+        // Add the notes to the ListView
+        noteListView.getItems().addAll(notes);
+
+        this.clearFields();
+        currentCollectionDrop.setVisible(false);
+    }
+
+    /**
+     * Method to move the selected Note into a new Collection
+     *
+     * @param currentNote          - note to be moved
+     * @param collectionChangeItem - the MenuItem corresponding to the new Collection
+     */
+    public void moveNoteToCollection(Note currentNote, String collectionChangeItem) {
+        System.out.println("Collection trying to be moved");
+        if (currentNote == null) {
+            dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.ERROR, "popup.moveNote.noneSelected");
+            return;
+        }
+        try {
+            Collection newCollection = server.getCollectionByName(collectionChangeItem);
+            if (currentNote.getCollection().equals(newCollection)) {
+                dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.WARNING,
+                        "popup.moveNote.sameCollection");
+                return;
+            }
+            List<String> noteTitles = server.getNotesByCollection(newCollection.getId()).stream().map(x -> (String) x.getTitle()).toList();
+            if (noteTitles.contains(currentNote.getTitle())) {
+                dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.WARNING, "popup.moveNote.sameTitleInCollection");
+                return;
+            }
+            currentNote.setCollection(newCollection);
+            server.updateNote(currentNote);
+
+            dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
+                    "popup.moveNote.success", Map.of("%collection%", newCollection.getName()));
+            currentCollectionDrop.setText(collectionChangeItem);
+            if (collectionBox.getText().equals(resourceBundle.getString("collections.all"))) {
+                return;
+            }
+            this.refresh();
+            this.clearFields();
+            currentCollectionDrop.setVisible(false);
+        } catch (Exception ex) {
+            dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.ERROR, "popup.moveNote.error");
+            ex.printStackTrace();
+        }
+    }
+
+    public void changeToDefaultCollection() {
+        moveNoteToCollection(noteListView.getSelectionModel().getSelectedItem(), configManager.getDefaultCollection().getName());
+    }
+
+    public void setCollectionLabelText(String name) {
+        collectionBox.setText(name);
+    }
+
+    // LANGUAGE RELATED
+    /**
+     * Sets the application language to the specified Locale.
+     *
+     * @param locale The Locale object representing the language to set.
+     */
+    public void setLanguage(Locale locale) {
+        this.selectedLanguage.setValue(locale);
+        liveLanguageBox.setValue(locale);
+    }
+    
+    // REFRESH CLEAR FIELDS
+
+    /**
+     * Called whenever the user clicks the "Refresh" button.
+     */
+    public void refresh() {
+        List<Note> notes;
+        if (currentCollection == null || collectionBox.getText().equals(resourceBundle.getString("collections.all"))) {
+            notes = server.getNotes(); // if no note selected then do not refresh the file pane
+        } else {
+            notes = server.getNotesByCollection(currentCollection.getId());
+        }
+        noteListView.setItems(FXCollections.observableList(notes));
+        refreshAnimation.play();
+        refreshPane.setVisible(true);
+        new Thread(() -> {
+            try {
+                Thread.sleep(700);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                javafx.application.Platform.runLater(() -> {
+                    refreshPane.setVisible(false);
+                    refreshAnimation.stop();
+                });
+            }
+        }).start();
+    }
+
+    public void refreshButton() {
+        this.refresh();
+        //logic for refreshing everything related to collections
+        this.deleteAllButtons();
+        Collection defaultCollection = configManager.getDefaultCollection();
+        server.getCollections().forEach(c -> addCollectionToMenuButton(c, c.equals(defaultCollection)));
+
+        if(!(collectionBox.getText().equals(resourceBundle.getString("collections.all")) ||
+                collectionBox.getText().equals(resourceBundle.getString("collections.defaultCollection")))) {
+            this.setCollectionLabelText(server.getCollectionById(currentCollection.getId()).getName());
+        }
+
+        if(currentNote == null) {
+            return; // check if note is null if so return since the small refresh is enough
+        }
+
+        Optional<Note> noteOptional = server.getNotes().stream().filter(n -> n.getId() == currentNote.getId()).findFirst();
+
+        if (noteOptional.isPresent()) {
+            Note note = noteOptional.get();
+            //System.out.println(note.getId() + " " + note.getContent());
+            editingArea.setText(note.getContent());
+            editingArea.setScrollTop(Double.MAX_VALUE);
+            titleField.setText(note.getTitle());
+            this.refreshFilesPane(note);
+        } else {
+            this.clearFields();
+        }
+    }
+
+    private void createRefresh() {
+        Arc refreshArc = new Arc();
+        refreshArc.setRadiusX(10);
+        refreshArc.setRadiusY(10);
+        refreshArc.setStartAngle(45);
+        refreshArc.setLength(250);
+        refreshArc.setType(ArcType.OPEN);
+        refreshArc.setStroke(Color.WHITE);
+        refreshArc.setStrokeWidth(3);
+        refreshArc.setFill(null);
+
+        // Add the refresh circle to the StackPane
+        refreshPane.getChildren().add(refreshArc);
+
+        // Set up the animation
+        refreshAnimation = new RotateTransition(Duration.seconds(1.5), refreshArc);
+        refreshAnimation.setByAngle(360);
+        refreshAnimation.setCycleCount(RotateTransition.INDEFINITE);
+        refreshAnimation.setInterpolator(javafx.animation.Interpolator.LINEAR);
+    }
+
+    private void clearFields() {
+        noteListView.getSelectionModel().clearSelection();
+        editingArea.setEditable(false);
+        editingArea.setText(resourceBundle.getString("initialText"));
+        titleField.setText(resourceBundle.getString("initialText"));
+        currentCollectionDrop.setVisible(false);
+        filesPane.getChildren().clear();
+    }
+
+
+    // KEYBINDINGS
+
+    private void keyShortcuts() {
+        noteListView.sceneProperty().addListener((_, _, newScene) -> {
+            if (newScene != null) {
+                newScene.setOnKeyPressed(event -> {
+                    Map<KeyCombination, Runnable> keyActions = keyCodeCombinations();
+                    keyActions.entrySet().stream()
+                            .filter(entry -> entry.getKey().match(event))
+                            .findFirst()
+                            .ifPresent(entry -> entry.getValue().run());
+                });
+            }
+        });
     }
 
     /**
@@ -646,323 +995,7 @@ public class NoteEditCtrl implements Initializable {
         editingArea.requestFocus();
     }
 
-
-    public void autoSave() {
-        Note note = noteListView.getSelectionModel().getSelectedItem();
-        note.setContent(editingArea.getText());
-        server.addNote(note);
-        this.saveLabelTransition();
-        System.out.println("Changes saved");// This line is just for debugging purpose
-    }
-
-    /**
-     * Called on exiting the app
-     */
-    public void saveChanges() {
-        this.saveChanges(noteListView.getSelectionModel().getSelectedItem());
-    }
-
-    /**
-     * Called when switching notes in ListView and when exiting the app
-     */
-    public void saveChanges(Note note) {
-        if (note == null)
-            return;
-        note.setContent(editingArea.getText());
-        try {
-            //System.out.println(note.getFiles());
-            server.addNote(note);
-            this.saveLabelTransition();
-            System.out.println("Changes were saved to note " + note.getId());
-        } catch (Exception ex) {
-            System.err.println("Saving changes to note " + note.getId() + " failed:");
-            ex.printStackTrace();
-
-            ButtonType cancelButton = new ButtonType(resourceBundle.getString("popup.savingFailed.cancel"));
-            ButtonType retryButton = new ButtonType(resourceBundle.getString("popup.savingFailed.retry"));
-
-            Alert alert = new Alert(Alert.AlertType.ERROR, resourceBundle.getString("popup.savingFailed.title"),
-                    cancelButton, retryButton);
-            alert.setContentText(resourceBundle.getString("popup.savingFailed.text")
-                    .replace("%id%", String.valueOf(note.getId())));
-            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-            alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
-            Optional<ButtonType> response = alert.showAndWait();
-            if (response.isPresent() && response.get() == retryButton) {
-                // Start the process again
-                this.saveChanges(note);
-            }
-        }
-    }
-
-    // COLLECTION RELATED
-
-    /**
-     * A method to add the buttons for changing a collection and moving a note of a specific collection
-     *
-     * @param collection - collection to add
-     */
-    public void addCollectionToMenuButton(Collection collection, boolean defaultCollection) {
-        //System.out.println("Collection button added");
-        MenuItem newCollectionItem;
-        MenuItem newCollectionChangeItem;
-        if (defaultCollection) {
-            newCollectionItem = new MenuItem(collection.getName() + "(Default)");
-            newCollectionChangeItem = new MenuItem(collection.getName() + "(Default)");
-        } else {
-            newCollectionItem = new MenuItem(collection.getName());
-            newCollectionChangeItem = new MenuItem(collection.getName());
-        }
-
-        //Handle the added buttons
-        newCollectionItem.setOnAction(_ -> this.handleSpecificCollectionSelected(collection));
-        newCollectionChangeItem.setOnAction(_ -> this.moveNoteToCollection(currentNote, collection.getName()));
-        // Add the new MenuItem to the MenuButton
-        MenuItem editCollections = collectionBox.getItems().getLast();
-        collectionBox.getItems().removeLast();
-        collectionBox.getItems().add(newCollectionItem);
-        collectionBox.getItems().add(editCollections);
-        currentCollectionDrop.getItems().add(newCollectionChangeItem);
-    }
-
-
-    /**
-     * A method to update the buttons for changing a collection and moving a note
-     *
-     * @param modifiedCollection - collection that was modified
-     * @param newTitle           - String with the Title that the buttons are updated
-     */
-    public void updateButtons(Collection modifiedCollection, String newTitle) {
-        System.out.println("Collection button updated");
-        collectionBox.getItems().stream()
-                .filter(mI -> mI.getText().equals(modifiedCollection.getName()) || mI.getText().equals(modifiedCollection.getName() + "(Default)"))
-                .findFirst().get()
-                .setText(newTitle);
-        currentCollectionDrop.getItems().stream()
-                .filter(mI -> mI.getText().equals(modifiedCollection.getName()) || mI.getText().equals(modifiedCollection.getName() + "(Default)"))
-                .findFirst().get()
-                .setText(newTitle);
-    }
-
-    /**
-     * Handler for "All" option
-     */
-    public void handleAllCollectionsSelected() {
-        System.out.println("All button pressed");
-
-        collectionBox.setText(resourceBundle.getString("collections.all"));
-        currentCollection = null;
-
-        List<Note> notes = server.getNotes();
-        currentCollection = configManager.getDefaultCollection();
-
-        // Clear the current list
-        noteListView.getItems().clear();
-
-        // Add the notes to the ListView
-        noteListView.getItems().addAll(notes);
-    }
-
-    public void handleDefaultCollection() {
-        System.out.println("Default collection handled"); //for debugging purposes
-        Collection defaultCollection = configManager.getDefaultCollection();
-        currentCollection = defaultCollection;
-        currentNote = null;
-        collectionBox.setText("Default Collection");
-
-        // Clear the current list
-        noteListView.getItems().clear();
-
-        // Add the notes to the ListView
-        noteListView.getItems().addAll(server.getNotesByCollection(server.getCollectionByName(defaultCollection.getName()).getId()));
-
-        this.clearFields();
-        currentCollectionDrop.setVisible(false);
-    }
-
-    /**
-     * Handler for "Edit collections"
-     */
-    public void handleEditCollections() {
-        System.out.println("Edit button pressed");
-        mainCtrl.showCollectionEdit(this.resourceBundle);
-    }
-
-    /**
-     * Displaying a given list of notes (from a collection) in the listview
-     *
-     * @param selectedItem - collection
-     */
-    private void handleSpecificCollectionSelected(Collection selectedItem) {
-        System.out.println("Collection handled"); //for debugging purposes
-        List<Note> notes = server.getNotesByCollection(selectedItem.getId());
-        currentCollection = selectedItem;
-        currentNote = null;
-        collectionBox.setText(selectedItem.getName()); //set the name of the collection to show in the MenuButton
-
-        // Clear the current list
-        noteListView.getItems().clear();
-
-        // Add the notes to the ListView
-        noteListView.getItems().addAll(notes);
-
-        this.clearFields();
-        currentCollectionDrop.setVisible(false);
-    }
-
-    /**
-     * Method to move the selected Note into a new Collection
-     *
-     * @param currentNote          - note to be moved
-     * @param collectionChangeItem - the MenuItem corresponding to the new Collection
-     */
-    public void moveNoteToCollection(Note currentNote, String collectionChangeItem) {
-        System.out.println("Collection trying to be moved");
-        if (currentNote == null) {
-            dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.ERROR, "popup.moveNote.noneSelected");
-            return;
-        }
-        try {
-            Collection newCollection = server.getCollectionByName(collectionChangeItem);
-            if (currentNote.getCollection().equals(newCollection)) {
-                dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.WARNING,
-                        "popup.moveNote.sameCollection");
-                return;
-            }
-            List<String> noteTitles = server.getNotesByCollection(newCollection.getId()).stream().map(x -> (String) x.getTitle()).toList();
-            if (noteTitles.contains(currentNote.getTitle())) {
-                dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.WARNING, "popup.moveNote.sameTitleInCollection");
-                return;
-            }
-            currentNote.setCollection(newCollection);
-            server.updateNote(currentNote);
-
-            dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
-                    "popup.moveNote.success", Map.of("%collection%", newCollection.getName()));
-            currentCollectionDrop.setText(collectionChangeItem);
-            if (collectionBox.getText().equals(resourceBundle.getString("collections.all"))) {
-                return;
-            }
-            this.refresh();
-            this.clearFields();
-            currentCollectionDrop.setVisible(false);
-        } catch (Exception ex) {
-            dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.ERROR, "popup.moveNote.error");
-            ex.printStackTrace();
-        }
-    }
-
-    public void changeToDefaultCollection() {
-        moveNoteToCollection(noteListView.getSelectionModel().getSelectedItem(), configManager.getDefaultCollection().getName());
-    }
-
-    // LANGUAGE RELATED
-    /**
-     * Sets the application language to the specified Locale.
-     *
-     * @param locale The Locale object representing the language to set.
-     */
-    public void setLanguage(Locale locale) {
-        this.selectedLanguage.setValue(locale);
-        liveLanguageBox.setValue(locale);
-    }
-    
-    // REFRESH CLEAR FIELDS
-
-    /**
-     * Called whenever the user clicks the "Refresh" button.
-     */
-    public void refresh() {
-        List<Note> notes;
-        if (currentCollection == null) {
-            notes = server.getNotes(); // if no note selected then do not refresh the file pane
-        } else if(collectionBox.getText().equals(resourceBundle.getString("collections.all"))) {
-            notes = server.getNotes();
-            this.refreshFilesPane(currentNote);
-        } else {
-            notes = server.getNotesByCollection(currentCollection.getId());
-            this.refreshFilesPane(currentNote);
-        }
-        noteListView.setItems(FXCollections.observableList(notes));
-        refreshAnimation.play();
-        refreshPane.setVisible(true);
-        new Thread(() -> {
-            try {
-                Thread.sleep(700);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } finally {
-                javafx.application.Platform.runLater(() -> {
-                    refreshPane.setVisible(false);
-                    refreshAnimation.stop();
-                });
-            }
-        }).start();
-    }
-
-    private void createRefresh() {
-        Arc refreshArc = new Arc();
-        refreshArc.setRadiusX(10);
-        refreshArc.setRadiusY(10);
-        refreshArc.setStartAngle(45);
-        refreshArc.setLength(250);
-        refreshArc.setType(ArcType.OPEN);
-        refreshArc.setStroke(Color.WHITE);
-        refreshArc.setStrokeWidth(3);
-        refreshArc.setFill(null);
-
-        // Add the refresh circle to the StackPane
-        refreshPane.getChildren().add(refreshArc);
-
-        // Set up the animation
-        refreshAnimation = new RotateTransition(Duration.seconds(1.5), refreshArc);
-        refreshAnimation.setByAngle(360);
-        refreshAnimation.setCycleCount(RotateTransition.INDEFINITE);
-        refreshAnimation.setInterpolator(javafx.animation.Interpolator.LINEAR);
-    }
-
-    private void clearFields() {
-        noteListView.getSelectionModel().clearSelection();
-        editingArea.setEditable(false);
-        editingArea.setText(resourceBundle.getString("initialText"));
-        titleField.setText(resourceBundle.getString("initialText"));
-        currentCollectionDrop.setVisible(false);
-        filesPane.getChildren().clear();
-    }
-
-
-    // KEYBINDINGS
-
-    private void keyShortcuts() {
-        noteListView.sceneProperty().addListener((_, _, newScene) -> {
-            if (newScene != null) {
-                newScene.setOnKeyPressed(event -> {
-                    Map<KeyCombination, Runnable> keyActions = keyCodeCombinations();
-                    keyActions.entrySet().stream()
-                            .filter(entry -> entry.getKey().match(event))
-                            .findFirst()
-                            .ifPresent(entry -> entry.getValue().run());
-                });
-            }
-        });
-    }
-
-    public void deleteAllButtons() {
-        for (MenuItem item : currentCollectionDrop.getItems().stream().toList()) {
-            if (item.getText().equals(resourceBundle.getString("collections.defaultCollection"))) {
-                continue;
-            }
-            currentCollectionDrop.getItems().remove(item);
-        }
-        for (MenuItem item : collectionBox.getItems().stream().toList()) {
-            if (item.getText().equals(resourceBundle.getString("collections.all")) ||
-                    item.getText().equals(resourceBundle.getString("collections.edit")) ||
-                    item.getText().equals(resourceBundle.getString("collections.defaultCollection"))) {
-                continue;
-            }
-            collectionBox.getItems().remove(item);
-        }
-    }
+    //FILE LOGIC
 
     public void addFile() {
         if (currentNote == null) {
@@ -1005,6 +1038,8 @@ public class NoteEditCtrl implements Initializable {
             note.getFiles().add(uploadedFile);
 
             renderFile(uploadedFile, note);
+
+            this.refreshFilesPane(note);
 
             dialogUtil.showDialog(this.resourceBundle, AlertType.INFORMATION,
                     "popup.files.added");

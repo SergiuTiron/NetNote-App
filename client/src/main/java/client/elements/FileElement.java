@@ -21,7 +21,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -169,7 +168,7 @@ public class FileElement extends BorderPane {
         server.deleteFile(file);
         Note currentNote = noteEditCtrl.getCurrentNote();
         noteEditCtrl.unRenderFile(file,currentNote);
-        noteEditCtrl.refresh();
+        noteEditCtrl.refreshFilesPane(currentNote);
         dialogUtil.showDialog(this.resourceBundle, AlertType.CONFIRMATION,
                 "popup.files.deleted");
     }
