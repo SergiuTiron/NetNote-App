@@ -94,8 +94,7 @@ public class CollectionEditCtrl implements Initializable {
                         return selectedCollection;
                     }
 
-                    config.setCollectionName(selectedCollection, newName.strip());
-                    saveConfig(config);
+                    configManager.changeCollectionName(selectedCollection, newName.strip());
                     selectedCollection.setName(newName.strip());
                     server.addCollection(selectedCollection);
                     System.out.println("Collection title changed");
@@ -163,9 +162,7 @@ public class CollectionEditCtrl implements Initializable {
             Collection collection = new Collection(collectionName);
             Collection savedCollection = server.addCollection(collection);
 
-            config.addCollection(savedCollection); // add collection to config
-            config.setDefaultCollection(configManager.getDefaultCollection()); // make sure the default collection is not replaced
-            saveConfig(config);
+            configManager.addCollection(savedCollection); // add collection to config
 
             // Add collection to listView
             dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
@@ -198,8 +195,7 @@ public class CollectionEditCtrl implements Initializable {
         if (confirmationDelete(selectedCollection)) {
             try {
                 server.deleteCollection(selectedCollection.getId());
-                config.removeCollection(selectedCollection);
-                saveConfig(config);
+                configManager.removeCollection(selectedCollection);
                 collectionListView.getItems().remove(selectedCollection);
                 this.refresh();
                 System.out.println("Collection deleted successfully");

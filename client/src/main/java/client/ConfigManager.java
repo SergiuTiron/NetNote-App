@@ -181,4 +181,54 @@ public class ConfigManager {
 	public void setConfig(Config config) {
 		this.config = config;
 	}
+
+	public void addCollection(Collection collection){
+		try{
+			config = loadConfig();
+		}catch (IOException e){
+			System.err.println("Failed re-loading config in setConfig()");
+		}
+		if(!config.getCollections().contains(collection)) {
+			config.addCollection(collection);
+		}
+		else{
+			return;
+		}
+		try {
+			saveConfig(config);
+		}catch(IOException e){
+			System.err.println("Failed saving config in setConfig()");
+		}
+		System.out.println("Collection " + collection.getName() + " added to config.");
+	}
+
+	public void changeCollectionName(Collection collection, String newName) {
+		try{
+			config = loadConfig();
+		}catch (IOException e){
+			System.err.println("Failed re-loading config in setConfig()");
+		}
+		config.setCollectionName(collection, newName);
+		try{
+			saveConfig(config);
+		}catch(IOException e){
+			System.err.println("Failed saving config in setConfig()");
+		}
+		System.out.println("Collection name changed in config from " + collection.getName() + " to " + newName);
+	}
+
+	public void removeCollection(Collection collection) {
+		try{
+			config = loadConfig();
+		}catch (IOException e){
+			System.err.println("Failed re-loading config in setConfig()");
+		}
+		config.removeCollection(collection);
+		try{
+			saveConfig(config);
+		}catch(IOException e){
+			System.err.println("Failed saving config in setConfig()");
+		}
+	}
+
 }

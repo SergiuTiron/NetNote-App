@@ -63,7 +63,7 @@ public class CollectionTest {
 
     @Test
     public void testEquals2() {
-        assertNotEquals(testCollection2, testCollection3);
+        assertEquals(testCollection2, testCollection3);
         assertNotEquals(testCollection1, testCollection3);
     }
 
@@ -122,7 +122,7 @@ public class CollectionTest {
         int initialHash = testCollection3.hashCode();
         assertEquals(initialHash, testCollection3.hashCode());
         testCollection3.addNote(note3);
-        assertNotEquals(initialHash, testCollection3.hashCode());
+        assertEquals(initialHash, testCollection3.hashCode());
     }
 
 

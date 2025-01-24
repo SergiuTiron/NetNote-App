@@ -35,11 +35,10 @@ public class Config {
 	}
 
 	public void setCollectionName(Collection collection, String newName) {
-
-		if (collections.contains(collection)){
-			for (Collection value : collections) {
-				if (value.equals(collection)) {
-					value.setName(newName.strip());
+		if (collections.stream().map(Collection::getId).toList().contains(collection.getId())){
+			for (int i = 0; i<collections.size(); i++) {
+				if (collections.get(i).getId() == collection.getId()) {
+					collections.get(i).setName(newName.strip());
 				}
 			}
 		} else {
