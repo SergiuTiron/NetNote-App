@@ -220,7 +220,6 @@ public class CollectionEditCtrl implements Initializable {
 
         }
         collectionListView.setItems(FXCollections.observableList(collections));
-
         System.out.println("Collections refreshed");
     }
 

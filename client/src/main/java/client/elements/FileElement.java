@@ -168,7 +168,7 @@ public class FileElement extends BorderPane {
         server.deleteFile(file);
         Note currentNote = noteEditCtrl.getCurrentNote();
         noteEditCtrl.unRenderFile(file,currentNote);
-        noteEditCtrl.refresh();
+        noteEditCtrl.refreshFilesPane(currentNote);
         dialogUtil.showDialog(this.resourceBundle, AlertType.CONFIRMATION,
                 "popup.files.deleted");
     }

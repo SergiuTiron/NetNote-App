@@ -363,11 +363,12 @@ public class NoteEditCtrl implements Initializable {
     private void handleNoteSelect(Note note) {
         this.refreshFilesPane(note);
         if (note == null) {
-            // If no note is selected, disable editing and show a default message
-            editingArea.setEditable(false);
-            editingArea.setText(resourceBundle.getString("initialText"));
-            titleField.setText(resourceBundle.getString("initialText"));
-            currentCollectionDrop.setVisible(false);
+//            If no note is selected, disable editing and show a default message
+//            editingArea.setEditable(false);
+//            editingArea.setText(resourceBundle.getString("initialText"));
+//            titleField.setText(resourceBundle.getString("initialText"));
+//            currentCollectionDrop.setVisible(false);
+            this.clearFields();
             return;
         }
         // If a note is selected, enable editing and display its content
@@ -746,6 +747,8 @@ public class NoteEditCtrl implements Initializable {
 
         // Add the notes to the ListView
         noteListView.getItems().addAll(notes);
+
+        this.clearFields();
     }
 
     public void handleDefaultCollection() {
@@ -888,14 +891,10 @@ public class NoteEditCtrl implements Initializable {
      */
     public void refresh() {
         List<Note> notes;
-        if (currentCollection == null) {
+        if (currentCollection == null || collectionBox.getText().equals(resourceBundle.getString("collections.all"))) {
             notes = server.getNotes(); // if no note selected then do not refresh the file pane
-        } else if(collectionBox.getText().equals(resourceBundle.getString("collections.all"))) {
-            notes = server.getNotes();
-            this.refreshFilesPane(currentNote);
         } else {
             notes = server.getNotesByCollection(currentCollection.getId());
-            this.refreshFilesPane(currentNote);
         }
         noteListView.setItems(FXCollections.observableList(notes));
         refreshAnimation.play();
@@ -912,6 +911,26 @@ public class NoteEditCtrl implements Initializable {
                 });
             }
         }).start();
+    }
+
+    public void refreshButton() {
+        this.refresh();
+        if(currentNote == null)
+            return;
+        Optional<Note> noteOptional = server.getNotes().stream().filter(n -> n.getId() == currentNote.getId()).findFirst();
+        this.deleteAllButtons();
+        Collection defaultCollection = configManager.getDefaultCollection();
+        server.getCollections().forEach(c -> addCollectionToMenuButton(c, c.equals(defaultCollection)));
+        if (noteOptional.isPresent()) {
+            Note note = noteOptional.get();
+            System.out.println(note.getId() + " " + note.getContent());
+            editingArea.setText(note.getContent());
+            editingArea.setScrollTop(Double.MAX_VALUE); //this is for making sure that when the user clicks the editing area it is sent to the end of the text
+            titleField.setText(note.getTitle());
+            this.refreshFilesPane(note);
+        } else {
+            this.clearFields();
+        }
     }
 
     private void createRefresh() {
@@ -1020,6 +1039,8 @@ public class NoteEditCtrl implements Initializable {
 
             renderFile(uploadedFile, note);
 
+            this.refreshFilesPane(note);
+
             dialogUtil.showDialog(this.resourceBundle, AlertType.INFORMATION,
                     "popup.files.added");
         } catch (Exception ex) {
@@ -1070,5 +1091,9 @@ public class NoteEditCtrl implements Initializable {
         this.saveChanges(note);
         this.refresh();
         editingArea.setScrollTop(Double.MAX_VALUE); //this is for making sure that when the user clicks the editing area it is sent to the end of the text
+    }
+
+    public void setCollectionLabelText(String name) {
+        collectionBox.setText(name);
     }
 }
