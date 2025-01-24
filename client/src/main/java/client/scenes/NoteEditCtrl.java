@@ -142,6 +142,7 @@ public class NoteEditCtrl implements Initializable {
         if(!server.getCollections().contains(defaultCollection)) {
             server.addCollection(defaultCollection);
         }
+        configManager.addCollection(defaultCollection);
         for (Collection collection : configCollections) {
             if (!server.getCollections().contains(collection)) {
                 server.addCollection(collection);
@@ -415,9 +416,22 @@ public class NoteEditCtrl implements Initializable {
             currentCollectionDrop.setVisible(false);
             this.clearFields();
             this.refresh();
-        } catch (IOException e) {
-            editingArea.setText(resourceBundle.getString("deleteText.fail"));
+        } catch (Exception e) {
             e.printStackTrace();
+            ButtonType cancelButton = new ButtonType(resourceBundle.getString("popup.savingFailed.cancel"));
+            ButtonType retryButton = new ButtonType(resourceBundle.getString("popup.savingFailed.retry"));
+
+            Alert alert = new Alert(Alert.AlertType.ERROR, resourceBundle.getString("deleteText.fail"),
+                cancelButton, retryButton);
+            alert.setContentText(resourceBundle.getString("deleteText.fail")
+                .replace("%id%", String.valueOf(selectedNote.getId())));
+            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+            alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
+            Optional<ButtonType> response = alert.showAndWait();
+            if (response.isPresent() && response.get() == retryButton) {
+                // Start the process again
+                this.deleteButton();
+            }
         }
     }
 

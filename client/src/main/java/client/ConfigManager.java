@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Locale;
 
 
@@ -181,4 +182,69 @@ public class ConfigManager {
 	public void setConfig(Config config) {
 		this.config = config;
 	}
+
+	public void addCollection(Collection collection){
+		try{
+			config = loadConfig();
+		}catch (IOException e){
+			System.err.println("Failed re-loading config in setConfig()");
+		}
+		if(!config.getCollections().contains(collection)) {
+			config.addCollection(collection);
+		}
+		else{
+			return;
+		}
+		try {
+			saveConfig(config);
+		}catch(IOException e){
+			System.err.println("Failed saving config in setConfig()");
+		}
+		System.out.println("Collection " + collection.getName() + " added to config.");
+	}
+
+	public void changeCollectionName(Collection collection, String newName) {
+		try{
+			config = loadConfig();
+		}catch (IOException e){
+			System.err.println("Failed re-loading config in setConfig()");
+		}
+		config.setCollectionName(collection, newName);
+		try{
+			saveConfig(config);
+		}catch(IOException e){
+			System.err.println("Failed saving config in setConfig()");
+		}
+		System.out.println("Collection name changed in config from " + collection.getName() + " to " + newName);
+	}
+
+	public void removeCollection(Collection collection) {
+		try{
+			config = loadConfig();
+		}catch (IOException e){
+			System.err.println("Failed re-loading config in setConfig()");
+		}
+		config.removeCollection(collection);
+		try{
+			saveConfig(config);
+		}catch(IOException e){
+			System.err.println("Failed saving config in setConfig()");
+		}
+	}
+
+	public void refreshCollections(List<Collection> collections){
+		try{
+			config=loadConfig();
+		}catch (IOException e){
+			System.err.println("Failed re-loading config in setConfig()");
+		}
+		config.setCollections(collections);
+		try{
+			config = loadConfig();
+		}catch (IOException e){
+			System.err.println("Failed re-loading config in setConfig()");
+		}
+		System.out.println("Collections refreshed in config.");
+	}
+
 }

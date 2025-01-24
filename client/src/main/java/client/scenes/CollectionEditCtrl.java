@@ -94,8 +94,7 @@ public class CollectionEditCtrl implements Initializable {
                         return selectedCollection;
                     }
 
-                    config.setCollectionName(selectedCollection, newName.strip());
-                    saveConfig(config);
+                    configManager.changeCollectionName(selectedCollection, newName.strip());
                     selectedCollection.setName(newName.strip());
                     server.addCollection(selectedCollection);
                     System.out.println("Collection title changed");
@@ -163,9 +162,7 @@ public class CollectionEditCtrl implements Initializable {
             Collection collection = new Collection(collectionName);
             Collection savedCollection = server.addCollection(collection);
 
-            config.addCollection(savedCollection); // add collection to config
-            config.setDefaultCollection(configManager.getDefaultCollection()); // make sure the default collection is not replaced
-            saveConfig(config);
+            configManager.addCollection(savedCollection); // add collection to config
 
             // Add collection to listView
             dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
@@ -190,11 +187,15 @@ public class CollectionEditCtrl implements Initializable {
             System.err.println("Delete attempt with no collection selected");
             return;
         }
+        Collection defaultCollection = configManager.getDefaultCollection();
+        if(defaultCollection.getId() == selectedCollection.getId()) {
+            dialogUtil.showDialog(resourceBundle, Alert.AlertType.WARNING, "popup.Collection.delete.defaultCollectionSelected");
+            return;
+        }
         if (confirmationDelete(selectedCollection)) {
             try {
                 server.deleteCollection(selectedCollection.getId());
-                config.removeCollection(selectedCollection);
-                saveConfig(config);
+                configManager.removeCollection(selectedCollection);
                 collectionListView.getItems().remove(selectedCollection);
                 this.refresh();
                 System.out.println("Collection deleted successfully");
@@ -214,6 +215,7 @@ public class CollectionEditCtrl implements Initializable {
     public void refresh() {
         noteEditCtrl.deleteAllButtons();
         List<Collection> collections = server.getCollections();
+        configManager.refreshCollections(collections);
         System.out.println(collections.toString());
         for (Collection collection : collections) {
             noteEditCtrl.addCollectionToMenuButton(collection, configManager.getDefaultCollection().equals(collection));
@@ -317,7 +319,7 @@ public class CollectionEditCtrl implements Initializable {
         }
         if (server.getCollections()
                 .stream()
-                .anyMatch(collection -> collection.getName().equals(newTitle))) {
+                .anyMatch(collection -> (collection.getName().equals(newTitle) &&collection.getId()!=currentCollection.getId()))) {
             System.err.println("Collection name must be unique.");
             dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.WARNING,
                     "popup.collections.duplicateName");
