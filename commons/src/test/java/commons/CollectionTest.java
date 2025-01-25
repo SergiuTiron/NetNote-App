@@ -82,9 +82,9 @@ public class CollectionTest {
     @Test
     public void testRemoveNote() {
         testCollection3.addNote(note3);
-        assertEquals(4, testCollection3.NoteCount());
+        assertEquals(4, testCollection3.countNote());
         testCollection3.removeNote(note3);
-        assertEquals(3, testCollection3.NoteCount());
+        assertEquals(3, testCollection3.countNote());
     }
 
     /**
@@ -96,7 +96,7 @@ public class CollectionTest {
             testCollection3.getNote(10);
             fail("Expected an IndexOutOfBoundsException to be thrown");
         } catch (IndexOutOfBoundsException e) {
-            assertEquals("Index 10 out of bounds for length " + testCollection3.NoteCount(), e.getMessage());
+            assertEquals("Index 10 out of bounds for length " + testCollection3.countNote(), e.getMessage());
         }
     }
 

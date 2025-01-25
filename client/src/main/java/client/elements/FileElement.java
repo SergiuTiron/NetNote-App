@@ -46,7 +46,7 @@ public class FileElement extends BorderPane {
 
         label = new Hyperlink(file.getName());
         label.setAlignment(Pos.CENTER);
-        label.setOnAction(_ -> {
+        label.setOnAction(a -> {
             label.setVisited(false);
             this.promptDownload();
         });
@@ -54,13 +54,15 @@ public class FileElement extends BorderPane {
         label.setMaxWidth(200);
 
         Button deleteButton = this.createButton("appIcon/delete_icon.png");
-        deleteButton.setOnAction(_ -> this.promptDelete());
+        deleteButton.setOnAction(a -> this.promptDelete());
 
         Button changeName = this.createButton("appIcon/changeName_icon.png");
-        changeName.setOnAction(_ -> this.updateFileTitle());
+        changeName.setOnAction(a -> this.updateFileTitle());
 
         Button renderFile = this.createButton("appIcon/render_icon.png");
-        renderFile.setOnAction(_ -> { noteEditCtrl.renderFile(file,noteEditCtrl.getCurrentNote());});
+        renderFile.setOnAction(a -> {
+            noteEditCtrl.renderFile(file, noteEditCtrl.getCurrentNote());
+        });
 
         HBox buttonBox = new HBox(10);
         buttonBox.getChildren().addAll(renderFile, changeName, deleteButton);
@@ -108,7 +110,7 @@ public class FileElement extends BorderPane {
                     String fileName = file.getName();
                     int lastDotIndex = fileName.lastIndexOf('.');
                     if (lastDotIndex > 0) { // Ensure there's a dot and it's not the first character
-                         fileName = textField.getText() + fileName.substring(lastDotIndex);
+                        fileName = textField.getText() + fileName.substring(lastDotIndex);
                     }
                     String oldName = file.getName();
                     file.setName(fileName);
@@ -117,7 +119,7 @@ public class FileElement extends BorderPane {
                     //System.out.println(file.getNote() + " " + file.getId() + " " + file.getName());
 
                     server.updateFileName(file);
-                    noteEditCtrl.replaceRender(file,currentNote, oldName);
+                    noteEditCtrl.replaceRender(file, currentNote, oldName);
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Error: " + e.getMessage());
@@ -167,7 +169,7 @@ public class FileElement extends BorderPane {
     private void delete() {
         server.deleteFile(file);
         Note currentNote = noteEditCtrl.getCurrentNote();
-        noteEditCtrl.unRenderFile(file,currentNote);
+        noteEditCtrl.unRenderFile(file, currentNote);
         noteEditCtrl.refreshFilesPane(currentNote);
         dialogUtil.showDialog(this.resourceBundle, AlertType.CONFIRMATION,
                 "popup.files.deleted");

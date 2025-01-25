@@ -47,7 +47,6 @@ public class Main extends Application {
     private Locale locale = DEFAULT_LOCALE;
 
     private ConfigManager configManager;
-    private Config config;
 
     public static void main(String[] args) {
         launch();
@@ -71,7 +70,7 @@ public class Main extends Application {
         mainCtrl.initialize(primaryStage);
         this.loadScenes();
 
-        primaryStage.setOnCloseRequest(_ -> {
+        primaryStage.setOnCloseRequest(r -> {
             if (noteEditCtrl != null) {
                 noteEditCtrl.saveChanges();
                 System.out.println("Changes were saved on exit.");
@@ -85,24 +84,26 @@ public class Main extends Application {
         Pair<NoteEditCtrl, Parent> editView = FXML.load(this.locale, "client", "scenes", "NoteEditView.fxml");
         Pair<CollectionEditCtrl, Parent> collectionView = FXML.load(this.locale, "client", "scenes", "CollectionEditView.fxml");
 
-        editView.getValue().getStylesheets().add(Objects.requireNonNull(getClass().getResource("/css/custom-overrides-noteedit.css")).toExternalForm());
-        collectionView.getValue().getStylesheets().add(Objects.requireNonNull(getClass().getResource("/css/custom-overrides-collectionedit.css")).toExternalForm());
+        editView.getValue().getStylesheets()
+                .add(Objects.requireNonNull(getClass().getResource("/css/custom-overrides-noteedit.css")).toExternalForm());
+        collectionView.getValue().getStylesheets()
+                .add(Objects.requireNonNull(getClass().getResource("/css/custom-overrides-collectionedit.css")).toExternalForm());
 
         this.noteEditCtrl = editView.getKey();
         noteEditCtrl.setLanguage(this.locale);
-        noteEditCtrl.selectedLanguage.addListener(this.localeChangeListener);
+        noteEditCtrl.getSelectedLanguage().addListener(this.localeChangeListener);
 
         mainCtrl.loadScenes(editView, collectionView);
     }
 
-    private final ChangeListener<Locale> localeChangeListener = (_, _, _) -> this.handleLocaleChange();
+    private final ChangeListener<Locale> localeChangeListener = (observable, locale1, locale2) -> this.handleLocaleChange();
 
     private void handleLocaleChange() {
         Note currentNote = noteEditCtrl.getCurrentNote();
         noteEditCtrl.saveChanges();
-        noteEditCtrl.selectedLanguage.removeListener(this.localeChangeListener);
+        noteEditCtrl.getSelectedLanguage().removeListener(this.localeChangeListener);
 
-        this.locale = noteEditCtrl.selectedLanguage.get();
+        this.locale = noteEditCtrl.getSelectedLanguage().get();
         Locale.setDefault(this.locale); // Default locale is used to translate e.g. dialogs by JavaFX
 
         System.out.println("Reloading scenes with new locale: " + locale);

@@ -31,7 +31,7 @@ public class CollectionEditCtrl implements Initializable {
     private Collection currentCollection;
     // Language fields
     private ResourceBundle resourceBundle;
-    public final ObjectProperty<Locale> selectedLanguage = new SimpleObjectProperty<>();
+    private final ObjectProperty<Locale> selectedLanguage = new SimpleObjectProperty<>();
 
     @FXML
     private ListView<Collection> collectionListView;
@@ -63,7 +63,7 @@ public class CollectionEditCtrl implements Initializable {
         this.resourceBundle = resourceBundle;
 
         collectionListView.setEditable(true);
-        collectionListView.setCellFactory(_ -> new TextFieldListCell<>(new StringConverter<>() {
+        collectionListView.setCellFactory(c -> new TextFieldListCell<>(new StringConverter<>() {
             @Override
             public String toString(Collection collection) {
                 if (collection == null) return "";
@@ -93,7 +93,7 @@ public class CollectionEditCtrl implements Initializable {
                     noteEditCtrl.updateCurrentCollectionDropText(oldName, newName);
                     configManager.changeCollectionName(selectedCollection, newName.strip());
                     selectedCollection.setName(newName.strip());
-                    if(selectedCollection.getId() == configManager.getDefaultCollection().getId()) {
+                    if (selectedCollection.getId() == configManager.getDefaultCollection().getId()) {
                         configManager.setDefaultCollection(selectedCollection);
                     }
                     server.addCollection(selectedCollection);
@@ -105,8 +105,8 @@ public class CollectionEditCtrl implements Initializable {
         }));
         // Listener for the ListView
         collectionListView.getSelectionModel().selectedItemProperty()
-                .addListener((_, _, current) -> {
-                    if(current != null && current.getId() == configManager.getDefaultCollection().getId()) {
+                .addListener((observableValue, old, current) -> {
+                    if (current != null && current.getId() == configManager.getDefaultCollection().getId()) {
                         defaultLabel.setText("Yes");
                     } else {
                         defaultLabel.setText("No");
@@ -114,10 +114,10 @@ public class CollectionEditCtrl implements Initializable {
                     handleSelectedCollection(current);
                 });
         // Listener for the title change
-        titleField.textProperty().addListener((_, _, text) -> statusListenerMethod(text));
+        titleField.textProperty().addListener((observableValue, old, text) -> statusListenerMethod(text));
         // Listener for the server change
-        serverField.textProperty().addListener((_, _, text) -> {
-            if(serverField.isFocused())
+        serverField.textProperty().addListener((observableValue, old, text) -> {
+            if (serverField.isFocused())
                 serverListenerMethod(text);
         });
         // Change title on double click
@@ -195,7 +195,7 @@ public class CollectionEditCtrl implements Initializable {
             return;
         }
         Collection defaultCollection = configManager.getDefaultCollection();
-        if(defaultCollection.getId() == selectedCollection.getId()) {
+        if (defaultCollection.getId() == selectedCollection.getId()) {
             dialogUtil.showDialog(resourceBundle, Alert.AlertType.WARNING, "popup.Collection.delete.defaultCollectionSelected");
             return;
         }
@@ -232,9 +232,9 @@ public class CollectionEditCtrl implements Initializable {
 
         collectionListView.setItems(FXCollections.observableList(collections));
 
-        MenuButton collectionLabel  = noteEditCtrl.getCollectionBox();
-        if(currentCollection != null) {
-            if(collectionLabel.getText().equals(resourceBundle.getString("collections.all")) ||
+        MenuButton collectionLabel = noteEditCtrl.getCollectionBox();
+        if (currentCollection != null) {
+            if (collectionLabel.getText().equals(resourceBundle.getString("collections.all")) ||
                     collectionLabel.getText().equals(resourceBundle.getString("collections.defaultCollection"))) {
                 return;
             }
@@ -251,7 +251,7 @@ public class CollectionEditCtrl implements Initializable {
             return;
         }
         //System.out.println(serverURL);
-        if(!serverURL.matches(regex)) {
+        if (!serverURL.matches(regex)) {
             serverStatus.setText(this.resourceBundle.getString("labels.collections.status.invalidPath"));
         } else {
             serverCheckConnection(serverURL);
@@ -260,7 +260,7 @@ public class CollectionEditCtrl implements Initializable {
 
     private void serverCheckConnection(String serverURL) {
         System.out.println("Request made to: " + serverURL);
-        if(server.makeRequest(serverURL, currentCollection) == 200) {
+        if (server.makeRequest(serverURL, currentCollection) == 200) {
             this.statusListenerMethod(currentCollection.getName());
         } else {
             serverStatus.setText(this.resourceBundle.getString("labels.collections.status.cannotConnect"));
@@ -341,7 +341,7 @@ public class CollectionEditCtrl implements Initializable {
         }
         if (server.getCollections()
                 .stream()
-                .anyMatch(collection -> (collection.getName().equals(newTitle) &&collection.getId()!=currentCollection.getId()))) {
+                .anyMatch(collection -> (collection.getName().equals(newTitle) && collection.getId() != currentCollection.getId()))) {
             System.err.println("Collection name must be unique.");
             dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.WARNING,
                     "popup.collections.duplicateName");
@@ -350,7 +350,7 @@ public class CollectionEditCtrl implements Initializable {
 
         configManager.changeCollectionName(currentCollection, newTitle.strip());
         currentCollection.setName(newTitle.strip());
-        if(currentCollection.getId() == configManager.getDefaultCollection().getId()) {
+        if (currentCollection.getId() == configManager.getDefaultCollection().getId()) {
             configManager.setDefaultCollection(currentCollection);
         }
         server.addCollection(currentCollection);
@@ -360,14 +360,14 @@ public class CollectionEditCtrl implements Initializable {
     }
 
     public void changeCollectionServer() {
-        if(serverStatus.getText().equals(resourceBundle.getString("labels.collections.status.cannotConnect"))){
-            dialogUtil.showDialog(resourceBundle, Alert.AlertType.ERROR,"popup.collections.serverUnavailable");
+        if (serverStatus.getText().equals(resourceBundle.getString("labels.collections.status.cannotConnect"))) {
+            dialogUtil.showDialog(resourceBundle, Alert.AlertType.ERROR, "popup.collections.serverUnavailable");
             return;
-        } else if(serverStatus.getText().equals(resourceBundle.getString("labels.collections.status.invalidPath"))){
-            dialogUtil.showDialog(resourceBundle, Alert.AlertType.ERROR,"popup.collections.invalidPath");
+        } else if (serverStatus.getText().equals(resourceBundle.getString("labels.collections.status.invalidPath"))) {
+            dialogUtil.showDialog(resourceBundle, Alert.AlertType.ERROR, "popup.collections.invalidPath");
             return;
-        } else if(serverStatus.getText().equals(resourceBundle.getString("labels.collections.status.alreadyExists"))){
-            dialogUtil.showDialog(resourceBundle, Alert.AlertType.ERROR,"popup.collections.alreadyExistsServer");
+        } else if (serverStatus.getText().equals(resourceBundle.getString("labels.collections.status.alreadyExists"))) {
+            dialogUtil.showDialog(resourceBundle, Alert.AlertType.ERROR, "popup.collections.alreadyExistsServer");
             return;
         }
         collectionListView.requestFocus();
@@ -399,6 +399,7 @@ public class CollectionEditCtrl implements Initializable {
             dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
                     "popup.collections.defaultChanged",
                     Map.of("%name%", selectedCollection.getName()));
+            defaultLabel.setText("Yes");
             noteEditCtrl.updateButtons(selectedCollection, selectedCollection.getName() + "(Default)");
         }
     }
