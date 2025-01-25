@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -91,4 +92,74 @@ class ConfigManagerTest {
 		// Verify that the config has been updated
 		assertEquals("it", configManager.loadLanguage().getLanguage(), "Language should be updated to 'en'");
 	}
+
+	@Test
+	void testAddCollection() throws IOException {
+		Collection collection = new Collection("Test Collection");
+		Config config = new Config();
+		configManager.saveConfig(config);
+		configManager.addCollection(collection);
+
+		Config updatedConfig = configManager.loadConfig();
+		assertTrue(updatedConfig.getCollections().contains(collection),
+				"The collection should be added to the config.");
+	}
+
+	@Test
+	void testChangeCollectionName() throws IOException {
+		Collection collection = new Collection("Old Name");
+		Config config = new Config();
+		config.addCollection(collection);
+		configManager.saveConfig(config);
+		configManager.changeCollectionName(collection, "New Name");
+		Config updatedConfig = configManager.loadConfig();
+		assertTrue(updatedConfig.getCollections().stream()
+						.anyMatch(c -> c.getName().equals("New Name")),
+				"The collection name should be updated in the config.");
+	}
+
+	@Test
+	void testRemoveCollection() throws IOException {
+		Collection collection = new Collection("Test Collection");
+		Config config = new Config();
+		config.addCollection(collection);
+		configManager.saveConfig(config);
+		configManager.removeCollection(collection);
+		Config updatedConfig = configManager.loadConfig();
+		assertFalse(updatedConfig.getCollections().contains(collection),
+				"The collection should be removed from the config.");
+	}
+
+	@Test
+	void testRefreshCollections() throws IOException {
+		Collection collection1 = new Collection("Collection 1");
+		Collection collection2 = new Collection("Collection 2");
+		List<Collection> newCollections = List.of(collection1, collection2);
+		Config config = new Config();
+		configManager.saveConfig(config);
+		configManager.refreshCollections(newCollections);
+		Config updatedConfig = configManager.loadConfig();
+		assertEquals(2, updatedConfig.getCollections().size(),
+				"The config should have the refreshed collections.");
+		assertTrue(updatedConfig.getCollections().containsAll(newCollections),
+				"The new collections should replace the old ones in the config.");
+	}
+
+	@Test
+	void testGetCollectionNameById() throws IOException {
+		Collection collection = new Collection("Test Collection");
+		collection.setId(1L); // Assume there's a setId method
+		Config config = new Config();
+		config.addCollection(collection);
+		configManager.saveConfig(config);
+		String name = configManager.getCollectionNameById(1L);
+		assertEquals("Test Collection", name,
+				"The method should return the correct collection name by ID.");
+	}
+
+
+
+
+
+
 }
