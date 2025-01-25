@@ -378,7 +378,8 @@ public class NoteEditCtrl implements Initializable {
         editingArea.setText(note.getContent());
         titleField.setEditable(true);
         currentCollectionDrop.setVisible(true);
-        currentCollectionDrop.setText(note.getCollection().getName());
+        currentCollectionDrop.setText(server.getNotes().stream().filter(n
+                -> n.getId() == note.getId()).findAny().get().getCollection().getName());
     }
 
     public void refreshFilesPane(Note note) {
