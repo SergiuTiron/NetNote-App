@@ -13,6 +13,7 @@ import javafx.animation.RotateTransition;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -73,6 +74,9 @@ public class NoteEditCtrl implements Initializable {
 
     @FXML
     private TextArea editingArea;
+
+    @FXML
+    private MenuBar menuBar;
 
     @FXML
     private WebView markdownPreview;
@@ -904,7 +908,6 @@ public class NoteEditCtrl implements Initializable {
                 throw new RuntimeException(e);
             }
         });
-        //new combinations
         combinations.put(new KeyCodeCombination(KeyCode.ESCAPE), this::focusSearchBar);
         combinations.put(new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.ALT_DOWN), this::nextCollection);
         combinations.put(new KeyCodeCombination(KeyCode.LEFT, KeyCombination.ALT_DOWN), this::handleAllCollectionsSelected);
@@ -912,6 +915,10 @@ public class NoteEditCtrl implements Initializable {
         combinations.put(new KeyCodeCombination(KeyCode.DOWN, KeyCombination.ALT_DOWN), this::nextNote);
         combinations.put(new KeyCodeCombination(KeyCode.UP, KeyCombination.ALT_DOWN), this::previousNote);
         combinations.put(new KeyCodeCombination(KeyCode.ENTER, KeyCombination.CONTROL_DOWN), this::editNoteContent);
+        combinations.put(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN, KeyCombination.ALT_DOWN), this::addFile);
+        combinations.put(new KeyCodeCombination(KeyCode.DIGIT1, KeyCombination.CONTROL_DOWN), () -> accessMenuBar("settings"));
+        combinations.put(new KeyCodeCombination(KeyCode.DIGIT2, KeyCombination.CONTROL_DOWN), () -> accessMenuBar("menu"));
+        combinations.put(new KeyCodeCombination(KeyCode.L, KeyCombination.CONTROL_DOWN), this::showLanguages);
 
         return combinations;
     }
@@ -922,6 +929,36 @@ public class NoteEditCtrl implements Initializable {
      */
     private void focusSearchBar() {
         searchField.requestFocus();
+    }
+
+    /**
+     * Shows a specific menu from the MenuBar based on the provided menu name.
+     * This method is primarily used for keyboard shortcuts to display menu items.
+     *
+     * @param menu The name of the menu to show. Valid values are:
+     *             - "settings" for the first menu
+     *             - "menu" for the second menu
+     *             Case-sensitive string comparison is used.
+     */
+    private void accessMenuBar(String menu) {
+        ObservableList<Menu> menus = menuBar.getMenus();
+        if(!menus.isEmpty()) {
+            if(menu.equals("settings")) {
+                menus.getFirst().show();
+            }
+            if(menu.equals("menu")) {
+                menus.get(1).show();
+            }
+        }
+    }
+
+    /**
+     * Displays the language selection ComboBox.
+     * Shows a dropdown list of available languages for the application.
+     * This method is triggered via keyboard shortcut CTRL+L.
+     */
+    private void showLanguages() {
+        liveLanguageBox.show();
     }
 
     /**
