@@ -173,9 +173,9 @@
                 </AnchorPane>
             </children>
         </HBox>
-        <MenuBar layoutY="1.0" prefHeight="25.0" prefWidth="900.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <MenuBar fx:id="menuBar" layoutY="1.0" prefHeight="25.0" prefWidth="900.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <menus>
-                <Menu mnemonicParsing="false" text="%menu.settings">
+                <Menu fx:id="settingsMenu" mnemonicParsing="false" text="%menu.settings">
                     <items>
                         <MenuItem mnemonicParsing="false" onAction="#changeNoteSavingSettings" text="%menu.settings.autosave" />
                     </items>
