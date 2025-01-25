@@ -89,6 +89,8 @@ public class CollectionEditCtrl implements Initializable {
                                 "popup.collections.duplicateName");
                         return selectedCollection;
                     }
+                    String oldName = configManager.getCollectionNameById(currentCollection.getId());
+                    noteEditCtrl.updateCurrentCollectionDropText(oldName, newName);
                     configManager.changeCollectionName(selectedCollection, newName.strip());
                     selectedCollection.setName(newName.strip());
                     if(selectedCollection.getId() == configManager.getDefaultCollection().getId()) {
@@ -329,6 +331,7 @@ public class CollectionEditCtrl implements Initializable {
             handleSelectedCollection(null);
             return;
         }
+        String oldTitle = currentCollection.getName();
         String newTitle = titleField.getText();
         if (newTitle.isBlank()) {
             System.err.println("Collection name must not be empty.");
@@ -351,7 +354,7 @@ public class CollectionEditCtrl implements Initializable {
             configManager.setDefaultCollection(currentCollection);
         }
         server.addCollection(currentCollection);
-
+        noteEditCtrl.updateCurrentCollectionDropText(oldTitle, newTitle);
         System.out.println("Collection title changed to " + newTitle);
         this.refresh();
     }

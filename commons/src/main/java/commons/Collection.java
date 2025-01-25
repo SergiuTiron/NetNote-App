@@ -42,6 +42,10 @@ public class Collection {
         this.name = name;
     }
 
+    public void setId(long id) {
+        this.id = id;
+    }
+
     public void addNote(Note note) {
         notes.add(note);
         note.setCollection(this);

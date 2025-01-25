@@ -240,11 +240,30 @@ public class ConfigManager {
 		}
 		config.setCollections(collections);
 		try{
-			config = loadConfig();
+			saveConfig(config);
 		}catch (IOException e){
-			System.err.println("Failed re-loading config in setConfig()");
+			System.err.println("Failed saving config in setConfig()");
 		}
 		System.out.println("Collections refreshed in config.");
+	}
+
+	public String getCollectionNameById(Long id){
+		try{
+			config = loadConfig();
+		}catch (IOException e){
+			System.err.println("Failed re-loading config in getCollectionById()");
+		}
+		Collection foundCollection = config.getCollections().
+				stream().
+				filter(value -> value.getId() == id).
+				findFirst().
+				orElse(null);
+		if(foundCollection == null){
+			return null;
+		}
+		else{
+			return foundCollection.getName();
+		}
 	}
 
 }

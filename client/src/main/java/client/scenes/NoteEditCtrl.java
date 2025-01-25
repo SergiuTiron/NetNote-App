@@ -378,7 +378,8 @@ public class NoteEditCtrl implements Initializable {
         editingArea.setText(note.getContent());
         titleField.setEditable(true);
         currentCollectionDrop.setVisible(true);
-        currentCollectionDrop.setText(note.getCollection().getName());
+        currentCollectionDrop.setText(server.getNotes().stream().filter(n
+                -> n.getId() == note.getId()).findAny().get().getCollection().getName());
     }
 
     public void refreshFilesPane(Note note) {
@@ -730,6 +731,25 @@ public class NoteEditCtrl implements Initializable {
 
     public void setCollectionLabelText(String name) {
         collectionBox.setText(name);
+    }
+
+    /**
+     * method used when the title of a collection is changed
+     * @param oldTitle
+     * @param newTitle
+     */
+    public void updateCurrentCollectionDropText(String oldTitle, String newTitle) {
+        if(oldTitle == null) {
+            System.out.println("Cannot change a null title in dropbox.");
+            return;
+        }
+        if(newTitle == null) {
+            System.out.println("Cannot change to a null title in dropbox.");
+            return;
+        }
+        if(this.currentCollectionDrop.getText().equals(oldTitle)) {
+            this.currentCollectionDrop.setText(newTitle);
+        }
     }
 
     // LANGUAGE RELATED
