@@ -915,7 +915,8 @@ public class NoteEditCtrl implements Initializable {
         combinations.put(new KeyCodeCombination(KeyCode.DOWN, KeyCombination.ALT_DOWN), this::nextNote);
         combinations.put(new KeyCodeCombination(KeyCode.UP, KeyCombination.ALT_DOWN), this::previousNote);
         combinations.put(new KeyCodeCombination(KeyCode.ENTER, KeyCombination.CONTROL_DOWN), this::editNoteContent);
-        combinations.put(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN, KeyCombination.ALT_DOWN), this::addFile);
+        combinations.put(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN, KeyCombination.ALT_DOWN), this::handleEditCollections);
+        combinations.put(new KeyCodeCombination(KeyCode.A, KeyCombination.CONTROL_DOWN, KeyCombination.ALT_DOWN), this::addFile);
         combinations.put(new KeyCodeCombination(KeyCode.DIGIT1, KeyCombination.CONTROL_DOWN), () -> accessMenuBar("settings"));
         combinations.put(new KeyCodeCombination(KeyCode.DIGIT2, KeyCombination.CONTROL_DOWN), () -> accessMenuBar("menu"));
         combinations.put(new KeyCodeCombination(KeyCode.L, KeyCombination.CONTROL_DOWN), this::showLanguages);
