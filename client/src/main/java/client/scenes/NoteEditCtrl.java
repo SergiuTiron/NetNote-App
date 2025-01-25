@@ -732,6 +732,25 @@ public class NoteEditCtrl implements Initializable {
         collectionBox.setText(name);
     }
 
+    /**
+     * method used when the title of a collection is changed
+     * @param oldTitle
+     * @param newTitle
+     */
+    public void updateCurrentCollectionDropText(String oldTitle, String newTitle) {
+        if(oldTitle == null) {
+            System.out.println("Cannot change a null title in dropbox.");
+            return;
+        }
+        if(newTitle == null) {
+            System.out.println("Cannot change to a null title in dropbox.");
+            return;
+        }
+        if(this.currentCollectionDrop.getText().equals(oldTitle)) {
+            this.currentCollectionDrop.setText(newTitle);
+        }
+    }
+
     // LANGUAGE RELATED
     /**
      * Sets the application language to the specified Locale.
