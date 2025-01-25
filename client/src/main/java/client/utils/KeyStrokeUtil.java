@@ -24,6 +24,7 @@ public class KeyStrokeUtil {
 
     /**
      * Getter for the counter
+     *
      * @return int with the number of keystrokes pressed
      */
     public int getCounter() {
@@ -32,6 +33,7 @@ public class KeyStrokeUtil {
 
     /**
      * Getter for the number of keystrokes needed for triggering an action
+     *
      * @return int with the number of keystrokes needed for triggering
      */
     public int getTrigger() {
@@ -48,6 +50,7 @@ public class KeyStrokeUtil {
 
     /**
      * Sets the number of keystrokes that makes a note be saved
+     *
      * @param triggerCount new int with the number of keystrokes that the note should be saved upon
      */
     public void setTriggerCount(int triggerCount) {
@@ -56,6 +59,7 @@ public class KeyStrokeUtil {
 
     /**
      * Equals method
+     *
      * @param o other object to be compared with the KeyStroke
      * @return True/False if the object o is equal/same to the KeyStroke
      */
@@ -69,6 +73,7 @@ public class KeyStrokeUtil {
 
     /**
      * HashCode method
+     *
      * @return an integer with the HashCode of the KeyStroke object
      */
     @Override

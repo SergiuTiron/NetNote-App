@@ -145,6 +145,7 @@ public class ServerUtils {
 
     /**
      * updates the collection name on the server
+     *
      * @param collection - collection to update
      * @return - updated collection
      */
@@ -156,7 +157,7 @@ public class ServerUtils {
                 .put(Entity.entity(collection, APPLICATION_JSON), Collection.class);
     }
 
-    public int makeRequest(String serverPath,Collection collection) {
+    public int makeRequest(String serverPath, Collection collection) {
         try {
             Response response = ClientBuilder.newClient(new ClientConfig())
                     .target(serverPath)
@@ -164,8 +165,8 @@ public class ServerUtils {
                     .request(APPLICATION_JSON)
                     .post(Entity.entity(collection, APPLICATION_JSON));
             return response.getStatus();
-        }catch(Exception e){
-                return 1000;
+        } catch (Exception e) {
+            return 1000;
         }
     }
 
@@ -183,7 +184,7 @@ public class ServerUtils {
             connection.setRequestMethod("DELETE");
 
             int responseCode = connection.getResponseCode();
-            if(responseCode == HttpURLConnection.HTTP_FORBIDDEN)
+            if (responseCode == HttpURLConnection.HTTP_FORBIDDEN)
                 throw new RuntimeException("Default Collection cannot be deleted. " + responseCode);
             if (responseCode != HttpURLConnection.HTTP_NO_CONTENT) {
                 throw new RuntimeException("Failed to delete collection. " + responseCode);
@@ -197,8 +198,9 @@ public class ServerUtils {
 
     /**
      * Associates a note to a specific collection
+     *
      * @param collectionId - id of the collection
-     * @param note - note to be linked
+     * @param note         - note to be linked
      * @return - the updated Collection
      */
     public Collection linkNoteToCollection(long collectionId, Note note) {
@@ -210,6 +212,7 @@ public class ServerUtils {
 
     /**
      * Get a list of all notes in a collection
+     *
      * @param collectionId - id of the collection
      * @return - list of all notes
      */
@@ -217,7 +220,8 @@ public class ServerUtils {
         return ClientBuilder.newClient(new ClientConfig())
                 .target(SERVER).path("api/collections/" + collectionId + "/notes")
                 .request(APPLICATION_JSON)
-                .get(new GenericType<>() {});
+                .get(new GenericType<>() {
+                });
     }
 
     public Collection getCollectionByName(String name) {
@@ -245,7 +249,8 @@ public class ServerUtils {
             return ClientBuilder.newClient(new ClientConfig())
                     .target(url)
                     .request(APPLICATION_JSON)
-                    .get(new GenericType<>() {});
+                    .get(new GenericType<>() {
+                    });
         } catch (Exception e) {
             throw new RuntimeException("Error encoding or executing search request", e);
         }
@@ -299,7 +304,8 @@ public class ServerUtils {
                 .target(SERVER)
                 .path("api/notes/" + noteId + "/files")
                 .request(APPLICATION_JSON)
-                .get(new GenericType<>() {});
+                .get(new GenericType<>() {
+                });
     }
 
 }

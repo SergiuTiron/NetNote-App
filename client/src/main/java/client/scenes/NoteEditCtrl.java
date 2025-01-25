@@ -43,7 +43,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class NoteEditCtrl implements Initializable {
     // Utils fields
@@ -57,7 +56,7 @@ public class NoteEditCtrl implements Initializable {
     private final MainCtrl mainCtrl;
     // Internationalization fields
     private ResourceBundle resourceBundle;
-    public final ObjectProperty<Locale> selectedLanguage = new SimpleObjectProperty<>();
+    private final ObjectProperty<Locale> selectedLanguage = new SimpleObjectProperty<>();
     // Config fields
     private final Config config;
     private final ConfigManager configManager;
@@ -128,6 +127,10 @@ public class NoteEditCtrl implements Initializable {
         return collectionBox;
     }
 
+    public ObjectProperty<Locale> getSelectedLanguage() {
+        return selectedLanguage;
+    }
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         createRefresh();
@@ -142,22 +145,10 @@ public class NoteEditCtrl implements Initializable {
         deleteAllButtons();
         List<Collection> configCollections = config.getCollections();
         Collection defaultCollection = configManager.getDefaultCollection();
-        if(!server.getCollections().contains(defaultCollection)) {
-            server.addCollection(defaultCollection);
-        }
-        configManager.addCollection(defaultCollection);
-        for (Collection collection : configCollections) {
-            if (!server.getCollections().contains(collection)) {
-                server.addCollection(collection);
-            }
-        }
-        List<Collection> serverCollections = server.getCollections();
-        for (Collection collection : serverCollections) {
-            addCollectionToMenuButton(collection, collection.equals(defaultCollection));
-        }
+        loadConfigCollections(defaultCollection, configCollections);
         // Set Language Box with languages and flags
         liveLanguageBox.setItems(FXCollections.observableList(localeUtil.getAvailableLocales()));
-        liveLanguageBox.setCellFactory(_ -> new ListCell<>() {
+        liveLanguageBox.setCellFactory(c -> new ListCell<>() {
             private final ImageView flagView = new ImageView();
 
             {
@@ -185,7 +176,7 @@ public class NoteEditCtrl implements Initializable {
                 this.setText(!empty ? locale.getDisplayName(selectedLanguage.get()) : null);
             }
         });
-        liveLanguageBox.getSelectionModel().selectedItemProperty().addListener((_, _, newValue) -> {
+        liveLanguageBox.getSelectionModel().selectedItemProperty().addListener((observableValue, oldValue, newValue) -> {
             if (newValue == null) {
                 return;
             }
@@ -193,7 +184,7 @@ public class NoteEditCtrl implements Initializable {
             configManager.saveLanguage(newValue);
         });
         // Note title addition
-        noteListView.setCellFactory(_ -> new TextFieldListCell<>(new StringConverter<>() {
+        noteListView.setCellFactory(c -> new TextFieldListCell<>(new StringConverter<>() {
             @Override
             public String toString(Note note) {
                 if (note == null) return "";
@@ -233,7 +224,7 @@ public class NoteEditCtrl implements Initializable {
             }
         }));
         // Listener for search bar
-        searchField.textProperty().addListener((_, _, _) -> this.filterNotes());
+        searchField.textProperty().addListener((observableValue, oldValue, newValue) -> this.filterNotes());
         // Double-click triggers note title editing
         noteListView.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
@@ -244,38 +235,60 @@ public class NoteEditCtrl implements Initializable {
         });
         // Listener for note saving logic
         noteListView.getSelectionModel().selectedItemProperty()
-                .addListener((_, old, current) -> {
-                    if (deleteFlag) {
-                        this.deleteFlag = false;
-                        if (current != null) {
-                            titleField.setText(current.getTitle());
-                        }
-                        return;
-                    }
-                    if (current == null || current.getTitle().isEmpty()) {
-                        return;
-                    } else {
-                        titleField.setText(current.getTitle());
-                    }
-                    this.saveChanges(old);
-                    this.handleNoteSelect(current);
+                .addListener((observableValue, old, current) -> {
+                    listenerSaveChangeNote(old, current);
                 });
         // Listener for Markdown
-        editingArea.textProperty().addListener((_, _, newText) ->
+        editingArea.textProperty().addListener((observableValue, oldText, newText) ->
                 markdown.renderMarkdownInWebView(newText, markdownPreview));
         // Used for autosave on keystrokes
-        editingArea.setOnKeyTyped(_ -> {
+        editingArea.setOnKeyTyped(c -> {
             keyStroke.increaseCounter();
             if (keyStroke.getCounter() == keyStroke.getTrigger() && !editingArea.getText().isEmpty()) {
                 autoSave();
                 keyStroke.counterReset();
             }
         });
-        editingArea.textProperty().addListener((_, _, newText) -> renderMarkdown(newText));
+        editingArea.textProperty().addListener((observableValue, oldText, newText) -> renderMarkdown(newText));
         // Until the user has selected a note to edit, display an informative message & do not allow the user to type.
         this.handleNoteSelect(null);
         this.keyShortcuts();
 
+    }
+
+    // EXTRACTED METHODS FOR INITIALIZE
+
+    private void loadConfigCollections(Collection defaultCollection, List<Collection> configCollections) {
+        if (!server.getCollections().contains(defaultCollection)) {
+            server.addCollection(defaultCollection);
+        }
+        configManager.addCollection(defaultCollection);
+        for (Collection collection : configCollections) {
+            if (!server.getCollections().contains(collection)) {
+                server.addCollection(collection);
+            }
+        }
+        List<Collection> serverCollections = server.getCollections();
+        for (Collection collection : serverCollections) {
+            addCollectionToMenuButton(collection, collection.equals(defaultCollection));
+        }
+    }
+
+    private void listenerSaveChangeNote(Note old, Note current) {
+        if (deleteFlag) {
+            this.deleteFlag = false;
+            if (current != null) {
+                titleField.setText(current.getTitle());
+            }
+            return;
+        }
+        if (current == null || current.getTitle().isEmpty()) {
+            return;
+        } else {
+            titleField.setText(current.getTitle());
+        }
+        this.saveChanges(old);
+        this.handleNoteSelect(current);
     }
 
     // MARKDOWN RENDER LOGIC
@@ -423,9 +436,9 @@ public class NoteEditCtrl implements Initializable {
             ButtonType retryButton = new ButtonType(resourceBundle.getString("popup.savingFailed.retry"));
 
             Alert alert = new Alert(Alert.AlertType.ERROR, resourceBundle.getString("deleteText.fail"),
-                cancelButton, retryButton);
+                    cancelButton, retryButton);
             alert.setContentText(resourceBundle.getString("deleteText.fail")
-                .replace("%id%", String.valueOf(selectedNote.getId())));
+                    .replace("%id%", String.valueOf(selectedNote.getId())));
             Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
             alertStage.getIcons().add(new Image("appIcon/NoteIcon.jpg"));
             Optional<ButtonType> response = alert.showAndWait();
@@ -468,11 +481,10 @@ public class NoteEditCtrl implements Initializable {
             if (response == ButtonType.OK && !textField.getText().isEmpty()) {
                 try {
                     int numberOfKeys = Integer.parseInt(textField.getText());
-                    if(numberOfKeys < 10) {
+                    if (numberOfKeys < 10) {
                         dialogUtil.showDialog(resourceBundle, Alert.AlertType.WARNING, "popup.autosave.less");
                         return;
-                    }
-                    else if(numberOfKeys > 10000) {
+                    } else if (numberOfKeys > 10000) {
                         dialogUtil.showDialog(resourceBundle, Alert.AlertType.WARNING, "popup.autosave.more");
                         return;
                     }
@@ -569,8 +581,8 @@ public class NoteEditCtrl implements Initializable {
         }
 
         //Handle the added buttons
-        newCollectionItem.setOnAction(_ -> this.handleSpecificCollectionSelected(collection));
-        newCollectionChangeItem.setOnAction(_ -> this.moveNoteToCollection(currentNote, collection.getName()));
+        newCollectionItem.setOnAction(a -> this.handleSpecificCollectionSelected(collection));
+        newCollectionChangeItem.setOnAction(a -> this.moveNoteToCollection(currentNote, collection.getName()));
         // Add the new MenuItem to the MenuButton
         MenuItem editCollections = collectionBox.getItems().getLast();
         collectionBox.getItems().removeLast();
@@ -716,6 +728,7 @@ public class NoteEditCtrl implements Initializable {
             if (collectionBox.getText().equals(resourceBundle.getString("collections.all"))) {
                 return;
             }
+            this.currentNote = null;
             this.refresh();
             this.clearFields();
             currentCollectionDrop.setVisible(false);
@@ -735,24 +748,26 @@ public class NoteEditCtrl implements Initializable {
 
     /**
      * method used when the title of a collection is changed
+     *
      * @param oldTitle
      * @param newTitle
      */
     public void updateCurrentCollectionDropText(String oldTitle, String newTitle) {
-        if(oldTitle == null) {
+        if (oldTitle == null) {
             System.out.println("Cannot change a null title in dropbox.");
             return;
         }
-        if(newTitle == null) {
+        if (newTitle == null) {
             System.out.println("Cannot change to a null title in dropbox.");
             return;
         }
-        if(this.currentCollectionDrop.getText().equals(oldTitle)) {
+        if (this.currentCollectionDrop.getText().equals(oldTitle)) {
             this.currentCollectionDrop.setText(newTitle);
         }
     }
 
     // LANGUAGE RELATED
+
     /**
      * Sets the application language to the specified Locale.
      *
@@ -762,7 +777,7 @@ public class NoteEditCtrl implements Initializable {
         this.selectedLanguage.setValue(locale);
         liveLanguageBox.setValue(locale);
     }
-    
+
     // REFRESH CLEAR FIELDS
 
     /**
@@ -799,12 +814,12 @@ public class NoteEditCtrl implements Initializable {
         Collection defaultCollection = configManager.getDefaultCollection();
         server.getCollections().forEach(c -> addCollectionToMenuButton(c, c.equals(defaultCollection)));
 
-        if(!(collectionBox.getText().equals(resourceBundle.getString("collections.all")) ||
+        if (!(collectionBox.getText().equals(resourceBundle.getString("collections.all")) ||
                 collectionBox.getText().equals(resourceBundle.getString("collections.defaultCollection")))) {
             this.setCollectionLabelText(server.getCollectionById(currentCollection.getId()).getName());
         }
 
-        if(currentNote == null) {
+        if (currentNote == null) {
             return; // check if note is null if so return since the small refresh is enough
         }
 
@@ -856,7 +871,7 @@ public class NoteEditCtrl implements Initializable {
     // KEYBINDINGS
 
     private void keyShortcuts() {
-        noteListView.sceneProperty().addListener((_, _, newScene) -> {
+        noteListView.sceneProperty().addListener((observableValue, oldScene, newScene) -> {
             if (newScene != null) {
                 newScene.setOnKeyPressed(event -> {
                     Map<KeyCombination, Runnable> keyActions = keyCodeCombinations();
@@ -940,6 +955,10 @@ public class NoteEditCtrl implements Initializable {
             return;
         }
 
+        calculateIndex(collectionItems);
+    }
+
+    private void calculateIndex(List<MenuItem> collectionItems) {
         int currentIndex = -1;
         for (int i = 0; i < collectionItems.size(); i++) {
             if (collectionItems.get(i).getText().equals(currentCollection.getName())) {
@@ -1019,7 +1038,8 @@ public class NoteEditCtrl implements Initializable {
 
     public void addFile() {
         if (currentNote == null) {
-            dialogUtil.showDialog(resourceBundle,AlertType.WARNING,"popup.files.noteNotSelected"); //popup for embedding a file with no note selected
+            //popup for embedding a file with no note selected
+            dialogUtil.showDialog(resourceBundle, AlertType.WARNING, "popup.files.noteNotSelected");
             return;
         }
 
@@ -1035,15 +1055,15 @@ public class NoteEditCtrl implements Initializable {
             String fileHash = hashUtil.computeFileHash(Files.readAllBytes(file.toPath()));
             List<FileEntity> existingFiles = server.getFilesForNote(currentNote.getId());
             boolean fileExists = existingFiles.stream()
-                        .anyMatch(f -> {
-                            try {
-                                return hashUtil.computeFileHash(f.getData()).equals(fileHash);
-                            } catch (NoSuchAlgorithmException | IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
-            if(fileExists) {
-                dialogUtil.showDialog(resourceBundle,AlertType.ERROR,"popup.files.alreadyExists"); // check if the file was already added
+                    .anyMatch(f -> {
+                        try {
+                            return hashUtil.computeFileHash(f.getData()).equals(fileHash);
+                        } catch (NoSuchAlgorithmException | IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+            if (fileExists) {
+                dialogUtil.showDialog(resourceBundle, AlertType.ERROR, "popup.files.alreadyExists"); // check if the file was already added
                 return;
             }
             server.createFile(this.currentNote, file);
@@ -1073,7 +1093,7 @@ public class NoteEditCtrl implements Initializable {
 
     }
 
-    public void renderFile(FileEntity uploadedFile,Note note) {
+    public void renderFile(FileEntity uploadedFile, Note note) {
         String serverPath = server.getServerPath() + "api/notes/" + currentNote.getId() + "/files/" + uploadedFile.getId();
         String markdownLink = "![" + uploadedFile.getName() + "](" + serverPath + ")";
         editingArea.appendText(markdownLink);
@@ -1110,6 +1130,7 @@ public class NoteEditCtrl implements Initializable {
 
         this.saveChanges(note);
         this.refresh();
-        editingArea.setScrollTop(Double.MAX_VALUE); //this is for making sure that when the user clicks the editing area it is sent to the end of the text
+        // This is for making sure that when the user clicks the editing area it is sent to the end of the text
+        editingArea.setScrollTop(Double.MAX_VALUE);
     }
 }

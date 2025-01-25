@@ -22,7 +22,9 @@ public class LocaleUtil {
             for (Locale locale : Locale.getAvailableLocales()) {
                 try {
                     resourceBundles.add(ResourceBundle.getBundle(BUNDLE_BASE_NAME, locale));
-                } catch (MissingResourceException _) {}
+                } catch (MissingResourceException _) {
+                    System.out.println("Not available");
+                }
             }
             this.availableLocales = resourceBundles.stream()
                     .map(ResourceBundle::getLocale)
@@ -49,7 +51,7 @@ public class LocaleUtil {
      *
      * @param language A string representing the language (e.g., "Dutch", "nl", "English").
      * @return The Locale object corresponding to the given language string.
-     *         Returns Locale.ENGLISH if the language is not recognized.
+     * Returns Locale.ENGLISH if the language is not recognized.
      */
     public Locale mapLanguageToLocale(String language) {
         return switch (language) {
@@ -67,7 +69,7 @@ public class LocaleUtil {
      *
      * @param locale The Locale object to be mapped.
      * @return A string representing the language of the given Locale (e.g., "Dutch", "English").
-     *         Returns "English" if the Locale is not recognized.
+     * Returns "English" if the Locale is not recognized.
      */
     public String mapLocaleToLanguage(Locale locale) {
         return switch (locale.getLanguage()) {

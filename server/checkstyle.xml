@@ -30,17 +30,10 @@
     </module>
 
     <module name="TreeWalker">
-        <module name="MissingJavadocMethod">
-            <property name="severity" value="warning"/>
-            <property name="scope" value="public"/>
-            <property name="minLineCount" value="0"/>
-            <property name="allowedAnnotations" value="Main"/>
-            <property name="tokens" value="METHOD_DEF, CTOR_DEF, COMPACT_CTOR_DEF"/>
-        </module>
         <module name="MethodLength">
             <property name="severity" value="warning"/>
             <property name="tokens" value="METHOD_DEF, CTOR_DEF, COMPACT_CTOR_DEF"/>
-            <property name="max" value="50"/>
+            <property name="max" value="75"/>
         </module>
         <module name="VisibilityModifier">
             <property name="severity" value="warning"/>

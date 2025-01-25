@@ -1,7 +1,6 @@
 package commons;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +69,7 @@ public class Collection {
         return notes;
     }
 
-    public int NoteCount() {
+    public int countNote() {
         return notes.size();
     }
 
