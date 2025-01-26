@@ -107,9 +107,9 @@ public class CollectionEditCtrl implements Initializable {
         collectionListView.getSelectionModel().selectedItemProperty()
                 .addListener((observableValue, old, current) -> {
                     if (current != null && current.getId() == configManager.getDefaultCollection().getId()) {
-                        defaultLabel.setText(resourceBundle.getString("default.label.no"));
-                    } else {
                         defaultLabel.setText(resourceBundle.getString("default.label.yes"));
+                    } else {
+                        defaultLabel.setText(resourceBundle.getString("default.label.no"));
                     }
                     handleSelectedCollection(current);
                 });
