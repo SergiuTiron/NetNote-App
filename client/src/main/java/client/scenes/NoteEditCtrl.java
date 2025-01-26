@@ -239,9 +239,7 @@ public class NoteEditCtrl implements Initializable {
         });
         // Listener for note saving logic
         noteListView.getSelectionModel().selectedItemProperty()
-                .addListener((observableValue, old, current) -> {
-                    listenerSaveChangeNote(old, current);
-                });
+                .addListener((observableValue, old, current) -> listenerSaveChangeNote(old, current));
         // Listener for Markdown
         editingArea.textProperty().addListener((observableValue, oldText, newText) ->
                 markdown.renderMarkdownInWebView(newText, markdownPreview));
@@ -432,6 +430,7 @@ public class NoteEditCtrl implements Initializable {
             server.deleteNoteFromServer(selectedNote.getId());
             noteListView.getItems().remove(selectedNote);
             currentCollectionDrop.setVisible(false);
+            this.currentNote = null;
             this.clearFields();
             this.refresh();
         } catch (Exception e) {
@@ -718,7 +717,7 @@ public class NoteEditCtrl implements Initializable {
                         "popup.moveNote.sameCollection");
                 return;
             }
-            List<String> noteTitles = server.getNotesByCollection(newCollection.getId()).stream().map(x -> (String) x.getTitle()).toList();
+            List<String> noteTitles = server.getNotesByCollection(newCollection.getId()).stream().map(Note::getTitle).toList();
             if (noteTitles.contains(currentNote.getTitle())) {
                 dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.WARNING, "popup.moveNote.sameTitleInCollection");
                 return;
@@ -753,8 +752,8 @@ public class NoteEditCtrl implements Initializable {
     /**
      * method used when the title of a collection is changed
      *
-     * @param oldTitle
-     * @param newTitle
+     * @param oldTitle old title to be changed
+     * @param newTitle new title to change the old one
      */
     public void updateCurrentCollectionDropText(String oldTitle, String newTitle) {
         if (oldTitle == null) {

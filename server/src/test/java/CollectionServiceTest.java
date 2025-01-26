@@ -125,4 +125,76 @@ public class CollectionServiceTest {
         assertNotNull(result);
         assertEquals("Default Collection", result.getName());
     }
+
+    @Test
+    void updateCollection_Exists() {
+        // Test when collection exists
+        Long collectionId = 1L;
+        Collection existingCollection = new Collection("Old Name");
+        Collection updatedCollection = new Collection("Updated Name");
+
+        when(collectionRepository.findById(collectionId)).thenReturn(Optional.of(existingCollection));
+        when(collectionRepository.save(existingCollection)).thenReturn(existingCollection);
+
+        Collection result = collectionService.updateCollection(collectionId, updatedCollection);
+
+        assertNotNull(result);
+        assertEquals("Updated Name", result.getName());
+        verify(collectionRepository, times(1)).save(existingCollection);
+    }
+
+    @Test
+    void updateCollection_DoesNotExist() {
+        // Test when collection does not exist
+        Long collectionId = 1L;
+        Collection updatedCollection = new Collection("Updated Name");
+
+        when(collectionRepository.findById(collectionId)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () ->
+                collectionService.updateCollection(collectionId, updatedCollection));
+
+        assertEquals("Collection with ID " + collectionId + " does not exist", exception.getMessage());
+    }
+
+    @Test
+    void getCollectionById_Exists() {
+        // Test when collection exists
+        Long collectionId = 1L;
+        Collection collection = new Collection("Some Collection");
+
+        when(collectionRepository.findById(collectionId)).thenReturn(Optional.of(collection));
+
+        Collection result = collectionService.getCollectionById(collectionId);
+
+        assertNotNull(result);
+        assertEquals("Some Collection", result.getName());
+    }
+
+    @Test
+    void getCollectionById_DoesNotExist() {
+        // Test when collection does not exist
+        Long collectionId = 1L;
+
+        when(collectionRepository.findById(collectionId)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () ->
+                collectionService.getCollectionById(collectionId));
+
+        assertEquals("Collection not found with ID: " + collectionId, exception.getMessage());
+    }
+
+    @Test
+    void createDefaultCollection() {
+        // Test default collection creation
+        Collection defaultCollection = new Collection("Initial Collection");
+
+        when(collectionRepository.save(any(Collection.class))).thenReturn(defaultCollection);
+
+        Collection result = collectionService.createDefaultCollection();
+
+        assertNotNull(result);
+        assertEquals("Initial Collection", result.getName());
+        verify(collectionRepository, times(1)).save(any(Collection.class));
+    }
 }
