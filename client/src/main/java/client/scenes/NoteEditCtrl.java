@@ -27,6 +27,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -305,7 +306,9 @@ public class NoteEditCtrl implements Initializable {
     }
 
     // NOTE FILTERING
-
+    public void focusSearch(MouseEvent mouseEvent) {
+        searchField.requestFocus();
+    }
     /**
      * called when the user clicks the "Search" button
      * This method displays all the notes in the current collection that contain the given keyword.

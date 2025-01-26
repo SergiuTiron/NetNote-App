@@ -45,9 +45,10 @@ Once this is working, you can try importing the project into your favorite IDE.
 
 #### Note searching
 
-- Notes can be searched through the searchbar above the search
-- Notes are searched based on the current collection that is selected or in all collections if 'All' is selected
-- The search is done in both the note content and the note title
+- Notes can be searched through the searchbar above the search.
+- Notes are searched based on the current collection that is selected or in all collections if 'All' is selected.
+- The search is done in both the note content and the note title.
+- There is a search icon that focuses the search bar when pressed.
 
 #### Languages
 
