@@ -28,6 +28,7 @@ Once this is working, you can try importing the project into your favorite IDE.
 - If no note is selected when adding a file, the user is informed.
 - Adding the same file twice in the same note is not allowed (the user is notified). If the user wishes to render the embedded file again, there is a button next to the filename for that.
 - Changing the filename is done using the button generated next to each file added. The same goes for file deletion and file rendering.
+- To download the files locally you need to press the hyperlink of the file.
 
 #### Note handling
 
