@@ -107,9 +107,9 @@ public class CollectionEditCtrl implements Initializable {
         collectionListView.getSelectionModel().selectedItemProperty()
                 .addListener((observableValue, old, current) -> {
                     if (current != null && current.getId() == configManager.getDefaultCollection().getId()) {
-                        defaultLabel.setText("Yes");
+                        defaultLabel.setText(resourceBundle.getString("default.label.no"));
                     } else {
-                        defaultLabel.setText("No");
+                        defaultLabel.setText(resourceBundle.getString("default.label.yes"));
                     }
                     handleSelectedCollection(current);
                 });
@@ -399,7 +399,7 @@ public class CollectionEditCtrl implements Initializable {
             dialogUtil.showDialog(this.resourceBundle, Alert.AlertType.INFORMATION,
                     "popup.collections.defaultChanged",
                     Map.of("%name%", selectedCollection.getName()));
-            defaultLabel.setText("Yes");
+            defaultLabel.setText(resourceBundle.getString("default.label.yes"));
             noteEditCtrl.updateButtons(selectedCollection, selectedCollection.getName() + "(Default)");
         }
     }
