@@ -39,9 +39,15 @@ Once this is working, you can try importing the project into your favorite IDE.
 
 #### Note saving
 
-- Notes can either be saved by pressing the 'Save Changes' button or they are saved automatically after a number of pressed keystrokes.
+- Notes can either be saved by pressing the 'Save Changes' button, or they are saved automatically after a number of pressed keystrokes.
 - The predefined number of keystrokes is set to 100 and can be changed from the 'Settings' menu of the app.
 - The user is not allowed to enter a number of keystrokes that is not in the range of 5 to 10000, and if they do otherwise, they are notified that the action is invalid.
+
+#### Note searching
+
+- Notes can be searched through the searchbar above the search
+- Notes are searched based on the current collection that is selected or in all collections if 'All' is selected
+- The search is done in both the note content and the note title
 
 #### Languages
 
@@ -57,7 +63,7 @@ Once this is working, you can try importing the project into your favorite IDE.
 - To edit collections, press 'Edit Collections' inside the dropdown box.
 - Collection names can be changed either by double-clicking their name in the list or changing their name in the 'Title' text field (Names are unique and blank names are not allowed).
 - The server of a collection can be changed, and the user is informed through a label if the server is available or the path is valid (Although collections are not sent to that server as multiple servers do not need to be supported anymore).
-- Collections can be deleted if selected, and a confirmation appears. When collections are deleted, all of the notes inside them get deleted as well.
+- Collections can be deleted if selected, and a confirmation appears. When collections are deleted, all the notes inside them get deleted as well.
 - Collections can be added via the 'Add Collection' button.
 - There is a button for making the selected collection the default, called 'Make Default'.
 - The default collection can be accessed via the 'Default Collection' button inside the dropdown box.
