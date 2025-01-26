@@ -28,9 +28,14 @@
     <children>
         <HBox alignment="CENTER" layoutY="25.0" prefHeight="40.0" prefWidth="900.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
             <children>
+            <AnchorPane onMouseClicked="#focusSearch" prefHeight="49.0" prefWidth="59.0" AnchorPane.leftAnchor="5.0">
+                <ImageView fitHeight="33.0" fitWidth="33.0" layoutX="13.0" layoutY="13.0" AnchorPane.leftAnchor="15.0" AnchorPane.topAnchor="9.0">
+                    <Image url="@/appIcon/search_icon.png" />
+                </ImageView>
+            </AnchorPane>
                 <AnchorPane prefHeight="49.0" prefWidth="495.0" HBox.hgrow="ALWAYS">
                     <children>
-                        <TextField fx:id="searchField" layoutX="146.0" layoutY="10.0" prefHeight="29.0" prefWidth="621.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="10.0" />
+                        <TextField fx:id="searchField" layoutX="47.0" layoutY="10.0" prefHeight="29.0" prefWidth="450.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="10.0" />
                     </children>
                 </AnchorPane>
             <AnchorPane prefHeight="49.0" prefWidth="39.0">
